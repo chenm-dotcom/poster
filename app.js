@@ -402,15 +402,23 @@ function buildImageField(fieldId) {
   zone.appendChild(fileInp);
   wrapper.appendChild(zone);
 
-  const ur = mk('div', 'unsplash-row');
-  ur.innerHTML = `
-    <span class="unsplash-label">or search Unsplash</span>
-    <div class="unsplash-input-row">
-      <input type="text" class="unsplash-input" placeholder="e.g. coworking space" id="us-${fieldId}">
-      <button type="button" class="unsplash-btn" data-field="${fieldId}">Search</button>
-    </div>
-    <div class="unsplash-results" id="usr-${fieldId}"></div>`;
-  wrapper.appendChild(ur);
+  if (UNSPLASH_KEY) {
+    const ur = mk('div', 'unsplash-row');
+    ur.innerHTML = `
+      <span class="unsplash-label">or search Unsplash</span>
+      <div class="unsplash-input-row">
+        <input type="text" class="unsplash-input" placeholder="e.g. coworking space" id="us-${fieldId}">
+        <button type="button" class="unsplash-btn" data-field="${fieldId}">Search</button>
+      </div>
+      <div class="unsplash-results" id="usr-${fieldId}"></div>`;
+    wrapper.appendChild(ur);
+    const usInput = ur.querySelector('.unsplash-input');
+    const usBtn   = ur.querySelector('.unsplash-btn');
+    const usRes   = ur.querySelector('.unsplash-results');
+    const doSearch = () => searchUnsplash(usInput.value, fieldId, usRes, zone, fileInp);
+    usBtn.addEventListener('click', doSearch);
+    usInput.addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
+  }
   const usInput = ur.querySelector('.unsplash-input');
   const usBtn   = ur.querySelector('.unsplash-btn');
   const usRes   = ur.querySelector('.unsplash-results');
@@ -437,24 +445,20 @@ async function searchUnsplash(query, fieldId, resultEl, zone, fileInp) {
       const data = await res.json();
       photos = (data.results || []).map(p => ({ thumb: p.urls.small, full: p.urls.regular, credit: p.user.name }));
     } else {
-      const tag = encodeURIComponent(query.replace(/\s+/g, ','));
-      const seeds = [1,2,3,4,5,6].map(s => ({
-        thumb: `https://loremflickr.com/240/320/${tag}?random=${s}`,
-        full:  `https://loremflickr.com/720/1280/${tag}?random=${s}`,
-        credit: 'loremflickr',
-      }));
-      photos = seeds;
+      resultEl.innerHTML = '<span class="us-loading">Photo search requires an Unsplash API key — use the upload button above instead.</span>';
+      return;
     }
     if (!photos.length) { resultEl.innerHTML = '<span class="us-loading">No results.</span>'; return; }
     resultEl.innerHTML = '';
     photos.forEach(p => {
       const img = mk('img', 'us-thumb');
+      img.crossOrigin = 'anonymous';
       img.src = p.thumb; img.title = `Photo by ${p.credit}`;
       img.addEventListener('click', async () => {
         resultEl.querySelectorAll('.us-thumb').forEach(t => t.classList.remove('us-selected'));
         img.classList.add('us-selected');
         try {
-          const blob = await fetch(p.full).then(r => r.blob());
+          const blob = await fetch(p.full, { mode: 'cors' }).then(r => r.blob());
           const reader = new FileReader();
           reader.onload = ev => { imgs[fieldId] = ev.target.result; setZoneThumb(zone, ev.target.result, fileInp); render(); };
           reader.readAsDataURL(blob);
