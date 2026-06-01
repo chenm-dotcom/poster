@@ -387,35 +387,30 @@ function buildForm(fields) {
 function buildImageField(fieldId) {
   const wrapper = mk('div', 'img-field');
 
-  /* ── Tab row ── */
-  const tabRow = mk('div', 'img-source-tabs');
-  const tabs = [
-    { id: 'upload',  label: 'Upload'  },
-    { id: 'gif',     label: 'GIF'     },
-    { id: 'pattern', label: 'Pattern' },
-  ];
-  const panels = {};
-  tabs.forEach((t, i) => {
-    const btn = mk('button', 'img-tab' + (i === 0 ? ' on' : ''));
-    btn.type = 'button'; btn.textContent = t.label;
-    btn.dataset.tab = t.id;
-    tabRow.appendChild(btn);
-    const panel = mk('div', 'img-tab-panel' + (i === 0 ? ' on' : ''));
-    panel.dataset.panel = t.id;
-    panels[t.id] = panel;
-  });
-  wrapper.appendChild(tabRow);
+  /* ── Source selector ── */
+  const sel = mk('select', 'img-source-select');
+  sel.innerHTML = `
+    <option value="upload">📁  Upload photo</option>
+    <option value="gif">🎞  Search GIFs</option>
+    <option value="unsplash">🖼  Search Unsplash</option>
+    <option value="pattern">🎨  Icon pattern</option>`;
+  wrapper.appendChild(sel);
 
-  tabRow.addEventListener('click', e => {
-    const btn = e.target.closest('.img-tab');
-    if (!btn) return;
-    const key = btn.dataset.tab;
-    qsa('.img-tab', tabRow).forEach(b => b.classList.toggle('on', b === btn));
+  /* ── Panels ── */
+  const panels = {};
+  ['upload','gif','unsplash','pattern'].forEach((key, i) => {
+    const p = mk('div', 'img-source-panel' + (i === 0 ? ' on' : ''));
+    p.dataset.panel = key;
+    panels[key] = p;
+    wrapper.appendChild(p);
+  });
+
+  sel.addEventListener('change', () => {
+    const key = sel.value;
     Object.values(panels).forEach(p => p.classList.toggle('on', p.dataset.panel === key));
   });
 
   /* ── Upload panel ── */
-  const uploadPanel = panels['upload'];
   const zone = mk('label', 'upload-zone');
   zone.id = 'zone-' + fieldId;
   zone.innerHTML = `
@@ -433,31 +428,37 @@ function buildImageField(fieldId) {
     r.readAsDataURL(file);
   });
   zone.appendChild(fileInp);
-  uploadPanel.appendChild(zone);
-  wrapper.appendChild(uploadPanel);
+  panels['upload'].appendChild(zone);
 
   /* ── GIF panel ── */
-  const gifPanel = panels['gif'];
-  const gr = mk('div', 'giphy-row');
-  gr.style.borderTop = 'none'; gr.style.marginTop = '0'; gr.style.paddingTop = '0';
-  gr.innerHTML = `
-    <span class="giphy-label">🎞 Search GIFs (Tenor)</span>
+  panels['gif'].innerHTML = `
     <div class="unsplash-input-row">
       <input type="text" class="unsplash-input giphy-input" placeholder="e.g. celebration, party" id="gi-${fieldId}">
       <button type="button" class="unsplash-btn giphy-btn" data-field="${fieldId}">Search</button>
     </div>
     <div class="unsplash-results giphy-results" id="gir-${fieldId}"></div>`;
-  gifPanel.appendChild(gr);
-  wrapper.appendChild(gifPanel);
-  const giInput = gr.querySelector('.giphy-input');
-  const giBtn   = gr.querySelector('.giphy-btn');
-  const giRes   = gr.querySelector('.giphy-results');
+  const giInput = panels['gif'].querySelector('.giphy-input');
+  const giBtn   = panels['gif'].querySelector('.giphy-btn');
+  const giRes   = panels['gif'].querySelector('.giphy-results');
   const doGiphy = () => searchGiphy(giInput.value, fieldId, giRes, zone, fileInp);
   giBtn.addEventListener('click', doGiphy);
   giInput.addEventListener('keydown', e => { if (e.key === 'Enter') doGiphy(); });
 
+  /* ── Unsplash panel ── */
+  panels['unsplash'].innerHTML = `
+    <div class="unsplash-input-row">
+      <input type="text" class="unsplash-input" placeholder="e.g. coworking space" id="us-${fieldId}">
+      <button type="button" class="unsplash-btn" data-field="${fieldId}">Search</button>
+    </div>
+    <div class="unsplash-results" id="usr-${fieldId}"></div>`;
+  const usInput = panels['unsplash'].querySelector('.unsplash-input');
+  const usBtn   = panels['unsplash'].querySelector('.unsplash-btn');
+  const usRes   = panels['unsplash'].querySelector('.unsplash-results');
+  const doSearch = () => searchUnsplash(usInput.value, fieldId, usRes, zone, fileInp);
+  usBtn.addEventListener('click', doSearch);
+  usInput.addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
+
   /* ── Pattern panel ── */
-  const patternPanel = panels['pattern'];
   const grid = mk('div', 'pattern-grid');
   Object.entries(PATTERN_SHAPES).forEach(([key, shape]) => {
     const btn = mk('button', 'pattern-opt');
@@ -468,7 +469,6 @@ function buildImageField(fieldId) {
       posterPattern = key;
       imgs[fieldId] = '';
       qsa('.pattern-opt', grid).forEach(b => b.classList.toggle('on', b === btn));
-      setZoneThumb(zone, shape.e, fileInp);
       render();
     });
     grid.appendChild(btn);
@@ -481,26 +481,8 @@ function buildImageField(fieldId) {
     render();
   });
   grid.appendChild(noneBtn);
-  patternPanel.appendChild(grid);
-  wrapper.appendChild(patternPanel);
+  panels['pattern'].appendChild(grid);
 
-  if (UNSPLASH_KEY) {
-    const ur = mk('div', 'unsplash-row');
-    ur.innerHTML = `
-      <span class="unsplash-label">or search Unsplash</span>
-      <div class="unsplash-input-row">
-        <input type="text" class="unsplash-input" placeholder="e.g. coworking space" id="us-${fieldId}">
-        <button type="button" class="unsplash-btn" data-field="${fieldId}">Search</button>
-      </div>
-      <div class="unsplash-results" id="usr-${fieldId}"></div>`;
-    gifPanel.appendChild(ur);
-    const usInput = ur.querySelector('.unsplash-input');
-    const usBtn   = ur.querySelector('.unsplash-btn');
-    const usRes   = ur.querySelector('.unsplash-results');
-    const doSearch = () => searchUnsplash(usInput.value, fieldId, usRes, zone, fileInp);
-    usBtn.addEventListener('click', doSearch);
-    usInput.addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
-  }
   return wrapper;
 }
 
