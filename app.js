@@ -421,12 +421,6 @@ function buildImageField(fieldId) {
     usBtn.addEventListener('click', doSearch);
     usInput.addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
   }
-  const usInput = ur.querySelector('.unsplash-input');
-  const usBtn   = ur.querySelector('.unsplash-btn');
-  const usRes   = ur.querySelector('.unsplash-results');
-  const doSearch = () => searchUnsplash(usInput.value, fieldId, usRes, zone, fileInp);
-  usBtn.addEventListener('click', doSearch);
-  usInput.addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
   return wrapper;
 }
 
