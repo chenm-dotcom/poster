@@ -255,6 +255,8 @@ function open(key) {
   $pick.classList.add('hidden');
   $build.classList.remove('hidden');
   document.querySelector('.app').classList.add('in-build');
+  const wrap = $build.querySelector('.build-wrap');
+  if (wrap) { wrap.classList.remove('animate-in'); void wrap.offsetWidth; wrap.classList.add('animate-in'); }
   render();
 }
 
@@ -561,8 +563,9 @@ function render() {
   $poster.style.setProperty('--hw', fweight);
   ({ event:renderEvent, spotlight:renderSpotlight, offer:renderOffer, announcement:renderAnnouncement })[tpl]();
   $poster.classList.remove('poster-focus-in');
-  void $poster.offsetWidth; /* reflow to restart animation */
+  void $poster.offsetWidth;
   $poster.classList.add('poster-focus-in');
+  updateDlBtn();
 }
 
 function v(fid) { const e = id('f-' + fid); return e ? e.value.trim() : ''; }
@@ -804,17 +807,153 @@ function renderAnnouncementSplit() {
 }
 
 /* ── Download / Print ── */
+function posterSlug() {
+  return (v('headline')||v('name')||v('brand')||'poster')
+    .toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,40);
+}
+
+function isGifSrc(src) {
+  return src && (src.startsWith('data:image/gif') || /\.gif(\?|$)/i.test(src));
+}
+
+function updateDlBtn() {
+  const gifSrc = imgs['photo'] || '';
+  if (isGifSrc(gifSrc)) {
+    $dlBtn.innerHTML = `<svg viewBox="0 0 18 18" fill="none"><path d="M9 2v10M5 8l4 4 4-4M2 14h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg> Download GIF`;
+  } else {
+    $dlBtn.innerHTML = `<svg viewBox="0 0 18 18" fill="none"><path d="M9 2v10M5 8l4 4 4-4M2 14h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg> Download PNG`;
+  }
+}
+
 $dlBtn.addEventListener('click', async () => {
+  const gifSrc = imgs['photo'] || '';
+  if (isGifSrc(gifSrc)) {
+    await downloadAnimatedGif(gifSrc);
+  } else {
+    await downloadPng();
+  }
+});
+
+async function downloadPng() {
   if (typeof html2canvas === 'undefined') { alert('Download library not loaded.'); return; }
   const orig = $dlBtn.innerHTML;
   $dlBtn.disabled = true; $dlBtn.textContent = 'Generating…';
   try {
     const canvas = await html2canvas($poster, { scale:3, useCORS:true, allowTaint:true, backgroundColor:null, logging:false });
-    const slug = (v('headline')||v('name')||v('brand')||'poster').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,40);
-    const a = document.createElement('a'); a.download = `mindspace-${slug}.png`; a.href = canvas.toDataURL('image/png'); a.click();
+    const a = document.createElement('a'); a.download = `mindspace-${posterSlug()}.png`; a.href = canvas.toDataURL('image/png'); a.click();
   } catch (err) { console.error(err); alert('PNG export failed — try Print / Save as PDF instead.'); }
   finally { $dlBtn.disabled = false; $dlBtn.innerHTML = orig; }
-});
+}
+
+async function downloadAnimatedGif(gifSrc) {
+  if (typeof parseGIF === 'undefined' || typeof GIF === 'undefined') {
+    alert('GIF export library not loaded yet — please wait a moment and try again.');
+    return;
+  }
+  const orig = $dlBtn.innerHTML;
+  $dlBtn.disabled = true; $dlBtn.textContent = 'Building GIF…';
+  try {
+    /* 1 — fetch raw GIF bytes */
+    let arrayBuf;
+    if (gifSrc.startsWith('data:')) {
+      const b64 = gifSrc.split(',')[1];
+      const bin = atob(b64);
+      arrayBuf = new ArrayBuffer(bin.length);
+      const view = new Uint8Array(arrayBuf);
+      for (let i = 0; i < bin.length; i++) view[i] = bin.charCodeAt(i);
+    } else {
+      arrayBuf = await fetch(gifSrc).then(r => r.arrayBuffer());
+    }
+
+    /* 2 — decode frames */
+    const parsed = parseGIF(arrayBuf);
+    const frames = decompressFrames(parsed, true);
+    if (!frames.length) throw new Error('No frames decoded');
+
+    const gifNatW = parsed.lsd.width;
+    const gifNatH = parsed.lsd.height;
+
+    /* 3 — poster dimensions (CSS px) */
+    const posterRect = $poster.getBoundingClientRect();
+    const W = Math.round(posterRect.width);
+    const H = Math.round(posterRect.height);
+
+    /* 4 — find the photo element's position within the poster */
+    const photoEl = $poster.querySelector('img[crossorigin="anonymous"]');
+    const photoZone = photoEl ? photoEl.parentElement : null;
+    let px = 0, py = 0, pw = W, ph = H;
+    if (photoZone) {
+      const zr = photoZone.getBoundingClientRect();
+      const pr = posterRect;
+      px = zr.left - pr.left; py = zr.top - pr.top;
+      pw = zr.width;          ph = zr.height;
+    }
+
+    /* 5 — render poster overlay (photo hidden, transparent bg) */
+    const origBg = $poster.style.background;
+    $poster.style.background = 'transparent';
+    if (photoEl) photoEl.style.visibility = 'hidden';
+    const overlayCanvas = await html2canvas($poster, {
+      scale: 1, useCORS: true, allowTaint: true, backgroundColor: null, logging: false,
+    });
+    $poster.style.background = origBg;
+    if (photoEl) photoEl.style.visibility = '';
+
+    /* 6 — fetch gif.js worker as blob to avoid cross-origin issues */
+    const workerBlob = await fetch('https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.worker.js').then(r => r.blob());
+    const workerURL  = URL.createObjectURL(workerBlob);
+
+    /* 7 — encode output GIF */
+    const encoder = new GIF({ workers: 2, quality: 8, width: W, height: H, workerScript: workerURL });
+
+    const tmp = document.createElement('canvas');
+    tmp.width = W; tmp.height = H;
+    const ctx = tmp.getContext('2d');
+
+    /* poster background fill colour */
+    const bgFill = bgColor || getComputedStyle($poster).backgroundColor || '#ffffff';
+
+    for (const frame of frames) {
+      ctx.clearRect(0, 0, W, H);
+      ctx.fillStyle = bgFill;
+      ctx.fillRect(0, 0, W, H);
+
+      /* draw this GIF frame into photo zone (cover fit) */
+      const fd = document.createElement('canvas');
+      fd.width = gifNatW; fd.height = gifNatH;
+      const fctx = fd.getContext('2d');
+      const idata = fctx.createImageData(gifNatW, gifNatH);
+      idata.data.set(frame.patch);
+      fctx.putImageData(idata, 0, 0);
+
+      const scale = Math.max(pw / gifNatW, ph / gifNatH);
+      const dw = gifNatW * scale, dh = gifNatH * scale;
+      const dx = px + (pw - dw) / 2, dy = py + (ph - dh) / 2;
+      ctx.drawImage(fd, dx, dy, dw, dh);
+
+      /* draw overlay (text, rules, gradient) on top */
+      ctx.drawImage(overlayCanvas, 0, 0, W, H);
+
+      encoder.addFrame(ctx, { copy: true, delay: frame.delay || 80 });
+    }
+
+    encoder.on('finished', blob => {
+      URL.revokeObjectURL(workerURL);
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `mindspace-${posterSlug()}.gif`;
+      a.click();
+      $dlBtn.disabled = false; $dlBtn.innerHTML = orig;
+    });
+    encoder.render();
+
+  } catch (err) {
+    console.error(err);
+    alert('GIF export failed. Try downloading as PNG instead.');
+    $dlBtn.disabled = false; $dlBtn.innerHTML = orig;
+  }
+}
+
 $printBtn.addEventListener('click', () => window.print());
 
 /* ── Utils ── */

@@ -230,11 +230,23 @@ button:focus:not(:focus-visible) { outline: none; }
 /* ══════════════════════════════════════════════════════════════════════════════
    BUILD SCREEN
    ══════════════════════════════════════════════════════════════════════════════ */
-#screen-build { padding: 52px 40px 72px; }
+#screen-build { padding: 24px 40px 32px; }
 .build-wrap {
   display: grid; grid-template-columns: 348px 1fr; gap: 32px;
-  height: 100vh;
+  height: calc(100vh - 56px);
 }
+
+/* Fade-in from sides when build screen loads */
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-28px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(28px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.build-wrap.animate-in .form-panel    { animation: slideInLeft  .38s cubic-bezier(.25,.46,.45,.94) both; }
+.build-wrap.animate-in .preview-panel { animation: slideInRight .38s cubic-bezier(.25,.46,.45,.94) both; }
 .app.in-build .nav { display: none; }
 
 /* ── Form panel ── */
@@ -456,16 +468,12 @@ button:focus:not(:focus-visible) { outline: none; }
 
 /* ── Preview panel ── */
 .preview-panel {
-  display: flex; flex-direction: column;
-  position: sticky; top: calc(54px + 52px); align-self: start;
-}
-.preview-label {
-  font-size: .63rem; font-weight: 700; text-transform: uppercase;
-  letter-spacing: .1em; color: var(--mist); margin-bottom: 14px;
+  display: flex; flex-direction: column; height: 100%;
 }
 .preview-stage {
-  background: #EBF0EC; border-radius: var(--r); padding: 36px;
-  display: flex; align-items: center; justify-content: center; min-height: 500px;
+  flex: 1; background: #EBF0EC; border-radius: var(--r); padding: 28px;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
 }
 
 /* ══════════════════════════════════════════════════════════════════════════════
@@ -1262,7 +1270,7 @@ button:focus:not(:focus-visible) { outline: none; }
 
 /* ── Print ─────────────────────────────────────────────────────────────────── */
 @media print {
-  .nav, .form-panel, .preview-label { display: none !important; }
+  .nav, .form-panel { display: none !important; }
   body { background: #fff; }
   .build-wrap { display: block; }
   .preview-stage { background: none; padding: 0; box-shadow: none; }
