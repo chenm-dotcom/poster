@@ -107,7 +107,7 @@ button:focus:not(:focus-visible) { outline: none; }
    ══════════════════════════════════════════════════════════════════════════════ */
 .screen-pick-outer {
   display: flex; flex-direction: column;
-  min-height: calc(100vh - 54px);
+  min-height: 100vh;
 }
 
 /* ── Full-width panels row ── */

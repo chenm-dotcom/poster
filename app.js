@@ -155,7 +155,7 @@ const $colorRow   = id('colorRow');
 const $dlBtn      = id('btnDownload');
 const $printBtn   = id('btnPrint');
 const $backBtn    = id('btnBack');
-const $navLogo    = id('navLogo');
+const $navLogo    = id('navLogo'); /* may be null if nav removed */
 const $advFontSec = id('advFontSection');
 const $fontPicker = id('fontPicker');
 const $designRow  = id('designPickerRow');
@@ -203,7 +203,7 @@ qsa('.mt-opt').forEach(btn => {
 /* ── Panel click → launch animation ── */
 qsa('.panel').forEach(c => c.addEventListener('click', () => launchCard(c, c.dataset.tpl)));
 
-[$backBtn, $navLogo].forEach(el => el.addEventListener('click', () => {
+[$backBtn, $navLogo].filter(Boolean).forEach(el => el.addEventListener('click', () => {
   $build.classList.add('hidden');
   $pick.classList.remove('hidden');
   document.querySelector('.app').classList.remove('in-build');
