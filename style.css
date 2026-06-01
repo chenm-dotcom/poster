@@ -16,7 +16,7 @@
 
 html { font-size: 16px; }
 body {
-  font-family: 'Inter', -apple-system, sans-serif;
+  font-family: 'DM Sans', -apple-system, sans-serif;
   background: var(--bg);
   color: var(--ink);
   min-height: 100vh;
@@ -112,7 +112,7 @@ body {
    ══════════════════════════════════════════════════════════════════════════════ */
 .pick-head { margin-bottom: 44px; }
 .pick-head h1 {
-  font-family: 'DM Serif Display', Georgia, serif;
+  font-family: 'Instrument Serif', Georgia, serif;
   font-style: italic; font-weight: 400;
   font-size: clamp(2.6rem, 4vw, 4.2rem);
   line-height: 1.08; letter-spacing: -.01em;
@@ -140,7 +140,7 @@ body {
 .pc-tag { font-size: .62rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; opacity: .5; }
 .pc-emoji { font-size: 1.8rem; line-height: 1; }
 .pc-headline {
-  font-family: 'DM Serif Display', Georgia, serif;
+  font-family: 'Instrument Serif', Georgia, serif;
   font-style: italic; font-weight: 400;
   font-size: clamp(1.15rem, 1.6vw, 1.35rem);
   line-height: 1.18; flex: 1; margin-bottom: 10px;
@@ -181,7 +181,7 @@ body {
 .btn-back:hover { color: var(--ink); border-color: var(--line2); }
 
 #formTitle {
-  font-family: 'DM Serif Display', Georgia, serif;
+  font-family: 'Instrument Serif', Georgia, serif;
   font-style: italic; font-weight: 400;
   font-size: 1.25rem; letter-spacing: -.01em; color: var(--ink);
 }
@@ -358,7 +358,7 @@ body {
   flex-shrink: 0;
   border-radius: 3px;
   box-shadow: 0 20px 70px rgba(3,36,22,.22);
-  font-family: 'Inter', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   background: #ddd;
 }
 
@@ -383,7 +383,7 @@ body {
 }
 
 .poster.t-event .ev-title {
-  font-family: 'DM Serif Display', Georgia, serif;
+  font-family: 'Instrument Serif', Georgia, serif;
   font-style: italic;
   padding: 10px 24px 0;
   font-size: 3.4rem;
@@ -462,7 +462,7 @@ body {
   align-self: stretch;
 }
 .poster.t-spotlight .sp-name {
-  font-family: 'DM Serif Display', Georgia, serif;
+  font-family: 'Instrument Serif', Georgia, serif;
   font-size: 2.8rem;
   font-weight: 400;
   line-height: 1.05;
@@ -540,13 +540,13 @@ body {
   margin-bottom: auto;
 }
 .poster.t-offer .of-title {
-  font-family: 'DM Serif Display', Georgia, serif;
+  font-family: 'Instrument Serif', Georgia, serif;
   font-size: 2.2rem; font-weight: 400;
   line-height: 1.15; letter-spacing: -.01em;
   margin-bottom: 10px;
 }
 .poster.t-offer .of-stat {
-  font-family: 'DM Serif Display', Georgia, serif;
+  font-family: 'Instrument Serif', Georgia, serif;
   font-size: 5.6rem; font-weight: 400;
   line-height: .92; letter-spacing: -.03em;
   margin-bottom: 10px;
@@ -579,7 +579,7 @@ body {
   margin-bottom: auto;
 }
 .poster.t-announcement .an-title {
-  font-family: 'DM Serif Display', Georgia, serif;
+  font-family: 'Instrument Serif', Georgia, serif;
   font-style: italic;
   font-size: 3.2rem;
   font-weight: 400;

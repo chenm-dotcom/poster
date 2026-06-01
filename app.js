@@ -102,7 +102,7 @@ const ADV_PALETTES = {
    ADVENTURE FONTS
    ════════════════════════════════════════════════════════════════════════════ */
 const ADV_FONTS = [
-  { key: 'DM Serif Display',  label: 'Brand Serif',     style: 'italic',  weight: '400' },
+  { key: 'Playfair Display',  label: 'Brand Serif',     style: 'italic',  weight: '700' },
   { key: 'Abril Fatface',     label: 'Abril Heavy',     style: 'normal',  weight: '400' },
   { key: 'Playfair Display',  label: 'Playfair',        style: 'italic',  weight: '700' },
   { key: 'Bebas Neue',        label: 'Bebas Block',     style: 'normal',  weight: '400' },
@@ -435,8 +435,8 @@ function render() {
   $poster.className = 'poster t-' + tpl;
   $poster.style.setProperty('--pb', bgColor);
   // Apply font
-  const font   = adventure ? advFont.key   : 'DM Serif Display';
-  const fstyle = adventure ? advFont.style : 'italic';
+  const font   = adventure ? advFont.key   : 'Instrument Serif';
+  const fstyle = adventure ? advFont.style : 'normal';
   const fweight= adventure ? advFont.weight: '400';
   $poster.style.setProperty('--headline-font',   `'${font}', Georgia, serif`);
   $poster.style.setProperty('--headline-style',  fstyle);
