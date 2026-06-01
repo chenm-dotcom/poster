@@ -577,3 +577,57 @@ $printBtn.addEventListener('click', () => window.print());
 function id(s)     { return document.getElementById(s); }
 function mk(t, c)  { const e = document.createElement(t); if (c) e.className = c; return e; }
 function qsa(s, p) { return Array.from((p||document).querySelectorAll(s)); }
+
+/* ════════════════════════════════════════════════════════════════════════════
+   INTRO ANIMATION
+   ════════════════════════════════════════════════════════════════════════════ */
+(function runIntro() {
+  const nav   = document.querySelector('.nav');
+  const h1    = document.querySelector('.pick-head h1');
+  const sub   = document.querySelector('.pick-head p');
+  const cards = qsa('.pcard');
+
+  // Hide everything to start
+  nav.classList.add('anim-fade-hidden');
+  h1.innerHTML = '';
+  sub.classList.add('anim-hidden');
+  cards.forEach(c => c.classList.add('anim-hidden'));
+
+  // 1. Nav fades in
+  setTimeout(() => {
+    nav.classList.remove('anim-fade-hidden');
+    nav.classList.add('anim-fade-in');
+  }, 100);
+
+  // 2. Typewriter for h1 (starts after nav appears)
+  const fullText = 'What are you\nmaking today?';
+  let i = 0;
+
+  function tick() {
+    if (i >= fullText.length) {
+      h1.classList.add('typing-done');
+      afterTyping();
+      return;
+    }
+    const ch = fullText[i++];
+    h1.innerHTML += ch === '\n' ? '<br>' : ch;
+    setTimeout(tick, ch === '\n' ? 120 : 52);
+  }
+
+  setTimeout(tick, 500);
+
+  // 3. After typing: subtitle then cards
+  function afterTyping() {
+    setTimeout(() => {
+      sub.classList.remove('anim-hidden');
+      sub.classList.add('anim-in');
+
+      cards.forEach((card, idx) => {
+        setTimeout(() => {
+          card.classList.remove('anim-hidden');
+          card.classList.add('anim-in');
+        }, 220 + idx * 130);
+      });
+    }, 180);
+  }
+})();
