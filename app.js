@@ -247,7 +247,6 @@ function open(key) {
   $advFontSec.classList.add('hidden');
   const def = TEMPLATES[key];
   $title.textContent = def.title;
-  $hint.textContent  = def.hint;
   buildForm(def.fields);
   buildFontPicker();
   buildPalette(PALETTES[key]);
