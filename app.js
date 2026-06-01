@@ -205,6 +205,7 @@ qsa('.panel').forEach(c => c.addEventListener('click', () => launchCard(c, c.dat
 [$backBtn, $navLogo].forEach(el => el.addEventListener('click', () => {
   $build.classList.add('hidden');
   $pick.classList.remove('hidden');
+  document.querySelector('.app').classList.remove('in-build');
   tpl = null; imgs = {}; adventure = false; design = 'editorial';
   qsa('.mt-opt').forEach(b => b.classList.toggle('on', b.dataset.mode === 'regular'));
 }));
@@ -253,6 +254,7 @@ function open(key) {
   buildDesignPicker(key);
   $pick.classList.add('hidden');
   $build.classList.remove('hidden');
+  document.querySelector('.app').classList.add('in-build');
   render();
 }
 
