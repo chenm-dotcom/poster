@@ -6,24 +6,20 @@
   <title>Build a Poster — Mindspace</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Dancing+Script:wght@700&family=Bebas+Neue&family=Abril+Fatface&family=Space+Mono:ital@0;1&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&family=Dancing+Script:wght@700&family=Bebas+Neue&family=Abril+Fatface&family=Space+Mono:ital@0;1&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <!-- ══ MOBILE WALL ══════════════════════════════════════════════════════════ -->
 <div class="mobile-wall" id="mobileWall">
-  <div class="mw-inner">
-    <div class="mw-laptop" aria-hidden="true">
-      <div class="mw-lid"><div class="mw-screen"><div class="mw-screen-content">
-        <div class="mw-bar w70"></div><div class="mw-bar w50"></div>
-        <div class="mw-bar w80"></div><div class="mw-rect"></div>
-      </div></div></div>
-      <div class="mw-base"><div class="mw-keyboard"></div></div>
+  <img class="mw-meme" src="assets/meme-1.gif" alt="" aria-hidden="true">
+  <div class="mw-overlay">
+    <div class="mw-inner">
+      <h2>Seriously though,<br>a poster? On this?</h2>
+      <p>This tool is built for a real screen.<br>Go grab your laptop — we promise<br>it's worth it.</p>
+      <div class="mw-tag">☕ We'll be here.</div>
     </div>
-    <h2>Seriously though,<br>a poster? On this?</h2>
-    <p>This tool is built for a real screen.<br>Go grab your laptop — we promise<br>it's worth it.</p>
-    <div class="mw-tag">☕ We'll be here.</div>
   </div>
 </div>
 
@@ -42,62 +38,54 @@
   <!-- ══ PICK ══════════════════════════════════════════════════════════════ -->
   <div class="screen screen-pick-outer" id="screen-pick">
 
-    <div class="pick-main">
-      <div class="pick-head">
-        <h1>What are you<br>making today?</h1>
-        <p>Pick one. Your poster is ready in under a minute.</p>
-      </div>
+    <!-- Full-width panels -->
+    <div class="panels-row">
 
-      <!-- ── ADVENTURE TOGGLE ────────────────────────────────────────────── -->
-      <div class="adv-toggle-wrap">
-        <div class="adv-toggle" id="advToggle">
-          <button class="adv-opt adv-opt-regular on" id="advOptRegular" data-mode="regular">
-            <span class="adv-opt-icon">✦</span>
-            <span class="adv-opt-label">Regular</span>
-            <span class="adv-opt-desc">Clean, on-brand, always looks right</span>
-          </button>
-          <button class="adv-opt adv-opt-adventure" id="advOptAdventure" data-mode="adventure">
-            <span class="adv-opt-icon">🎨</span>
-            <span class="adv-opt-label">Adventure</span>
-            <span class="adv-opt-desc">Wild fonts, bold colours, anything goes</span>
-          </button>
+      <button class="panel" data-tpl="event" style="--bg:#D2B1F0;--fg:#032416">
+        <div class="panel-inner">
+          <span class="panel-emoji">🎉</span>
+          <span class="panel-tag">Event</span>
+          <div class="panel-headline">Something fun<br>is happening.</div>
+          <div class="panel-cta">Make it →</div>
         </div>
-      </div>
+      </button>
 
-      <div class="pick-grid">
+      <button class="panel" data-tpl="spotlight" style="--bg:#ECD8A1;--fg:#032416">
+        <div class="panel-inner">
+          <span class="panel-emoji">✨</span>
+          <span class="panel-tag">Spotlight</span>
+          <div class="panel-headline">Someone here<br>is doing big things.</div>
+          <div class="panel-cta">Make it →</div>
+        </div>
+      </button>
 
-        <button class="pcard" data-tpl="event" style="--bg:#D2B1F0;--fg:#032416">
-          <div class="pc-top"><span class="pc-tag">Event</span><span class="pc-emoji">🎉</span></div>
-          <div class="pc-headline">Something fun<br>is happening.</div>
-          <p class="pc-sub">Mindspace Hours, parties,<br>dog playdates, you name it.</p>
-          <div class="pc-btn">Make it →</div>
-        </button>
+      <button class="panel" data-tpl="offer" style="--bg:#17382A;--fg:#FDFCF7">
+        <div class="panel-inner">
+          <span class="panel-emoji">🎁</span>
+          <span class="panel-tag">Member Special</span>
+          <div class="panel-headline">A deal too<br>good to miss.</div>
+          <div class="panel-cta">Make it →</div>
+        </div>
+      </button>
 
-        <button class="pcard" data-tpl="spotlight" style="--bg:#ECD8A1;--fg:#032416">
-          <div class="pc-top"><span class="pc-tag">Spotlight</span><span class="pc-emoji">✨</span></div>
-          <div class="pc-headline">Someone here<br>is doing big things.</div>
-          <p class="pc-sub">Introduce a member.<br>Make them feel seen.</p>
-          <div class="pc-btn">Make it →</div>
-        </button>
+      <button class="panel" data-tpl="announcement" style="--bg:#6BCA79;--fg:#032416">
+        <div class="panel-inner">
+          <span class="panel-emoji">📣</span>
+          <span class="panel-tag">Announcement</span>
+          <div class="panel-headline">Quick. Clear.<br>Impossible to miss.</div>
+          <div class="panel-cta">Make it →</div>
+        </div>
+      </button>
 
-        <button class="pcard" data-tpl="offer" style="--bg:#17382A;--fg:#FDFCF7">
-          <div class="pc-top"><span class="pc-tag">Member Special</span><span class="pc-emoji">🎁</span></div>
-          <div class="pc-headline">A deal too<br>good to miss.</div>
-          <p class="pc-sub">Discounts, perks, offers —<br>make it look as good as it sounds.</p>
-          <div class="pc-btn">Make it →</div>
-        </button>
-
-        <button class="pcard" data-tpl="announcement" style="--bg:#6BCA79;--fg:#032416">
-          <div class="pc-top"><span class="pc-tag">Announcement</span><span class="pc-emoji">📣</span></div>
-          <div class="pc-headline">Quick. Clear.<br>Impossible to miss.</div>
-          <p class="pc-sub">Where we are, what's changed,<br>who to call.</p>
-          <div class="pc-btn">Make it →</div>
-        </button>
-
-      </div>
     </div>
 
-    <!-- ══ FOOTER — only on pick screen ══════════════════════════════════ -->
+    <!-- Hero text -->
+    <div class="pick-hero">
+      <h1 class="pick-hero-h1">What are you<br>making today?</h1>
+      <p class="pick-hero-sub">Pick a format above. Your poster is ready in under a minute.</p>
+    </div>
+
+    <!-- Footer — only on pick screen -->
     <footer class="site-footer">
       <div class="sf-left">
         <a class="sf-footer-logo" href="https://mindspace.me" target="_blank" rel="noopener">
@@ -128,16 +116,18 @@
 
         <div class="fp-header">
           <button class="btn-back" id="btnBack">← Back</button>
-          <div class="fp-title-row">
-            <h2 id="formTitle">Event Poster</h2>
-            <button class="btn-adventure" id="btnAdventure" title="Toggle Adventure mode">
-              🎨 Adventure
-            </button>
-          </div>
+          <h2 id="formTitle">Event Poster</h2>
           <p class="fp-hint" id="formHint">Fill in the details — your poster updates live.</p>
         </div>
 
         <div class="fp-body">
+
+          <!-- Adventure mode toggle -->
+          <div class="mode-toggle" id="modeToggle">
+            <button class="mt-opt on" id="btnAdventure" data-mode="regular">✦ Regular</button>
+            <button class="mt-opt" id="btnAdventureOn" data-mode="adventure">🎨 Adventure</button>
+          </div>
+
           <div id="designPickerRow"></div>
           <div id="formFields"></div>
 
@@ -165,7 +155,7 @@
       <!-- PREVIEW -->
       <div class="preview-panel">
         <div class="preview-label">Live preview</div>
-        <div class="preview-stage">
+        <div class="preview-stage" id="previewStage">
           <div class="poster" id="poster"></div>
         </div>
       </div>

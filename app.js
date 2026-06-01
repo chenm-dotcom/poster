@@ -112,23 +112,24 @@ const TEMPLATES = {
 
 const DESIGNS = {
   event:        [
-    { key:'editorial', label:'Editorial'       },
-    { key:'bold',      label:'Bold — photo fill' },
-    { key:'frame',     label:'Frame'            },
+    { key:'editorial', label:'Editorial'  },
+    { key:'bold',      label:'Photo Fill' },
+    { key:'frame',     label:'Frame'      },
   ],
   spotlight:    [
-    { key:'editorial', label:'Editorial'        },
-    { key:'cover',     label:'Cover — full photo' },
-    { key:'minimal',   label:'Minimal — text only' },
+    { key:'editorial', label:'Editorial'  },
+    { key:'cover',     label:'Full Cover' },
+    { key:'minimal',   label:'Minimal'    },
   ],
   offer:        [
-    { key:'editorial', label:'Editorial'        },
-    { key:'bold',      label:'Bold — no photo'  },
+    { key:'editorial', label:'Photo'      },
+    { key:'bold',      label:'Bold'       },
+    { key:'split',     label:'Split'      },
   ],
   announcement: [
-    { key:'editorial', label:'Editorial'        },
-    { key:'bold',      label:'Bold — massive type' },
-    { key:'split',     label:'Split — two-tone'  },
+    { key:'editorial', label:'Editorial'  },
+    { key:'bold',      label:'Massive'    },
+    { key:'split',     label:'Two-Tone'   },
   ],
 };
 
@@ -148,40 +149,32 @@ const $dlBtn      = id('btnDownload');
 const $printBtn   = id('btnPrint');
 const $backBtn    = id('btnBack');
 const $navLogo    = id('navLogo');
-const $advBtn     = id('btnAdventure');
 const $advFontSec = id('advFontSection');
 const $fontPicker = id('fontPicker');
 const $designRow  = id('designPickerRow');
+const $stage      = id('previewStage');
 
-/* ── Pick-screen adventure toggle ── */
-let pickAdventure = false;
-qsa('.adv-opt').forEach(btn => {
+/* ── Build-screen adventure toggle ── */
+qsa('.mt-opt').forEach(btn => {
   btn.addEventListener('click', () => {
-    qsa('.adv-opt').forEach(b => b.classList.remove('on'));
+    qsa('.mt-opt').forEach(b => b.classList.remove('on'));
     btn.classList.add('on');
-    pickAdventure = btn.dataset.mode === 'adventure';
-    id('screen-pick').classList.toggle('adv-mode-on', pickAdventure);
+    adventure = btn.dataset.mode === 'adventure';
+    $advFontSec.classList.toggle('hidden', !adventure);
+    buildPalette(adventure ? ADV_PALETTES[tpl] : PALETTES[tpl]);
+    render();
   });
 });
 
-/* ── Card click → launch animation ── */
-qsa('.pcard').forEach(c => c.addEventListener('click', () => launchCard(c, c.dataset.tpl)));
+/* ── Panel click → launch animation ── */
+qsa('.panel').forEach(c => c.addEventListener('click', () => launchCard(c, c.dataset.tpl)));
 
 [$backBtn, $navLogo].forEach(el => el.addEventListener('click', () => {
   $build.classList.add('hidden');
   $pick.classList.remove('hidden');
-  tpl = null; imgs = {}; design = 'editorial';
-  adventure = pickAdventure;
-  $advBtn.classList.toggle('active', adventure);
+  tpl = null; imgs = {}; adventure = false; design = 'editorial';
+  qsa('.mt-opt').forEach(b => b.classList.toggle('on', b.dataset.mode === 'regular'));
 }));
-
-$advBtn.addEventListener('click', () => {
-  adventure = !adventure;
-  $advBtn.classList.toggle('active', adventure);
-  $advFontSec.classList.toggle('hidden', !adventure);
-  buildPalette(adventure ? ADV_PALETTES[tpl] : PALETTES[tpl]);
-  render();
-});
 
 /* ════════════════════════════════════════════════════════════════════════════
    LAUNCH ANIMATION
@@ -193,7 +186,7 @@ function launchCard(card, key) {
   const bg = getComputedStyle(card).getPropertyValue('--bg').trim() || '#D2B1F0';
 
   card.classList.add('popping');
-  qsa('.pcard').forEach((c, i) => {
+  qsa('.panel').forEach((c, i) => {
     if (c !== card) setTimeout(() => c.classList.add('flying'), i * 30);
   });
 
@@ -207,7 +200,7 @@ function launchCard(card, key) {
   setTimeout(() => {
     open(key);
     splash.remove();
-    qsa('.pcard').forEach(c => c.classList.remove('popping', 'flying'));
+    qsa('.panel').forEach(c => c.classList.remove('popping', 'flying'));
   }, 520);
 }
 
@@ -215,9 +208,9 @@ function launchCard(card, key) {
    OPEN
    ════════════════════════════════════════════════════════════════════════════ */
 function open(key) {
-  tpl = key; imgs = {}; adventure = pickAdventure; design = 'editorial';
-  $advBtn.classList.toggle('active', adventure);
-  $advFontSec.classList.toggle('hidden', !adventure);
+  tpl = key; imgs = {}; adventure = false; design = 'editorial';
+  qsa('.mt-opt').forEach(b => b.classList.toggle('on', b.dataset.mode === 'regular'));
+  $advFontSec.classList.add('hidden');
   const def = TEMPLATES[key];
   $title.textContent = def.title;
   $hint.textContent  = def.hint;
@@ -235,19 +228,97 @@ function open(key) {
    ════════════════════════════════════════════════════════════════════════════ */
 function buildDesignPicker(key) {
   const opts = DESIGNS[key] || [];
+  const cards = opts.map((d, i) => `
+    <button type="button" class="design-card${i===0?' on':''}" data-design="${d.key}">
+      <div class="dc-thumb">${makeDesignThumb(key, d.key)}</div>
+      <div class="dc-label">${d.label}</div>
+    </button>`).join('');
   $designRow.innerHTML = `
-    <p class="field-label" style="margin-bottom:8px">Design style</p>
-    <div class="design-chips">${opts.map(d =>
-      `<button type="button" class="design-chip${d.key==='editorial'?' on':''}" data-design="${d.key}">${d.label}</button>`
-    ).join('')}</div>`;
-  qsa('.design-chip', $designRow).forEach(btn => {
+    <p class="field-label" style="margin-bottom:0">Design style</p>
+    <div class="design-grid">${cards}</div>`;
+  qsa('.design-card', $designRow).forEach(btn => {
     btn.addEventListener('click', () => {
-      qsa('.design-chip', $designRow).forEach(b => b.classList.remove('on'));
+      qsa('.design-card', $designRow).forEach(b => b.classList.remove('on'));
       btn.classList.add('on');
       design = btn.dataset.design;
       render();
     });
   });
+}
+
+function makeDesignThumb(tpl, key) {
+  const c  = bgColor || '#D2B1F0';
+  const dk = a => `rgba(3,36,22,${a})`;
+  const lt = a => `rgba(253,252,247,${a})`;
+  const row = (h, w, col) =>
+    `<div style="height:${h}px;width:${w}%;background:${col};border-radius:2px;flex-shrink:0"></div>`;
+
+  const wrap = (bg, content) =>
+    `<div style="height:100%;background:${bg};display:flex;flex-direction:column;overflow:hidden">${content}</div>`;
+
+  switch (`${tpl}-${key}`) {
+
+    case 'event-editorial':
+    case 'spotlight-editorial':
+    case 'offer-editorial':
+    case 'announcement-editorial':
+      return wrap(tpl==='offer'?'#17382A':c, `
+        <div style="padding:9px 8px;display:flex;flex-direction:column;gap:5px">
+          ${row(3,40,tpl==='offer'?lt(.3):dk(.22))}
+          ${row(9,88,tpl==='offer'?lt(.8):dk(.72))}
+          ${row(9,66,tpl==='offer'?lt(.8):dk(.72))}
+        </div>
+        <div style="flex:1;background:${tpl==='offer'?dk(.25):dk(.1)};margin-top:auto"></div>`);
+
+    case 'event-bold':
+    case 'spotlight-cover':
+      return `<div style="height:100%;background:#1a1a1a;display:flex;flex-direction:column;justify-content:flex-end;padding:8px;position:relative">
+        <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.9),transparent 60%)"></div>
+        <div style="position:relative;z-index:1;display:flex;flex-direction:column;gap:4px">
+          ${row(3,38,lt(.45))} ${row(11,92,lt(.9))} ${row(11,70,lt(.9))}
+        </div>
+      </div>`;
+
+    case 'event-frame':
+      return wrap(c, `
+        <div style="margin:6px;border:1.5px solid ${dk(.22)};border-radius:2px;flex:1;display:flex;flex-direction:column;padding:5px 5px 0;overflow:hidden">
+          <div style="display:flex;flex-direction:column;gap:4px;margin-bottom:auto">
+            ${row(3,40,dk(.2))} ${row(8,82,dk(.7))} ${row(8,60,dk(.7))}
+          </div>
+          <div style="flex:0 0 38%;background:${dk(.1)};margin:4px -5px 0"></div>
+        </div>`);
+
+    case 'spotlight-minimal':
+      return wrap(c, `
+        <div style="padding:12px 10px;display:flex;flex-direction:column;justify-content:center;height:100%;gap:5px">
+          ${row(3,36,dk(.25))} ${row(12,92,dk(.8))} ${row(12,72,dk(.8))}
+          <div style="height:1.5px;width:22%;background:${dk(.2)};border-radius:2px;margin-top:3px"></div>
+          ${row(3,80,dk(.18))} ${row(3,62,dk(.18))}
+        </div>`);
+
+    case 'offer-bold':
+    case 'announcement-bold':
+      return wrap(c, `
+        <div style="padding:8px 8px;display:flex;flex-direction:column;justify-content:flex-end;height:100%;gap:4px">
+          ${row(3,34,lt(.35))}
+          <div style="flex:1"></div>
+          ${row(18,72,lt(.9))} ${row(9,88,lt(.6))} ${row(3,66,lt(.3))}
+        </div>`);
+
+    case 'offer-split':
+    case 'announcement-split':
+      return `<div style="height:100%;display:flex;flex-direction:column">
+        <div style="height:56%;background:${c};display:flex;flex-direction:column;justify-content:flex-end;padding:5px 7px;gap:3px">
+          ${row(9,88,'rgba(255,255,255,.82)')} ${row(9,68,'rgba(255,255,255,.82)')}
+        </div>
+        <div style="flex:1;background:#032416;padding:5px 7px;display:flex;flex-direction:column;justify-content:flex-end;gap:3px">
+          ${row(3,58,'rgba(255,255,255,.35)')} ${row(3,42,'rgba(255,255,255,.35)')}
+        </div>
+      </div>`;
+
+    default:
+      return wrap(c, '');
+  }
 }
 
 /* ════════════════════════════════════════════════════════════════════════════
@@ -391,6 +462,10 @@ function buildPalette(palette) {
 function render() {
   $poster.className = `poster t-${tpl} d-${design}`;
   $poster.style.setProperty('--pb', bgColor);
+  if ($stage && bgColor && bgColor.length === 7) {
+    const r = parseInt(bgColor.slice(1,3),16), g = parseInt(bgColor.slice(3,5),16), b = parseInt(bgColor.slice(5,7),16);
+    $stage.style.background = `rgb(${Math.round(r*.18+230*.82)},${Math.round(g*.18+234*.82)},${Math.round(b*.18+230*.82)})`;
+  }
   const font    = adventure ? advFont.key    : 'Instrument Serif';
   const fstyle  = adventure ? advFont.style  : 'normal';
   const fweight = adventure ? advFont.weight : '400';
@@ -500,7 +575,8 @@ function renderSpotlightMinimal() {
 
 /* ── OFFER ── */
 function renderOffer() {
-  if (design === 'bold') return renderOfferBold();
+  if (design === 'bold')  return renderOfferBold();
+  if (design === 'split') return renderOfferSplit();
   const brand = v('brand') || 'Mindspace', title = v('title'), stat = v('stat'),
         headline = v('headline'), note = v('note'), photo = imgs['photo'] || '';
   $poster.innerHTML = `
@@ -525,6 +601,21 @@ function renderOfferBold() {
       ${title    ? `<div class="ofb-title" style="${hs()}">${x(title)}</div>` : ''}
       ${headline ? `<div class="ofb-desc">${x(headline)}</div>`  : ''}
       ${note     ? `<div class="ofb-note">${x(note)}</div>`      : ''}
+    </div>`;
+}
+
+function renderOfferSplit() {
+  const brand = v('brand') || 'Mindspace', stat = v('stat'),
+        title = v('title'), headline = v('headline'), note = v('note');
+  $poster.innerHTML = `
+    <div class="ofs-top">
+      <span class="ofs-brand">${x(brand)}</span>
+      ${stat ? `<div class="ofs-stat" style="${hs()}">${x(stat)}</div>` : '<div class="ofs-stat" style="opacity:.18;'+hs()+'">0%</div>'}
+    </div>
+    <div class="ofs-bottom">
+      ${title    ? `<div class="ofs-title" style="${hs()}">${x(title)}</div>`   : ''}
+      ${headline ? `<div class="ofs-desc">${x(headline)}</div>`   : ''}
+      ${note     ? `<div class="ofs-note">${x(note)}</div>`       : ''}
     </div>`;
 }
 
@@ -584,16 +675,35 @@ function id(s)     { return document.getElementById(s); }
 function mk(t, c)  { const e = document.createElement(t); if (c) e.className = c; return e; }
 function qsa(s, p) { return Array.from((p||document).querySelectorAll(s)); }
 
+/* ── Mobile wall meme randomiser ── */
+(function randomiseMobileWall() {
+  const MEMES = [
+    { img:'assets/meme-1.gif', h2:'A poster?<br>On <em>this</em>??',         p:'Come on. Grab your laptop.<br>We\'ll be here.' },
+    { img:'assets/meme-2.jpg', h2:'We see you.',                              p:'Desktop-only tool. Laptop. Now.<br>We promise it\'s worth it.' },
+    { img:'assets/meme-3.jpg', h2:'You want to design<br>on your phone??',   p:'This tool needs a real screen.<br>Go grab your laptop.' },
+    { img:'assets/meme-4.jpg', h2:'Not today.<br>Not like this.',             p:'Bigger screen. Better posters.<br>See you on a laptop.' },
+  ];
+  const m = MEMES[Math.floor(Math.random() * MEMES.length)];
+  const wall = id('mobileWall');
+  if (!wall) return;
+  const imgEl = wall.querySelector('.mw-meme');
+  const h2El  = wall.querySelector('.mw-inner h2');
+  const pEl   = wall.querySelector('.mw-inner p');
+  if (imgEl) imgEl.src = m.img;
+  if (h2El)  h2El.innerHTML = m.h2;
+  if (pEl)   pEl.innerHTML  = m.p;
+})();
+
 /* ── Intro animation ── */
 (function runIntro() {
-  const nav = document.querySelector('.nav');
-  const h1  = document.querySelector('.pick-head h1');
-  const sub = document.querySelector('.pick-head p');
-  const cards = qsa('.pcard');
+  const nav    = document.querySelector('.nav');
+  const h1     = document.querySelector('.pick-hero-h1');
+  const sub    = document.querySelector('.pick-hero-sub');
+  const panels = qsa('.panel');
   nav.classList.add('anim-fade-hidden');
   h1.innerHTML = '';
   sub.classList.add('anim-hidden');
-  cards.forEach(c => c.classList.add('anim-hidden'));
+  panels.forEach(c => c.classList.add('anim-hidden'));
   setTimeout(() => { nav.classList.remove('anim-fade-hidden'); nav.classList.add('anim-fade-in'); }, 100);
   const fullText = 'What are you\nmaking today?';
   let i = 0;
@@ -601,13 +711,11 @@ function qsa(s, p) { return Array.from((p||document).querySelectorAll(s)); }
     if (i >= fullText.length) { h1.classList.add('typing-done'); afterTyping(); return; }
     const ch = fullText[i++];
     h1.innerHTML += ch === '\n' ? '<br>' : ch;
-    setTimeout(tick, ch === '\n' ? 120 : 52);
+    setTimeout(tick, ch === '\n' ? 100 : 48);
   }
-  setTimeout(tick, 500);
+  setTimeout(tick, 400);
   function afterTyping() {
-    setTimeout(() => {
-      sub.classList.remove('anim-hidden'); sub.classList.add('anim-in');
-      cards.forEach((c, idx) => setTimeout(() => { c.classList.remove('anim-hidden'); c.classList.add('anim-in'); }, 220 + idx * 130));
-    }, 180);
+    panels.forEach((c, idx) => setTimeout(() => { c.classList.remove('anim-hidden'); c.classList.add('anim-in'); }, idx * 80));
+    setTimeout(() => { sub.classList.remove('anim-hidden'); sub.classList.add('anim-in'); }, panels.length * 80 + 100);
   }
 })();
