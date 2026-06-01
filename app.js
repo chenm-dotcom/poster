@@ -54,11 +54,17 @@ const ADV_PALETTES = {
 };
 
 const ADV_FONTS = [
-  { key:'Playfair Display', label:'Brand Serif',  style:'italic', weight:'700' },
-  { key:'Abril Fatface',    label:'Abril Heavy',  style:'normal', weight:'400' },
-  { key:'Bebas Neue',       label:'Bebas Block',  style:'normal', weight:'400' },
-  { key:'Dancing Script',   label:'Handwritten',  style:'normal', weight:'700' },
-  { key:'Space Mono',       label:'Mono',         style:'italic', weight:'400' },
+  { key:'Bebas Neue',          label:'Bebas Block',   style:'normal', weight:'400' },
+  { key:'Abril Fatface',       label:'Abril Heavy',   style:'normal', weight:'400' },
+  { key:'Playfair Display',    label:'Playfair Serif', style:'italic', weight:'700' },
+  { key:'Space Mono',          label:'Mono',           style:'italic', weight:'400' },
+  { key:'Permanent Marker',    label:'Marker',         style:'normal', weight:'400' },
+  { key:'Caveat',              label:'Caveat',         style:'normal', weight:'700' },
+  { key:'Pacifico',            label:'Pacifico',       style:'normal', weight:'400' },
+  { key:'Gloria Hallelujah',   label:'Gloria',         style:'normal', weight:'400' },
+  { key:'Kalam',               label:'Kalam',          style:'normal', weight:'700' },
+  { key:'Satisfy',             label:'Satisfy',        style:'normal', weight:'400' },
+  { key:'Architects Daughter', label:'Architects',     style:'normal', weight:'400' },
 ];
 
 const TEMPLATES = {
@@ -154,12 +160,37 @@ const $fontPicker = id('fontPicker');
 const $designRow  = id('designPickerRow');
 const $stage      = id('previewStage');
 
+/* ── Adventure mode animal burst ── */
+function burstAnimals() {
+  const ANIMALS = ['🦊','🐸','🦋','🐙','🦄','🐼','🦁','🐯','🐨','🦖','🦜','🐬','🦩','🐺','🦝','🦦','🐧','🦚','🐙','🐻'];
+  const N = 22;
+  for (let i = 0; i < N; i++) {
+    const el = document.createElement('div');
+    el.className = 'adv-animal';
+    el.textContent = ANIMALS[Math.floor(Math.random() * ANIMALS.length)];
+    const angle = Math.random() * 360;
+    const dist  = 120 + Math.random() * 220;
+    const size  = 1.4 + Math.random() * 2.4;
+    const delay = Math.random() * 280;
+    el.style.cssText = `
+      --ax:${Math.cos(angle*Math.PI/180)*dist}px;
+      --ay:${Math.sin(angle*Math.PI/180)*dist}px;
+      --arot:${-30+Math.random()*60}deg;
+      font-size:${size}rem;
+      animation-delay:${delay}ms;
+    `;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), delay + 900);
+  }
+}
+
 /* ── Build-screen adventure toggle ── */
 qsa('.mt-opt').forEach(btn => {
   btn.addEventListener('click', () => {
     qsa('.mt-opt').forEach(b => b.classList.remove('on'));
     btn.classList.add('on');
     adventure = btn.dataset.mode === 'adventure';
+    if (adventure) burstAnimals();
     $advFontSec.classList.toggle('hidden', !adventure);
     buildPalette(adventure ? ADV_PALETTES[tpl] : PALETTES[tpl]);
     render();
@@ -406,8 +437,13 @@ async function searchUnsplash(query, fieldId, resultEl, zone, fileInp) {
       const data = await res.json();
       photos = (data.results || []).map(p => ({ thumb: p.urls.small, full: p.urls.regular, credit: p.user.name }));
     } else {
-      const src = `https://source.unsplash.com/featured/720x1280/?${encodeURIComponent(query)}`;
-      photos = [{ thumb: src, full: src, credit: 'Unsplash' }];
+      const tag = encodeURIComponent(query.replace(/\s+/g, ','));
+      const seeds = [1,2,3,4,5,6].map(s => ({
+        thumb: `https://loremflickr.com/240/320/${tag}?random=${s}`,
+        full:  `https://loremflickr.com/720/1280/${tag}?random=${s}`,
+        credit: 'loremflickr',
+      }));
+      photos = seeds;
     }
     if (!photos.length) { resultEl.innerHTML = '<span class="us-loading">No results.</span>'; return; }
     resultEl.innerHTML = '';

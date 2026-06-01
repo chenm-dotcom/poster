@@ -1124,6 +1124,25 @@ body {
 .nl-mark { width: 18px; height: 18px; flex-shrink: 0; }
 .nl-name { font-size: .875rem; font-weight: 700; color: var(--ink); letter-spacing: -.02em; }
 
+/* ══════════════════════════════════════════════════════════════════════════════
+   ADVENTURE MODE — animal burst overlay
+   ══════════════════════════════════════════════════════════════════════════════ */
+.adv-animal {
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 9999;
+  line-height: 1;
+  animation: animalBurst 0.85s cubic-bezier(.22,.8,.3,1) forwards;
+}
+@keyframes animalBurst {
+  0%   { opacity: 0; transform: translate(-50%,-50%) translate(0,0) rotate(0deg) scale(.2); }
+  30%  { opacity: 1; }
+  80%  { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%,-50%) translate(var(--ax),var(--ay)) rotate(var(--arot)) scale(1); }
+}
+
 /* ── Print ─────────────────────────────────────────────────────────────────── */
 @media print {
   .nav, .form-panel, .preview-label { display: none !important; }
