@@ -55,17 +55,12 @@ const ADV_PALETTES = {
 };
 
 const ADV_FONTS = [
-  { key:'Bebas Neue',          label:'Bebas Block',   style:'normal', weight:'400' },
-  { key:'Abril Fatface',       label:'Abril Heavy',   style:'normal', weight:'400' },
-  { key:'Playfair Display',    label:'Playfair Serif', style:'italic', weight:'700' },
-  { key:'Space Mono',          label:'Mono',           style:'italic', weight:'400' },
-  { key:'Permanent Marker',    label:'Marker',         style:'normal', weight:'400' },
-  { key:'Caveat',              label:'Caveat',         style:'normal', weight:'700' },
-  { key:'Pacifico',            label:'Pacifico',       style:'normal', weight:'400' },
-  { key:'Gloria Hallelujah',   label:'Gloria',         style:'normal', weight:'400' },
-  { key:'Kalam',               label:'Kalam',          style:'normal', weight:'700' },
-  { key:'Satisfy',             label:'Satisfy',        style:'normal', weight:'400' },
-  { key:'Architects Daughter', label:'Architects',     style:'normal', weight:'400' },
+  { key:'League Script',      label:'League Script', style:'normal', weight:'400' },
+  { key:'Oi',                 label:'Oi',            style:'normal', weight:'400' },
+  { key:'Anton SC',           label:'Anton SC',      style:'normal', weight:'400' },
+  { key:'Cedarville Cursive', label:'Cedarville',    style:'normal', weight:'400' },
+  { key:'Special Elite',      label:'Special Elite', style:'normal', weight:'400' },
+  { key:'Erica One',          label:'Erica One',     style:'normal', weight:'400' },
 ];
 
 const TEMPLATES = {
