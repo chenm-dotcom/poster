@@ -553,13 +553,16 @@ function render() {
     const r = parseInt(bgColor.slice(1,3),16), g = parseInt(bgColor.slice(3,5),16), b = parseInt(bgColor.slice(5,7),16);
     $stage.style.background = `rgb(${Math.round(r*.18+230*.82)},${Math.round(g*.18+234*.82)},${Math.round(b*.18+230*.82)})`;
   }
-  const font    = adventure ? advFont.key    : 'Instrument Serif';
+  const font    = adventure ? advFont.key    : 'PP Right Serif';
   const fstyle  = adventure ? advFont.style  : 'normal';
   const fweight = adventure ? advFont.weight : '400';
   $poster.style.setProperty('--hf', `'${font}', Georgia, serif`);
   $poster.style.setProperty('--hs', fstyle);
   $poster.style.setProperty('--hw', fweight);
   ({ event:renderEvent, spotlight:renderSpotlight, offer:renderOffer, announcement:renderAnnouncement })[tpl]();
+  $poster.classList.remove('poster-focus-in');
+  void $poster.offsetWidth; /* reflow to restart animation */
+  $poster.classList.add('poster-focus-in');
 }
 
 function v(fid) { const e = id('f-' + fid); return e ? e.value.trim() : ''; }
@@ -583,11 +586,9 @@ function renderEvent() {
   const time     = v('time');
   const loc      = v('location');
   const photo    = imgs['photo'] || '';
-  const titleStyle = adventure ? hs() : 'font-family:"DM Sans",sans-serif;font-weight:800;font-style:normal;';
+  const titleStyle = adventure ? hs() : 'font-family:"ABC Diatype","DM Sans",sans-serif;font-weight:500;font-style:normal;';
   $poster.innerHTML = `
     <div class="ev-swiss">
-      <div class="ev-sw-header"><span class="ev-sw-label">${x(brand)}</span></div>
-      <div class="ev-sw-rule"></div>
       <div class="ev-sw-title" style="${titleStyle}">${headline || '<span style="opacity:.18">Event name</span>'}</div>
       <div class="ev-sw-rule"></div>
       ${tagline ? `<div class="ev-sw-tagline">${x(tagline)}</div><div class="ev-sw-rule"></div>` : ''}
@@ -611,13 +612,12 @@ function renderEventBold() {
   const time     = v('time');
   const loc      = v('location');
   const photo    = imgs['photo'] || '';
-  const titleStyle = adventure ? hs() : 'font-family:"DM Sans",sans-serif;font-weight:800;font-style:normal;';
+  const titleStyle = adventure ? hs() : 'font-family:"ABC Diatype","DM Sans",sans-serif;font-weight:500;font-style:normal;';
   $poster.innerHTML = `
     <div class="evb-bg">${photo ? `<img src="${photo}" alt="" crossorigin="anonymous">` : '<div class="evb-bg-empty"></div>'}</div>
     <div class="evb-overlay"></div>
     <div class="evb-body">
       <div class="evb-top">
-        <span class="evb-brand">${x(brand)}</span>
         ${tagline ? `<span class="evb-tagline">${x(tagline)}</span>` : ''}
       </div>
       <div class="evb-bottom">
@@ -637,7 +637,6 @@ function renderEventFrame() {
   $poster.innerHTML = `
     <div class="evf-inner">
       <div class="evf-top">
-        <span class="evf-brand">${x(brand)}</span>
         <div class="evf-title" style="${hs()}">${headline||'<span style="opacity:.28">Event name</span>'}</div>
       </div>
       <div class="evf-photo">
@@ -659,7 +658,6 @@ function renderEventIllustrated() {
   $poster.innerHTML = `
     <div class="evi-wrap">
       <header class="evi-head">
-        <span class="evi-brand">${x(brand)}</span>
         ${tagline ? `<span class="evi-tagline">${x(tagline)}</span>` : ''}
       </header>
 
@@ -697,7 +695,6 @@ function renderSpotlight() {
   const brand = v('brand') || 'MINDSPACE SPOTLIGHT', name = v('name'),
         bio = v('bio'), link = v('link'), photo = imgs['photo'] || '';
   $poster.innerHTML = `
-    <div class="sp-label">${x(brand)}</div>
     <div class="sp-name" style="${hs()}">${name||'<span style="opacity:.22">Member name</span>'}</div>
     <div class="sp-photo">
       ${photo?`<img src="${photo}" alt="" crossorigin="anonymous">`:'<div class="sp-photo-empty">Add portrait ↑</div>'}
@@ -714,7 +711,6 @@ function renderSpotlightCover() {
     <div class="spc-photo">${photo?`<img src="${photo}" alt="" crossorigin="anonymous">`:''}</div>
     <div class="spc-overlay"></div>
     <div class="spc-body">
-      <span class="spc-label">${x(brand)}</span>
       <div class="spc-name" style="${hs()}">${name||'<span style="opacity:.3">Member name</span>'}</div>
       ${bio ? `<div class="spc-bio">${x(bio)}</div>` : ''}
     </div>`;
@@ -724,7 +720,6 @@ function renderSpotlightMinimal() {
   const brand = v('brand') || 'MINDSPACE SPOTLIGHT', name = v('name'),
         bio = v('bio'), link = v('link');
   $poster.innerHTML = `
-    <div class="spm-label">${x(brand)}</div>
     <div class="spm-name" style="${hs()}">${name||'<span style="opacity:.22">Member name</span>'}</div>
     <div class="spm-rule"></div>
     ${bio  ? `<div class="spm-bio">${bioToHtml(bio)}</div>` : ''}
@@ -741,7 +736,6 @@ function renderOffer() {
     ${photo ? `<div class="of-bg"><img src="${photo}" alt="" crossorigin="anonymous"></div>` : ''}
     <div class="of-overlay"></div>
     <div class="of-body">
-      <div class="of-brand">${x(brand)}</div>
       ${title    ? `<div class="of-title" style="${hs()}">${x(title)}</div>`   : ''}
       ${stat     ? `<div class="of-stat"  style="${hs()}">${x(stat)}</div>`   : ''}
       ${headline ? `<div class="of-desc">${x(headline)}</div>`  : ''}
@@ -754,7 +748,6 @@ function renderOfferBold() {
         headline = v('headline'), note = v('note');
   $poster.innerHTML = `
     <div class="ofb-body">
-      <span class="ofb-brand">${x(brand)}</span>
       ${stat     ? `<div class="ofb-stat"  style="${hs()}">${x(stat)}</div>`  : ''}
       ${title    ? `<div class="ofb-title" style="${hs()}">${x(title)}</div>` : ''}
       ${headline ? `<div class="ofb-desc">${x(headline)}</div>`  : ''}
@@ -767,7 +760,6 @@ function renderOfferSplit() {
         title = v('title'), headline = v('headline'), note = v('note');
   $poster.innerHTML = `
     <div class="ofs-top">
-      <span class="ofs-brand">${x(brand)}</span>
       ${stat ? `<div class="ofs-stat" style="${hs()}">${x(stat)}</div>` : '<div class="ofs-stat" style="opacity:.18;'+hs()+'">0%</div>'}
     </div>
     <div class="ofs-bottom">
@@ -784,7 +776,6 @@ function renderAnnouncement() {
   const brand = v('brand') || 'Mindspace', title = v('headline'),
         body = v('body'), contact = v('contact');
   $poster.innerHTML = `
-    <div class="an-brand">${x(brand)}</div>
     <div class="an-title" style="${hs()}">${title?x(title).replace(/\n/g,'<br>'):'<span style="opacity:.28">Your headline</span>'}</div>
     ${body    ? `<div class="an-body">${x(body)}</div>` : ''}
     ${contact ? `<div class="an-contact">${x(contact)}</div>` : ''}`;
@@ -794,7 +785,6 @@ function renderAnnouncementBold() {
   const brand = v('brand') || 'Mindspace', title = v('headline'),
         body = v('body'), contact = v('contact');
   $poster.innerHTML = `
-    <span class="anb-brand">${x(brand)}</span>
     <div class="anb-title" style="${hs()}">${title?x(title).replace(/\n/g,'<br>'):'<span style="opacity:.25">Your headline</span>'}</div>
     ${body    ? `<div class="anb-body">${x(body)}</div>` : ''}
     ${contact ? `<div class="anb-contact">${x(contact)}</div>` : ''}`;
@@ -805,7 +795,6 @@ function renderAnnouncementSplit() {
         body = v('body'), contact = v('contact');
   $poster.innerHTML = `
     <div class="ans-header">
-      <span class="ans-brand">${x(brand)}</span>
       <div class="ans-title" style="${hs()}">${title?x(title).replace(/\n/g,'<br>'):'<span style="opacity:.3">Your headline</span>'}</div>
     </div>
     <div class="ans-body-area">

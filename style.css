@@ -1,3 +1,19 @@
+/* ── Custom fonts ───────────────────────────────────────────────────────────── */
+@font-face {
+  font-family: 'ABC Diatype';
+  src: url('fonts/ABCDiatypeMedium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'PP Right Serif';
+  src: url('fonts/PPRightSerifRegular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* ── Reset ─────────────────────────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -16,7 +32,7 @@
 
 html { font-size: 16px; }
 body {
-  font-family: 'DM Sans', -apple-system, sans-serif;
+  font-family: 'ABC Diatype', 'DM Sans', -apple-system, sans-serif;
   background: var(--bg);
   color: var(--ink);
   min-height: 100vh;
@@ -58,7 +74,7 @@ button:focus:not(:focus-visible) { outline: none; }
   display: flex; flex-direction: column; gap: 16px;
 }
 .mw-inner h2 {
-  font-family: 'Instrument Serif', Georgia, serif;
+  font-family: 'PP Right Serif', Georgia, serif;
   font-size: 2rem; font-weight: 400; line-height: 1.15;
   letter-spacing: -.01em; color: #FDFCF7;
 }
@@ -90,12 +106,12 @@ button:focus:not(:focus-visible) { outline: none; }
 }
 .nav-logo:hover { opacity: .55; }
 .nl-wordmark {
-  font-family: 'Instrument Serif', Georgia, serif;
+  font-family: 'PP Right Serif', Georgia, serif;
   font-size: 1.35rem; font-weight: 400;
   color: var(--ink); letter-spacing: -.01em;
   line-height: 1;
 }
-.nl-sep { color: var(--line2); font-weight: 400; margin: 0 4px; font-family: 'DM Sans', sans-serif; }
+.nl-sep { color: var(--line2); font-weight: 400; margin: 0 4px; font-family: 'ABC Diatype', 'DM Sans', sans-serif; }
 .nl-sub { color: var(--smoke); font-weight: 500; font-size: .85rem; }
 .nav-hint { font-size: .75rem; color: var(--mist); }
 
@@ -143,7 +159,7 @@ button:focus:not(:focus-visible) { outline: none; }
   text-transform: uppercase; opacity: .45; margin-top: 4px;
 }
 .panel-headline {
-  font-family: 'Instrument Serif', Georgia, serif;
+  font-family: 'PP Right Serif', Georgia, serif;
   font-size: clamp(1rem, 1.4vw, 1.25rem);
   font-weight: 400; line-height: 1.2;
   opacity: .8; margin-top: 2px;
@@ -185,7 +201,7 @@ button:focus:not(:focus-visible) { outline: none; }
   gap: 32px;
 }
 .pick-hero-h1 {
-  font-family: 'Instrument Serif', Georgia, serif;
+  font-family: 'PP Right Serif', Georgia, serif;
   font-weight: 400;
   font-size: clamp(2.6rem, 4.2vw, 5rem);
   line-height: 1.0; letter-spacing: -.02em;
@@ -241,7 +257,7 @@ button:focus:not(:focus-visible) { outline: none; }
 }
 .btn-back:hover { color: var(--ink); border-color: var(--line2); }
 #formTitle {
-  font-family: 'Instrument Serif', Georgia, serif;
+  font-family: 'PP Right Serif', Georgia, serif;
   font-weight: 400;
   font-size: 1.1rem; letter-spacing: -.01em; color: var(--ink);
   margin: 0;
@@ -462,6 +478,15 @@ button:focus:not(:focus-visible) { outline: none; }
 
    Portrait 9:16 · Preview: 360×640px · Export: 3× = 1080×1920
    ══════════════════════════════════════════════════════════════════════════════ */
+/* Focus-in animation — text blurs in softly on every render */
+@keyframes focusIn {
+  0%   { filter: blur(6px); opacity: 0; }
+  100% { filter: blur(0);   opacity: 1; }
+}
+.poster-focus-in {
+  animation: focusIn 0.35s cubic-bezier(.25,.46,.45,.94) both;
+}
+
 /* All large headline elements must wrap — never overflow the poster */
 .poster * {
   max-width: 100%;
@@ -477,7 +502,7 @@ button:focus:not(:focus-visible) { outline: none; }
   flex-shrink: 0;
   border-radius: 3px;
   box-shadow: 0 20px 70px rgba(3,36,22,.22);
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'ABC Diatype', 'DM Sans', sans-serif;
   background: #ddd;
 }
 
@@ -497,7 +522,7 @@ button:focus:not(:focus-visible) { outline: none; }
 .ev-sw-label {
   font-size: .44rem; font-weight: 800; letter-spacing: .28em;
   text-transform: uppercase; color: rgba(20,10,50,.35);
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'ABC Diatype', 'DM Sans', sans-serif;
 }
 .ev-sw-rule { height: 1px; background: currentColor; opacity: .12; flex-shrink: 0; }
 .ev-sw-title {
@@ -508,7 +533,7 @@ button:focus:not(:focus-visible) { outline: none; }
 .ev-sw-tagline {
   padding: 8px 22px 10px; flex-shrink: 0;
   font-size: .72rem; line-height: 1.5; color: rgba(20,10,50,.5);
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'ABC Diatype', 'DM Sans', sans-serif;
 }
 .ev-sw-meta { display: flex; flex-shrink: 0; }
 .ev-sw-col {
@@ -520,18 +545,18 @@ button:focus:not(:focus-visible) { outline: none; }
 .ev-sw-meta-label {
   font-size: .38rem; font-weight: 800; letter-spacing: .22em;
   text-transform: uppercase; opacity: .3;
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'ABC Diatype', 'DM Sans', sans-serif;
 }
 .ev-sw-meta-val {
   font-size: 1rem; font-weight: 700; letter-spacing: -.03em; line-height: 1.1;
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'ABC Diatype', 'DM Sans', sans-serif;
 }
 .ev-sw-loc { font-size: .78rem; }
 .ev-sw-photo { flex: 1; min-height: 0; overflow: hidden; background: rgba(20,10,50,.06); }
 .ev-sw-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .ev-sw-empty {
   height: 100%; display: flex; align-items: center; justify-content: center;
-  font-size: .62rem; opacity: .2; font-family: 'DM Sans', sans-serif;
+  font-size: .62rem; opacity: .2; font-family: 'ABC Diatype', 'DM Sans', sans-serif;
 }
 
 
@@ -554,7 +579,7 @@ button:focus:not(:focus-visible) { outline: none; }
   max-width: 42%; line-height: 1.35;
 }
 .evi-title {
-  font-family: var(--hf, 'Instrument Serif', Georgia, serif);
+  font-family: var(--hf, 'PP Right Serif', Georgia, serif);
   font-style: var(--hs, normal); font-weight: var(--hw, 400);
   padding: 8px 24px 14px;
   font-size: 3.8rem; line-height: .93; letter-spacing: -.03em;
@@ -627,11 +652,11 @@ button:focus:not(:focus-visible) { outline: none; }
 .poster.t-event.d-bold .evb-brand {
   font-size: .45rem; font-weight: 800; letter-spacing: .28em;
   text-transform: uppercase; color: rgba(255,255,255,.55);
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'ABC Diatype', 'DM Sans', sans-serif;
 }
 .poster.t-event.d-bold .evb-tagline {
   font-size: .58rem; color: rgba(255,255,255,.4);
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'ABC Diatype', 'DM Sans', sans-serif;
 }
 .poster.t-event.d-bold .evb-bottom { display: flex; flex-direction: column; gap: 0; }
 .poster.t-event.d-bold .evb-meta-row { display: flex; margin-bottom: 10px; }
@@ -644,11 +669,11 @@ button:focus:not(:focus-visible) { outline: none; }
 .poster.t-event.d-bold .evb-meta-label {
   font-size: .36rem; font-weight: 800; letter-spacing: .2em;
   text-transform: uppercase; color: rgba(255,255,255,.35);
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'ABC Diatype', 'DM Sans', sans-serif;
 }
 .poster.t-event.d-bold .evb-meta-val {
   font-size: .66rem; font-weight: 600; color: rgba(255,255,255,.82);
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'ABC Diatype', 'DM Sans', sans-serif;
 }
 .poster.t-event.d-bold .evb-title {
   font-size: 4.2rem; line-height: .88; letter-spacing: -.04em;
@@ -680,7 +705,7 @@ button:focus:not(:focus-visible) { outline: none; }
   color: rgba(20,10,50,.36); margin-bottom: 8px;
 }
 .poster.t-event.d-frame .evf-title {
-  font-family: var(--hf, 'Instrument Serif', Georgia, serif);
+  font-family: var(--hf, 'PP Right Serif', Georgia, serif);
   font-style: var(--hs, normal);
   font-weight: var(--hw, 400);
   font-size: 3rem; line-height: 1.0;
@@ -723,7 +748,7 @@ button:focus:not(:focus-visible) { outline: none; }
   align-self: stretch;
 }
 .poster.t-spotlight .sp-name {
-  font-family: var(--hf, 'Instrument Serif', Georgia, serif);
+  font-family: var(--hf, 'PP Right Serif', Georgia, serif);
   font-style: var(--hs, normal);
   font-weight: var(--hw, 400);
   font-size: 2.8rem;
@@ -797,7 +822,7 @@ button:focus:not(:focus-visible) { outline: none; }
   margin-bottom: 10px;
 }
 .poster.t-spotlight.d-cover .spc-name {
-  font-family: var(--hf, 'Instrument Serif', Georgia, serif);
+  font-family: var(--hf, 'PP Right Serif', Georgia, serif);
   font-style: var(--hs, normal);
   font-weight: var(--hw, 400);
   font-size: 3.2rem; line-height: 1.0;
@@ -826,7 +851,7 @@ button:focus:not(:focus-visible) { outline: none; }
   margin-bottom: 28px;
 }
 .poster.t-spotlight.d-minimal .spm-name {
-  font-family: var(--hf, 'Instrument Serif', Georgia, serif);
+  font-family: var(--hf, 'PP Right Serif', Georgia, serif);
   font-style: var(--hs, normal);
   font-weight: var(--hw, 400);
   font-size: 4.2rem; line-height: .95;
@@ -887,7 +912,7 @@ button:focus:not(:focus-visible) { outline: none; }
   margin-bottom: auto;
 }
 .poster.t-offer .of-title {
-  font-family: var(--hf, 'Instrument Serif', Georgia, serif);
+  font-family: var(--hf, 'PP Right Serif', Georgia, serif);
   font-style: var(--hs, normal);
   font-weight: var(--hw, 400);
   font-size: 2.2rem;
@@ -895,7 +920,7 @@ button:focus:not(:focus-visible) { outline: none; }
   margin-bottom: 10px;
 }
 .poster.t-offer .of-stat {
-  font-family: var(--hf, 'Instrument Serif', Georgia, serif);
+  font-family: var(--hf, 'PP Right Serif', Georgia, serif);
   font-style: var(--hs, normal);
   font-weight: var(--hw, 400);
   font-size: 5.6rem;
@@ -970,7 +995,7 @@ button:focus:not(:focus-visible) { outline: none; }
   margin-bottom: auto;
 }
 .poster.t-announcement .an-title {
-  font-family: var(--hf, 'Instrument Serif', Georgia, serif);
+  font-family: var(--hf, 'PP Right Serif', Georgia, serif);
   font-style: var(--hs, normal);
   font-weight: var(--hw, 400);
   font-size: 3.2rem;
@@ -1046,7 +1071,7 @@ button:focus:not(:focus-visible) { outline: none; }
   margin-bottom: 10px;
 }
 .poster.t-announcement.d-split .ans-title {
-  font-family: var(--hf, 'Instrument Serif', Georgia, serif);
+  font-family: var(--hf, 'PP Right Serif', Georgia, serif);
   font-style: var(--hs, normal);
   font-weight: var(--hw, 400);
   font-size: 3.4rem; line-height: 1.0;
@@ -1088,7 +1113,7 @@ button:focus:not(:focus-visible) { outline: none; }
   margin-bottom: auto;
 }
 .poster.t-offer.d-split .ofs-stat {
-  font-family: var(--hf, 'Instrument Serif', Georgia, serif);
+  font-family: var(--hf, 'PP Right Serif', Georgia, serif);
   font-style: var(--hs, normal); font-weight: var(--hw, 400);
   font-size: 7rem; line-height: .88;
   letter-spacing: -.04em; color: #fff;
@@ -1099,7 +1124,7 @@ button:focus:not(:focus-visible) { outline: none; }
   display: flex; flex-direction: column; justify-content: center; gap: 8px;
 }
 .poster.t-offer.d-split .ofs-title {
-  font-family: var(--hf, 'Instrument Serif', Georgia, serif);
+  font-family: var(--hf, 'PP Right Serif', Georgia, serif);
   font-style: var(--hs, normal); font-weight: var(--hw, 400);
   font-size: 1.8rem; line-height: 1.1; letter-spacing: -.01em;
   color: var(--ink);
@@ -1160,7 +1185,7 @@ button:focus:not(:focus-visible) { outline: none; }
 }
 .sf-footer-logo:hover { opacity: .6; }
 .sf-footer-wordmark {
-  font-family: 'Instrument Serif', Georgia, serif;
+  font-family: 'PP Right Serif', Georgia, serif;
   font-size: 1.5rem; font-weight: 400;
   color: var(--ink); letter-spacing: -.01em;
   line-height: 1;
