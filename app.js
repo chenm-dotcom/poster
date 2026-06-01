@@ -153,14 +153,26 @@ const $advFontSec = id('advFontSection');
 const $fontPicker = id('fontPicker');
 const $designRow  = id('designPickerRow');
 
+/* ── Pick-screen adventure toggle ── */
+let pickAdventure = false;
+qsa('.adv-opt').forEach(btn => {
+  btn.addEventListener('click', () => {
+    qsa('.adv-opt').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+    pickAdventure = btn.dataset.mode === 'adventure';
+    id('screen-pick').classList.toggle('adv-mode-on', pickAdventure);
+  });
+});
+
 /* ── Card click → launch animation ── */
 qsa('.pcard').forEach(c => c.addEventListener('click', () => launchCard(c, c.dataset.tpl)));
 
 [$backBtn, $navLogo].forEach(el => el.addEventListener('click', () => {
   $build.classList.add('hidden');
   $pick.classList.remove('hidden');
-  tpl = null; imgs = {}; adventure = false; design = 'editorial';
-  $advBtn.classList.remove('active');
+  tpl = null; imgs = {}; design = 'editorial';
+  adventure = pickAdventure;
+  $advBtn.classList.toggle('active', adventure);
 }));
 
 $advBtn.addEventListener('click', () => {
@@ -203,9 +215,9 @@ function launchCard(card, key) {
    OPEN
    ════════════════════════════════════════════════════════════════════════════ */
 function open(key) {
-  tpl = key; imgs = {}; adventure = false; design = 'editorial';
-  $advBtn.classList.remove('active');
-  $advFontSec.classList.add('hidden');
+  tpl = key; imgs = {}; adventure = pickAdventure; design = 'editorial';
+  $advBtn.classList.toggle('active', adventure);
+  $advFontSec.classList.toggle('hidden', !adventure);
   const def = TEMPLATES[key];
   $title.textContent = def.title;
   $hint.textContent  = def.hint;

@@ -92,25 +92,33 @@ body {
   position: sticky; top: 0; z-index: 50; background: var(--bg);
 }
 .nav-logo {
-  display: flex; align-items: center; gap: 8px;
+  display: flex; align-items: center; gap: 10px;
   background: none; border: none; font-family: inherit;
-  font-size: .875rem; font-weight: 700; color: var(--ink);
+  font-size: .9rem; font-weight: 700; color: var(--ink);
   cursor: pointer; letter-spacing: -.01em; padding: 0;
   transition: opacity .15s;
 }
-.nav-logo:hover { opacity: .5; }
-.nl-dot { width: 7px; height: 7px; background: var(--ink2); border-radius: 50%; flex-shrink: 0; }
-.nl-sep { color: var(--line2); font-weight: 400; }
-.nl-sub { color: var(--smoke); font-weight: 500; }
+.nav-logo:hover { opacity: .55; }
+.nl-mark { width: 22px; height: 22px; flex-shrink: 0; }
+.nl-name { font-size: .95rem; font-weight: 800; color: var(--ink); letter-spacing: -.03em; }
+.nl-sep { color: var(--line2); font-weight: 400; margin: 0 2px; }
+.nl-sub { color: var(--smoke); font-weight: 500; font-size: .85rem; }
 .nav-hint { font-size: .75rem; color: var(--mist); }
 
-.screen { flex: 1; padding: 52px 40px 72px; }
+.screen { flex: 1; }
 .hidden { display: none !important; }
 
 /* ══════════════════════════════════════════════════════════════════════════════
    PICK SCREEN
    ══════════════════════════════════════════════════════════════════════════════ */
-.pick-head { margin-bottom: 44px; }
+.screen-pick-outer {
+  display: flex; flex-direction: column;
+  min-height: calc(100vh - 54px);
+}
+.pick-main {
+  flex: 1; padding: 52px 40px 32px;
+}
+.pick-head { margin-bottom: 36px; }
 .pick-head h1 {
   font-family: 'Instrument Serif', Georgia, serif;
   font-weight: 400;
@@ -120,9 +128,49 @@ body {
 }
 .pick-head p { font-size: .95rem; color: var(--smoke); }
 
+/* ── Adventure toggle ── */
+.adv-toggle-wrap {
+  margin-bottom: 28px;
+}
+.adv-toggle {
+  display: inline-flex; background: var(--panel);
+  border: 1px solid var(--line); border-radius: 16px;
+  padding: 5px; gap: 4px;
+}
+.adv-opt {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 24px; border-radius: 12px;
+  border: none; background: none; cursor: pointer;
+  font-family: inherit; text-align: left;
+  transition: background .2s, color .2s;
+  min-width: 220px;
+}
+.adv-opt-icon {
+  font-size: 1.4rem; flex-shrink: 0; line-height: 1;
+}
+.adv-opt-label {
+  display: block; font-size: .95rem; font-weight: 700;
+  color: var(--ink); letter-spacing: -.01em; line-height: 1;
+  margin-bottom: 3px;
+}
+.adv-opt-desc {
+  display: block; font-size: .72rem; color: var(--mist); line-height: 1.3;
+}
+.adv-opt:not(.on):hover { background: #F4F7F5; }
+.adv-opt.on {
+  background: var(--ink); box-shadow: 0 2px 12px rgba(3,36,22,.2);
+}
+.adv-opt.on .adv-opt-label { color: #FDFCF7; }
+.adv-opt.on .adv-opt-desc  { color: rgba(253,252,247,.55); }
+
+/* adventure active state: cards get a subtle glow */
+.adv-mode-on .pcard {
+  box-shadow: 0 0 0 2px rgba(107,202,121,.4);
+}
+
 .pick-grid {
   display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
-  height: calc(100vh - 54px - 196px); min-height: 360px; max-height: 560px;
+  height: calc(100vh - 54px - 280px); min-height: 320px; max-height: 520px;
 }
 
 /* ── Poster cards ── */
@@ -188,6 +236,7 @@ body {
 /* ══════════════════════════════════════════════════════════════════════════════
    BUILD SCREEN
    ══════════════════════════════════════════════════════════════════════════════ */
+#screen-build { padding: 52px 40px 72px; }
 .build-wrap {
   display: grid; grid-template-columns: 348px 1fr; gap: 32px;
   height: calc(100vh - 54px - 124px);

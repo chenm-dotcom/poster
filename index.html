@@ -32,9 +32,9 @@
 
   <nav class="nav">
     <button class="nav-logo" id="navLogo">
-      <svg class="nl-mark" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-        <circle cx="10" cy="10" r="9" fill="#032416"/>
-        <circle cx="10" cy="10" r="4" fill="#6BCA79"/>
+      <svg class="nl-mark" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <circle cx="12" cy="12" r="11" fill="#032416"/>
+        <circle cx="12" cy="12" r="5" fill="#6BCA79"/>
       </svg>
       <span class="nl-name">Mindspace</span>
       <span class="nl-sep">/</span>
@@ -44,42 +44,87 @@
   </nav>
 
   <!-- ══ PICK ══════════════════════════════════════════════════════════════ -->
-  <div class="screen" id="screen-pick">
-    <div class="pick-head">
-      <h1>What are you<br>making today?</h1>
-      <p>Pick one. Your poster is ready in under a minute.</p>
+  <div class="screen screen-pick-outer" id="screen-pick">
+
+    <div class="pick-main">
+      <div class="pick-head">
+        <h1>What are you<br>making today?</h1>
+        <p>Pick one. Your poster is ready in under a minute.</p>
+      </div>
+
+      <!-- ── ADVENTURE TOGGLE ────────────────────────────────────────────── -->
+      <div class="adv-toggle-wrap">
+        <div class="adv-toggle" id="advToggle">
+          <button class="adv-opt adv-opt-regular on" id="advOptRegular" data-mode="regular">
+            <span class="adv-opt-icon">✦</span>
+            <span class="adv-opt-label">Regular</span>
+            <span class="adv-opt-desc">Clean, on-brand, always looks right</span>
+          </button>
+          <button class="adv-opt adv-opt-adventure" id="advOptAdventure" data-mode="adventure">
+            <span class="adv-opt-icon">🎨</span>
+            <span class="adv-opt-label">Adventure</span>
+            <span class="adv-opt-desc">Wild fonts, bold colours, anything goes</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="pick-grid">
+
+        <button class="pcard" data-tpl="event" style="--bg:#D2B1F0;--fg:#032416">
+          <div class="pc-top"><span class="pc-tag">Event</span><span class="pc-emoji">🎉</span></div>
+          <div class="pc-headline">Something fun<br>is happening.</div>
+          <p class="pc-sub">Mindspace Hours, parties,<br>dog playdates, you name it.</p>
+          <div class="pc-btn">Make it →</div>
+        </button>
+
+        <button class="pcard" data-tpl="spotlight" style="--bg:#ECD8A1;--fg:#032416">
+          <div class="pc-top"><span class="pc-tag">Spotlight</span><span class="pc-emoji">✨</span></div>
+          <div class="pc-headline">Someone here<br>is doing big things.</div>
+          <p class="pc-sub">Introduce a member.<br>Make them feel seen.</p>
+          <div class="pc-btn">Make it →</div>
+        </button>
+
+        <button class="pcard" data-tpl="offer" style="--bg:#17382A;--fg:#FDFCF7">
+          <div class="pc-top"><span class="pc-tag">Member Special</span><span class="pc-emoji">🎁</span></div>
+          <div class="pc-headline">A deal too<br>good to miss.</div>
+          <p class="pc-sub">Discounts, perks, offers —<br>make it look as good as it sounds.</p>
+          <div class="pc-btn">Make it →</div>
+        </button>
+
+        <button class="pcard" data-tpl="announcement" style="--bg:#6BCA79;--fg:#032416">
+          <div class="pc-top"><span class="pc-tag">Announcement</span><span class="pc-emoji">📣</span></div>
+          <div class="pc-headline">Quick. Clear.<br>Impossible to miss.</div>
+          <p class="pc-sub">Where we are, what's changed,<br>who to call.</p>
+          <div class="pc-btn">Make it →</div>
+        </button>
+
+      </div>
     </div>
-    <div class="pick-grid">
 
-      <button class="pcard" data-tpl="event" style="--bg:#D2B1F0;--fg:#032416">
-        <div class="pc-top"><span class="pc-tag">Event</span><span class="pc-emoji">🎉</span></div>
-        <div class="pc-headline">Something fun<br>is happening.</div>
-        <p class="pc-sub">Mindspace Hours, parties,<br>dog playdates, you name it.</p>
-        <div class="pc-btn">Make it →</div>
-      </button>
+    <!-- ══ FOOTER — only on pick screen ══════════════════════════════════ -->
+    <footer class="site-footer">
+      <div class="sf-left">
+        <a class="sf-footer-logo" href="https://mindspace.me" target="_blank" rel="noopener">
+          <svg class="sf-footer-mark" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle cx="12" cy="12" r="11" fill="#032416"/>
+            <circle cx="12" cy="12" r="5" fill="#6BCA79"/>
+          </svg>
+          <span class="sf-footer-name">Mindspace</span>
+        </a>
+        <span class="sf-tagline">Poster Builder — made for the community</span>
+      </div>
+      <div class="sf-right">
+        <div class="sf-sticker" aria-hidden="true">
+          <span class="sf-sticker-icon">♪</span>
+          <span class="sf-sticker-text">WORKING WITH MUSIC<br>IS ALWAYS BETTER!</span>
+          <span class="sf-sticker-icon">♪</span>
+        </div>
+        <div class="sf-spotify">
+          <iframe style="border-radius:10px" src="https://open.spotify.com/embed/playlist/0rZl1ueC2zLklkFeuppWru?utm_source=generator" width="100%" height="80" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+        </div>
+      </div>
+    </footer>
 
-      <button class="pcard" data-tpl="spotlight" style="--bg:#ECD8A1;--fg:#032416">
-        <div class="pc-top"><span class="pc-tag">Spotlight</span><span class="pc-emoji">✨</span></div>
-        <div class="pc-headline">Someone here<br>is doing big things.</div>
-        <p class="pc-sub">Introduce a member.<br>Make them feel seen.</p>
-        <div class="pc-btn">Make it →</div>
-      </button>
-
-      <button class="pcard" data-tpl="offer" style="--bg:#17382A;--fg:#FDFCF7">
-        <div class="pc-top"><span class="pc-tag">Member Special</span><span class="pc-emoji">🎁</span></div>
-        <div class="pc-headline">A deal too<br>good to miss.</div>
-        <p class="pc-sub">Discounts, perks, offers —<br>make it look as good as it sounds.</p>
-        <div class="pc-btn">Make it →</div>
-      </button>
-
-      <button class="pcard" data-tpl="announcement" style="--bg:#6BCA79;--fg:#032416">
-        <div class="pc-top"><span class="pc-tag">Announcement</span><span class="pc-emoji">📣</span></div>
-        <div class="pc-headline">Quick. Clear.<br>Impossible to miss.</div>
-        <p class="pc-sub">Where we are, what's changed,<br>who to call.</p>
-        <div class="pc-btn">Make it →</div>
-      </button>
-
-    </div>
   </div>
 
   <!-- ══ BUILD ══════════════════════════════════════════════════════════════ -->
@@ -93,7 +138,7 @@
           <button class="btn-back" id="btnBack">← Back</button>
           <div class="fp-title-row">
             <h2 id="formTitle">Event Poster</h2>
-            <button class="btn-adventure" id="btnAdventure" title="Adventure Design — unlock more colours & fonts">
+            <button class="btn-adventure" id="btnAdventure" title="Toggle Adventure mode">
               🎨 Adventure
             </button>
           </div>
@@ -104,7 +149,6 @@
           <div id="designPickerRow"></div>
           <div id="formFields"></div>
 
-          <!-- ADVENTURE: Font picker (hidden by default) -->
           <div class="adv-section hidden" id="advFontSection">
             <label class="field-label">Adventure font</label>
             <div class="font-picker" id="fontPicker"></div>
@@ -136,30 +180,6 @@
 
     </div>
   </div>
-
-  <!-- ══ FOOTER ═════════════════════════════════════════════════════════════ -->
-  <footer class="site-footer">
-    <div class="sf-left">
-      <a class="sf-footer-logo" href="https://mindspace.me" target="_blank" rel="noopener">
-        <svg class="sf-footer-mark" viewBox="0 0 22 22" fill="none" aria-hidden="true">
-          <circle cx="11" cy="11" r="10" fill="#032416"/>
-          <circle cx="11" cy="11" r="4.5" fill="#6BCA79"/>
-        </svg>
-        <span class="sf-footer-name">Mindspace</span>
-      </a>
-      <span class="sf-tagline">Poster Builder — made for the community</span>
-    </div>
-    <div class="sf-right">
-      <div class="sf-sticker" aria-hidden="true">
-        <span class="sf-sticker-icon">♪</span>
-        <span class="sf-sticker-text">WORKING WITH MUSIC<br>IS ALWAYS BETTER!</span>
-        <span class="sf-sticker-icon">♪</span>
-      </div>
-      <div class="sf-spotify">
-        <iframe style="border-radius:10px" src="https://open.spotify.com/embed/playlist/0rZl1ueC2zLklkFeuppWru?utm_source=generator" width="100%" height="80" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
-      </div>
-    </div>
-  </footer>
 
 </div>
 
