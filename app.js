@@ -162,25 +162,27 @@ const $stage      = id('previewStage');
 
 /* ── Adventure mode animal burst ── */
 function burstAnimals() {
-  const ANIMALS = ['🦊','🐸','🦋','🐙','🦄','🐼','🦁','🐯','🐨','🦖','🦜','🐬','🦩','🐺','🦝','🦦','🐧','🦚','🐙','🐻'];
-  const N = 22;
+  const ANIMALS = ['🦊','🐸','🦋','🐙','🦄','🐼','🦁','🐯','🐨','🦖','🦜','🐬','🦩','🐺','🦝','🦦','🐧','🦚','🦕','🐻','🦈','🦓','🐆','🦏','🦒','🐘','🦤','🦥'];
+  const N = 38;
+  const vw = window.innerWidth / 2;
+  const vh = window.innerHeight / 2;
   for (let i = 0; i < N; i++) {
     const el = document.createElement('div');
     el.className = 'adv-animal';
     el.textContent = ANIMALS[Math.floor(Math.random() * ANIMALS.length)];
-    const angle = Math.random() * 360;
-    const dist  = 120 + Math.random() * 220;
-    const size  = 1.4 + Math.random() * 2.4;
-    const delay = Math.random() * 280;
+    const angle = (i / N) * 360 + Math.random() * 20;
+    const dist  = 200 + Math.random() * Math.max(vw, vh) * 1.1;
+    const size  = 1.8 + Math.random() * 3.5;
+    const delay = Math.random() * 350;
     el.style.cssText = `
       --ax:${Math.cos(angle*Math.PI/180)*dist}px;
       --ay:${Math.sin(angle*Math.PI/180)*dist}px;
-      --arot:${-30+Math.random()*60}deg;
+      --arot:${-45+Math.random()*90}deg;
       font-size:${size}rem;
       animation-delay:${delay}ms;
     `;
     document.body.appendChild(el);
-    setTimeout(() => el.remove(), delay + 900);
+    setTimeout(() => el.remove(), delay + 1100);
   }
 }
 
@@ -745,13 +747,13 @@ function qsa(s, p) { return Array.from((p||document).querySelectorAll(s)); }
   sub.classList.add('anim-hidden');
   panels.forEach(c => c.classList.add('anim-hidden'));
   setTimeout(() => { nav.classList.remove('anim-fade-hidden'); nav.classList.add('anim-fade-in'); }, 100);
-  const fullText = 'What are you making today?';
+  const fullText = 'What are you\nmaking today?';
   let i = 0;
   function tick() {
     if (i >= fullText.length) { h1.classList.add('typing-done'); afterTyping(); return; }
     const ch = fullText[i++];
-    h1.innerHTML += ch;
-    setTimeout(tick, 48);
+    h1.innerHTML += ch === '\n' ? '<br>' : ch;
+    setTimeout(tick, ch === '\n' ? 80 : 48);
   }
   setTimeout(tick, 400);
   function afterTyping() {

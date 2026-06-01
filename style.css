@@ -175,19 +175,24 @@ body {
 
 /* ── Hero text below panels ── */
 .pick-hero {
-  padding: 28px 48px 20px;
+  padding: 22px 48px 16px;
   display: flex;
-  align-items: baseline;
+  align-items: flex-end;
+  justify-content: space-between;
   gap: 32px;
 }
 .pick-hero-h1 {
   font-family: 'Instrument Serif', Georgia, serif;
   font-weight: 400;
-  font-size: clamp(2.2rem, 3.6vw, 4rem);
-  line-height: 1.05; letter-spacing: -.02em;
-  color: var(--ink); margin: 0; white-space: nowrap;
+  font-size: clamp(2.6rem, 4.2vw, 5rem);
+  line-height: 1.0; letter-spacing: -.02em;
+  color: var(--ink); margin: 0;
 }
-.pick-hero-sub { font-size: 1rem; color: var(--smoke); margin: 0; }
+.pick-hero-sub {
+  font-size: .95rem; color: var(--smoke); margin: 0;
+  text-align: right; flex-shrink: 0; max-width: 220px;
+  line-height: 1.5; padding-bottom: 4px;
+}
 
 /* ── Color splash overlay ── */
 .color-splash {
@@ -259,6 +264,18 @@ body {
 .mt-opt.on {
   background: var(--ink); color: #FDFCF7;
   box-shadow: 0 1px 6px rgba(3,36,22,.25);
+}
+.mt-opt-adventure {
+  background: linear-gradient(135deg, #6BCA79 0%, #17382A 100%);
+  color: #FDFCF7 !important;
+}
+.mt-opt-adventure:hover:not(.on) {
+  background: linear-gradient(135deg, #7FD98A 0%, #1f4a36 100%);
+  color: #FDFCF7;
+}
+.mt-opt-adventure.on {
+  background: linear-gradient(135deg, #6BCA79 0%, #032416 100%);
+  box-shadow: 0 2px 10px rgba(107,202,121,.4);
 }
 
 /* ── Design picker — card grid ── */
@@ -1055,7 +1072,7 @@ body {
    ══════════════════════════════════════════════════════════════════════════════ */
 .site-footer {
   border-top: 1px solid var(--line);
-  padding: 20px 36px;
+  padding: 12px 36px;
   display: flex; align-items: center; justify-content: space-between; gap: 24px;
   background: var(--bg);
 }
@@ -1104,7 +1121,7 @@ body {
     91.9% 28%,  91%   37.8%, 96.7% 38.6%, 94%   45.8%
   );
   background: #D2B1F0;
-  width: 220px; height: 72px;
+  width: 180px; height: 58px;
   flex-shrink: 0;
   display: flex; align-items: center; justify-content: center; gap: 6px;
   transform: rotate(-5deg) translateX(12px);
@@ -1134,7 +1151,7 @@ body {
   pointer-events: none;
   z-index: 9999;
   line-height: 1;
-  animation: animalBurst 0.85s cubic-bezier(.22,.8,.3,1) forwards;
+  animation: animalBurst 1.05s cubic-bezier(.22,.8,.3,1) forwards;
 }
 @keyframes animalBurst {
   0%   { opacity: 0; transform: translate(-50%,-50%) translate(0,0) rotate(0deg) scale(.2); }
