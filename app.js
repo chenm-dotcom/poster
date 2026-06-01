@@ -1,7 +1,7 @@
 'use strict';
 
 const UNSPLASH_KEY = '';
-const GIPHY_KEY    = 'dc6zaTOxFJmzC'; /* public test key — get your own at developers.giphy.com */
+const TENOR_KEY    = 'LIVDSRZULELA'; /* Tenor public demo key */
 
 const PALETTES = {
   event: [
@@ -411,7 +411,7 @@ function buildImageField(fieldId) {
   /* ── Giphy search ── */
   const gr = mk('div', 'giphy-row');
   gr.innerHTML = `
-    <span class="giphy-label">🎞 Search Giphy</span>
+    <span class="giphy-label">🎞 Search GIFs (Tenor)</span>
     <div class="unsplash-input-row">
       <input type="text" class="unsplash-input giphy-input" placeholder="e.g. celebration, party" id="gi-${fieldId}">
       <button type="button" class="unsplash-btn giphy-btn" data-field="${fieldId}">Search</button>
@@ -447,15 +447,15 @@ function buildImageField(fieldId) {
 
 async function searchGiphy(query, fieldId, resultEl, zone, fileInp) {
   if (!query.trim()) return;
-  resultEl.innerHTML = '<span class="us-loading">Searching Giphy…</span>';
+  resultEl.innerHTML = '<span class="us-loading">Searching GIFs…</span>';
   try {
-    const res  = await fetch(`https://api.giphy.com/v1/gifs/search?api_key=${GIPHY_KEY}&q=${encodeURIComponent(query)}&limit=6&rating=g&lang=en`);
+    const res  = await fetch(`https://g.tenor.com/v1/search?q=${encodeURIComponent(query)}&key=${TENOR_KEY}&limit=6&contentfilter=low&media_filter=minimal`);
     const data = await res.json();
-    const gifs = (data.data || []).map(g => ({
-      thumb: g.images.fixed_height_small.url,
-      full:  g.images.original.url,
+    const gifs = (data.results || []).map(g => ({
+      thumb: g.media[0].tinygif.url,
+      full:  g.media[0].gif.url,
     }));
-    if (!gifs.length) { resultEl.innerHTML = '<span class="us-loading">No GIFs found.</span>'; return; }
+    if (!gifs.length) { resultEl.innerHTML = '<span class="us-loading">No GIFs found — try different words.</span>'; return; }
     resultEl.innerHTML = '';
     gifs.forEach(g => {
       const img = mk('img', 'us-thumb giphy-thumb');
@@ -572,35 +572,62 @@ function hs() { return `font-family:var(--hf);font-style:var(--hs);font-weight:v
 
 /* ── EVENT ── */
 function renderEvent() {
-  if (design === 'bold')       return renderEventBold();
-  if (design === 'frame')      return renderEventFrame();
+  if (design === 'bold')        return renderEventBold();
+  if (design === 'frame')       return renderEventFrame();
   if (design === 'illustrated') return renderEventIllustrated();
-  const brand = v('brand') || 'MINDSPACE HOUR', headline = v('headline'),
-        tagline = v('tagline'), date = v('date'), time = v('time'),
-        location = v('location'), photo = imgs['photo'] || '';
+  /* editorial — Swiss/International Typographic Style */
+  const brand    = v('brand') || 'MINDSPACE HOUR';
+  const headline = v('headline');
+  const tagline  = v('tagline');
+  const date     = v('date');
+  const time     = v('time');
+  const loc      = v('location');
+  const photo    = imgs['photo'] || '';
+  const titleStyle = adventure ? hs() : 'font-family:"DM Sans",sans-serif;font-weight:800;font-style:normal;';
   $poster.innerHTML = `
-    <span class="ev-label">${x(brand)}</span>
-    <div class="ev-title" style="${hs()}">${headline||'<span style="opacity:.22">Event name</span>'}</div>
-    ${tagline ? `<span class="ev-tagline">${x(tagline)}</span>` : ''}
-    <div class="ev-meta">
-      <div class="ev-date">${x(date)}</div>
-      <div class="ev-timeloc">${[time,location].filter(Boolean).map(x).join('<br>')}</div>
-    </div>
-    <div class="ev-photo">
-      ${photo ? `<img src="${photo}" alt="" crossorigin="anonymous">` : '<div class="ev-photo-empty">Add a photo above ↑</div>'}
+    <div class="ev-swiss">
+      <div class="ev-sw-header"><span class="ev-sw-label">${x(brand)}</span></div>
+      <div class="ev-sw-rule"></div>
+      <div class="ev-sw-title" style="${titleStyle}">${headline || '<span style="opacity:.18">Event name</span>'}</div>
+      <div class="ev-sw-rule"></div>
+      ${tagline ? `<div class="ev-sw-tagline">${x(tagline)}</div><div class="ev-sw-rule"></div>` : ''}
+      <div class="ev-sw-meta">
+        <div class="ev-sw-col"><span class="ev-sw-meta-label">Date</span><span class="ev-sw-meta-val">${x(date) || '—'}</span></div>
+        <div class="ev-sw-col"><span class="ev-sw-meta-label">Time</span><span class="ev-sw-meta-val">${x(time) || '—'}</span></div>
+        <div class="ev-sw-col"><span class="ev-sw-meta-label">Where</span><span class="ev-sw-meta-val ev-sw-loc">${x(loc) || '—'}</span></div>
+      </div>
+      <div class="ev-sw-rule"></div>
+      <div class="ev-sw-photo">
+        ${photo ? `<img src="${photo}" alt="" crossorigin="anonymous">` : '<div class="ev-sw-empty">Add photo or GIF ↑</div>'}
+      </div>
     </div>`;
 }
 
 function renderEventBold() {
-  const brand = v('brand') || 'MINDSPACE', headline = v('headline'),
-        date = v('date'), time = v('time'), loc = v('location'), photo = imgs['photo'] || '';
+  const brand    = v('brand') || 'MINDSPACE';
+  const headline = v('headline');
+  const tagline  = v('tagline');
+  const date     = v('date');
+  const time     = v('time');
+  const loc      = v('location');
+  const photo    = imgs['photo'] || '';
+  const titleStyle = adventure ? hs() : 'font-family:"DM Sans",sans-serif;font-weight:800;font-style:normal;';
   $poster.innerHTML = `
-    <div class="evb-bg">${photo?`<img src="${photo}" alt="" crossorigin="anonymous">`:''}</div>
+    <div class="evb-bg">${photo ? `<img src="${photo}" alt="" crossorigin="anonymous">` : '<div class="evb-bg-empty"></div>'}</div>
     <div class="evb-overlay"></div>
     <div class="evb-body">
-      <span class="evb-brand">${x(brand)}</span>
-      <div class="evb-title" style="${hs()}">${headline||'<span style="opacity:.35">Event name</span>'}</div>
-      <div class="evb-meta">${[date,time,loc].filter(Boolean).map(x).join(' · ')}</div>
+      <div class="evb-top">
+        <span class="evb-brand">${x(brand)}</span>
+        ${tagline ? `<span class="evb-tagline">${x(tagline)}</span>` : ''}
+      </div>
+      <div class="evb-bottom">
+        <div class="evb-meta-row">
+          ${date ? `<div class="evb-meta-col"><span class="evb-meta-label">Date</span><span class="evb-meta-val">${x(date)}</span></div>` : ''}
+          ${time ? `<div class="evb-meta-col"><span class="evb-meta-label">Time</span><span class="evb-meta-val">${x(time)}</span></div>` : ''}
+          ${loc  ? `<div class="evb-meta-col"><span class="evb-meta-label">Where</span><span class="evb-meta-val">${x(loc)}</span></div>`  : ''}
+        </div>
+        <div class="evb-title" style="${titleStyle}">${headline || '<span style="opacity:.25">Event name</span>'}</div>
+      </div>
     </div>`;
 }
 
