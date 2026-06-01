@@ -1276,3 +1276,88 @@ button:focus:not(:focus-visible) { outline: none; }
   .preview-stage { background: none; padding: 0; box-shadow: none; }
   .poster { box-shadow: none; border-radius: 0; width: 100%; height: auto; min-height: 100vh; }
 }
+
+/* ── OFFER — Benefit layout ── */
+.poster.t-offer.d-benefit { display: flex; flex-direction: column; }
+.ofb2-wrap { display: flex; flex-direction: column; height: 100%; }
+.ofb2-label {
+  text-align: center; padding: 13px 16px 10px; flex-shrink: 0;
+  font-size: .42rem; font-weight: 800; letter-spacing: .28em;
+  text-transform: uppercase; opacity: .45;
+  font-family: 'ABC Diatype','DM Sans',sans-serif;
+}
+.ofb2-photo { flex: 0 0 40%; overflow: hidden; flex-shrink: 0; }
+.ofb2-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.ofb2-photo-empty {
+  width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
+  background: rgba(20,10,50,.06); font-size: .62rem; opacity: .3;
+  font-family: 'ABC Diatype','DM Sans',sans-serif;
+}
+.ofb2-mid {
+  display: flex; justify-content: center;
+  margin-top: -52px; position: relative; z-index: 2; flex-shrink: 0;
+}
+.ofb2-qr {
+  width: 108px; height: 108px; background: #fff; padding: 6px;
+  border-radius: 4px; box-shadow: 0 3px 20px rgba(0,0,0,.18);
+}
+.ofb2-qr img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.ofb2-qr-empty {
+  width: 108px; height: 108px; border: 2px dashed rgba(20,10,50,.18);
+  border-radius: 4px; display: flex; align-items: center; justify-content: center;
+  font-size: .48rem; opacity: .4; font-family: 'ABC Diatype','DM Sans',sans-serif;
+  background: rgba(255,255,255,.5);
+}
+.ofb2-body { flex: 1; min-height: 0; padding: 10px 20px 6px; display: flex; flex-direction: column; gap: 8px; }
+.ofb2-headline {
+  font-size: 2.5rem; line-height: 1.0; letter-spacing: -.03em; word-break: break-word;
+}
+.ofb2-headline .tt-accent { font-style: italic; font-synthesis: none; }
+.ofb2-desc { font-size: .7rem; line-height: 1.6; opacity: .75; font-family: 'ABC Diatype','DM Sans',sans-serif; }
+.ofb2-note { font-size: .48rem; opacity: .35; font-family: 'ABC Diatype','DM Sans',sans-serif; }
+.ofb2-footer {
+  padding: 9px 18px 13px; display: flex; align-items: center;
+  justify-content: space-between; flex-shrink: 0;
+  border-top: 1px solid rgba(20,10,50,.1);
+}
+.ofb2-wordmark { font-family: 'PP Right Serif', Georgia, serif; font-size: 1.05rem; }
+.ofb2-partner { height: 28px; width: auto; object-fit: contain; max-width: 80px; }
+
+/* ── Image source tabs ── */
+.img-source-tabs {
+  display: flex; gap: 4px; margin-bottom: 8px;
+}
+.img-tab {
+  flex: 1; padding: 5px 8px; border-radius: 20px; border: 1px solid var(--line);
+  background: none; font-family: inherit; font-size: .7rem; font-weight: 600;
+  color: var(--smoke); cursor: pointer; text-align: center;
+  transition: background .15s, color .15s, border-color .15s;
+}
+.img-tab.on {
+  background: var(--ink); color: #fff; border-color: var(--ink);
+}
+.img-tab-panel { display: none; }
+.img-tab-panel.on { display: block; }
+
+/* ── Pattern grid ── */
+.pattern-grid {
+  display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin-top: 2px;
+}
+.pattern-opt {
+  display: flex; flex-direction: column; align-items: center; gap: 1px;
+  padding: 5px 2px; border-radius: 6px; border: 1px solid var(--line);
+  background: none; cursor: pointer; font-family: inherit;
+  transition: background .12s, border-color .12s;
+}
+.pattern-opt:hover { background: var(--line); }
+.pattern-opt.on { background: var(--ink); border-color: var(--ink); color: #fff; }
+.pattern-opt-icon { font-size: 1.2rem; line-height: 1; }
+.pattern-opt-name { font-size: .52rem; font-weight: 600; color: var(--smoke); }
+.pattern-opt.on .pattern-opt-name { color: rgba(255,255,255,.7); }
+.pattern-none {
+  grid-column: 1 / -1; padding: 5px; border-radius: 6px; border: 1px solid var(--line);
+  background: none; cursor: pointer; font-size: .7rem; font-weight: 600;
+  color: var(--smoke); font-family: inherit; text-align: center;
+  transition: background .12s;
+}
+.pattern-none:hover { background: var(--line); }

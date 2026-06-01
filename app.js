@@ -97,12 +97,12 @@ const TEMPLATES = {
     title: 'Member Special',
     hint:  'Lead with the number. Make the deal look as good as it is.',
     fields: [
-      { id:'brand',    label:'Brand line',       type:'text', ph:'Mindspace',                               xl:true },
-      { id:'title',    label:'Offer title',      type:'text', ph:'Member\'s Special',                       xl:true },
-      { id:'stat',     label:'Big number',       type:'text', ph:'30%'                                              },
-      { id:'headline', label:'Offer text',       type:'text', ph:'discount on your event booking for 2026!'         },
-      { id:'note',     label:'Fine print',       type:'text', ph:"Don't miss out – valid only for June events"       },
-      { id:'photo',    label:'Background photo', type:'image'                                                        },
+      { id:'headline', label:'Headline (use *word* for accent colour)', type:'text',     ph:'Be your best. *Naturally*',                xl:true },
+      { id:'body',     label:'Body text',                               type:'textarea', ph:'Members enjoy 15% OFF with code MIND15\nand free drinks during Mindspace hours'  },
+      { id:'note',     label:'Fine print (optional)',                   type:'text',     ph:'Valid for June 2026 only'                           },
+      { id:'photo',    label:'Photo (top zone)',                        type:'image'                                                             },
+      { id:'qr',       label:'QR code',                                 type:'image'                                                             },
+      { id:'partnerlogo', label:'Partner logo (optional)',              type:'image'                                                             },
     ],
   },
   announcement: {
@@ -129,6 +129,7 @@ const DESIGNS = {
     { key:'minimal',   label:'Minimal'    },
   ],
   offer:        [
+    { key:'benefit',   label:'Benefit'    },
     { key:'editorial', label:'Photo'      },
     { key:'bold',      label:'Bold'       },
     { key:'split',     label:'Split'      },
@@ -141,7 +142,7 @@ const DESIGNS = {
 };
 
 /* ── State ── */
-let tpl = null, bgColor = null, imgs = {}, adventure = false,
+let tpl = null, bgColor = null, imgs = {}, adventure = false, posterPattern = null,
     advFont = ADV_FONTS[0], design = 'editorial';
 
 /* ── DOM refs ── */
@@ -150,7 +151,6 @@ const $build      = id('screen-build');
 const $poster     = id('poster');
 const $fields     = id('formFields');
 const $title      = id('formTitle');
-const $hint       = id('formHint');
 const $colorRow   = id('colorRow');
 const $dlBtn      = id('btnDownload');
 const $printBtn   = id('btnPrint');
@@ -207,7 +207,7 @@ qsa('.panel').forEach(c => c.addEventListener('click', () => launchCard(c, c.dat
   $build.classList.add('hidden');
   $pick.classList.remove('hidden');
   document.querySelector('.app').classList.remove('in-build');
-  tpl = null; imgs = {}; adventure = false; design = 'editorial';
+  tpl = null; imgs = {}; adventure = false; design = 'editorial'; posterPattern = null;
   qsa('.mt-opt').forEach(b => b.classList.toggle('on', b.dataset.mode === 'regular'));
 }));
 
@@ -243,7 +243,7 @@ function launchCard(card, key) {
    OPEN
    ════════════════════════════════════════════════════════════════════════════ */
 function open(key) {
-  tpl = key; imgs = {}; adventure = false; design = 'editorial';
+  tpl = key; imgs = {}; adventure = false; design = 'editorial'; posterPattern = null;
   qsa('.mt-opt').forEach(b => b.classList.toggle('on', b.dataset.mode === 'regular'));
   $advFontSec.classList.add('hidden');
   const def = TEMPLATES[key];
@@ -391,6 +391,36 @@ function buildForm(fields) {
 
 function buildImageField(fieldId) {
   const wrapper = mk('div', 'img-field');
+
+  /* ── Tab row ── */
+  const tabRow = mk('div', 'img-source-tabs');
+  const tabs = [
+    { id: 'upload',  label: 'Upload'  },
+    { id: 'gif',     label: 'GIF'     },
+    { id: 'pattern', label: 'Pattern' },
+  ];
+  const panels = {};
+  tabs.forEach((t, i) => {
+    const btn = mk('button', 'img-tab' + (i === 0 ? ' on' : ''));
+    btn.type = 'button'; btn.textContent = t.label;
+    btn.dataset.tab = t.id;
+    tabRow.appendChild(btn);
+    const panel = mk('div', 'img-tab-panel' + (i === 0 ? ' on' : ''));
+    panel.dataset.panel = t.id;
+    panels[t.id] = panel;
+  });
+  wrapper.appendChild(tabRow);
+
+  tabRow.addEventListener('click', e => {
+    const btn = e.target.closest('.img-tab');
+    if (!btn) return;
+    const key = btn.dataset.tab;
+    qsa('.img-tab', tabRow).forEach(b => b.classList.toggle('on', b === btn));
+    Object.values(panels).forEach(p => p.classList.toggle('on', p.dataset.panel === key));
+  });
+
+  /* ── Upload panel ── */
+  const uploadPanel = panels['upload'];
   const zone = mk('label', 'upload-zone');
   zone.id = 'zone-' + fieldId;
   zone.innerHTML = `
@@ -404,14 +434,17 @@ function buildImageField(fieldId) {
   fileInp.addEventListener('change', e => {
     const file = e.target.files[0]; if (!file) return;
     const r = new FileReader();
-    r.onload = ev => { imgs[fieldId] = ev.target.result; setZoneThumb(zone, ev.target.result, fileInp); render(); };
+    r.onload = ev => { imgs[fieldId] = ev.target.result; posterPattern = null; setZoneThumb(zone, ev.target.result, fileInp); render(); };
     r.readAsDataURL(file);
   });
   zone.appendChild(fileInp);
-  wrapper.appendChild(zone);
+  uploadPanel.appendChild(zone);
+  wrapper.appendChild(uploadPanel);
 
-  /* ── Giphy search ── */
+  /* ── GIF panel ── */
+  const gifPanel = panels['gif'];
   const gr = mk('div', 'giphy-row');
+  gr.style.borderTop = 'none'; gr.style.marginTop = '0'; gr.style.paddingTop = '0';
   gr.innerHTML = `
     <span class="giphy-label">🎞 Search GIFs (Tenor)</span>
     <div class="unsplash-input-row">
@@ -419,13 +452,42 @@ function buildImageField(fieldId) {
       <button type="button" class="unsplash-btn giphy-btn" data-field="${fieldId}">Search</button>
     </div>
     <div class="unsplash-results giphy-results" id="gir-${fieldId}"></div>`;
-  wrapper.appendChild(gr);
+  gifPanel.appendChild(gr);
+  wrapper.appendChild(gifPanel);
   const giInput = gr.querySelector('.giphy-input');
   const giBtn   = gr.querySelector('.giphy-btn');
   const giRes   = gr.querySelector('.giphy-results');
   const doGiphy = () => searchGiphy(giInput.value, fieldId, giRes, zone, fileInp);
   giBtn.addEventListener('click', doGiphy);
   giInput.addEventListener('keydown', e => { if (e.key === 'Enter') doGiphy(); });
+
+  /* ── Pattern panel ── */
+  const patternPanel = panels['pattern'];
+  const grid = mk('div', 'pattern-grid');
+  Object.entries(PATTERN_SHAPES).forEach(([key, shape]) => {
+    const btn = mk('button', 'pattern-opt');
+    btn.type = 'button';
+    if (posterPattern === key) btn.classList.add('on');
+    btn.innerHTML = `<span class="pattern-opt-icon">${shape.e}</span><span class="pattern-opt-name">${shape.n}</span>`;
+    btn.addEventListener('click', () => {
+      posterPattern = key;
+      imgs[fieldId] = '';
+      qsa('.pattern-opt', grid).forEach(b => b.classList.toggle('on', b === btn));
+      setZoneThumb(zone, shape.e, fileInp);
+      render();
+    });
+    grid.appendChild(btn);
+  });
+  const noneBtn = mk('button', 'pattern-none');
+  noneBtn.type = 'button'; noneBtn.textContent = '✕ None / Clear pattern';
+  noneBtn.addEventListener('click', () => {
+    posterPattern = null;
+    qsa('.pattern-opt', grid).forEach(b => b.classList.remove('on'));
+    render();
+  });
+  grid.appendChild(noneBtn);
+  patternPanel.appendChild(grid);
+  wrapper.appendChild(patternPanel);
 
   if (UNSPLASH_KEY) {
     const ur = mk('div', 'unsplash-row');
@@ -436,7 +498,7 @@ function buildImageField(fieldId) {
         <button type="button" class="unsplash-btn" data-field="${fieldId}">Search</button>
       </div>
       <div class="unsplash-results" id="usr-${fieldId}"></div>`;
-    wrapper.appendChild(ur);
+    gifPanel.appendChild(ur);
     const usInput = ur.querySelector('.unsplash-input');
     const usBtn   = ur.querySelector('.unsplash-btn');
     const usRes   = ur.querySelector('.unsplash-results');
@@ -545,6 +607,80 @@ function buildPalette(palette) {
   });
 }
 
+const PATTERN_SHAPES = {
+  heart:     { e:'❤️', n:'Heart',     d:'M50 30C50 19 37 7 22 13C8 19 6 35 18 48L50 80L82 48C94 35 92 19 78 13C63 7 50 19 50 30Z' },
+  star:      { e:'⭐', n:'Star',      d:'M50 5L62 35H96L70 56L80 92L50 70L20 92L30 56L4 35H38Z' },
+  sparkle:   { e:'✨', n:'Sparkle',   d:'M50 5L55 45H95L56 56L50 95L44 56H5L45 45Z' },
+  tree:      { e:'🎄', n:'Tree',      d:'M50 5L70 38H58L76 65H60L80 92H20L40 65H24L42 38H30Z' },
+  snowflake: { e:'❄️', n:'Snow',      d:'M47 5H53V22L66 9L70 14L55 28V47H74L88 32L92 37L76 52H95V58H76L92 73L88 78L74 62H55V81L70 96L66 100L53 86V95H47V86L34 100L30 96L45 81V62H26L12 78L8 73L24 58H5V52H24L8 37L12 32L26 47H45V28L30 14L34 9L47 22Z' },
+  flower:    { e:'🌸', n:'Flower',    d:'M50 5C56 18 68 20 78 13C74 26 82 36 95 36C86 44 86 56 95 62C82 62 74 72 78 85C68 78 56 80 50 93C44 80 32 78 22 85C26 72 18 62 5 62C14 56 14 44 5 36C18 36 26 26 22 13C32 20 44 18 50 5Z' },
+  leaf:      { e:'🍃', n:'Leaf',      d:'M50 5C82 18 96 48 88 72C82 90 68 96 50 96C68 72 64 38 50 5ZM50 5C18 18 4 48 12 72C18 90 32 96 50 96C32 72 36 38 50 5Z' },
+  moon:      { e:'🌙', n:'Moon',      d:'M62 8C40 8 22 26 22 50C22 74 40 92 62 92C46 84 35 68 35 50C35 32 46 16 62 8Z' },
+  diamond:   { e:'💎', n:'Diamond',   d:'M50 5L92 42L68 92H32L8 42Z' },
+  crown:     { e:'👑', n:'Crown',     d:'M5 88V36L28 65L50 14L72 65L95 36V88Z' },
+  bolt:      { e:'⚡', n:'Lightning', d:'M62 5L24 55H52L38 95L76 42H48Z' },
+  cloud:     { e:'☁️', n:'Cloud',     d:'M24 78C10 78 6 64 14 56C10 48 14 38 26 38C26 28 35 20 47 22C52 14 64 10 74 18C86 12 97 24 94 38C102 40 100 56 92 60C96 68 90 78 80 78Z' },
+  wave:      { e:'🌊', n:'Wave',      d:'M5 62C15 38 30 18 46 32C60 44 64 60 80 50C90 43 93 28 96 20V82H5Z' },
+  balloon:   { e:'🎈', n:'Balloon',   d:'M50 5C72 5 88 22 88 46C88 68 72 82 50 84L54 95H46L50 84C28 82 12 68 12 46C12 22 28 5 50 5Z' },
+  butterfly: { e:'🦋', n:'Butterfly', d:'M50 22C50 22 30 5 10 10C0 15 0 34 14 42C28 50 44 46 50 52C56 46 72 50 86 42C100 34 100 15 90 10C70 5 50 22 50 22ZM50 52C50 52 34 62 24 76C16 88 26 97 38 94C48 92 51 78 50 64C49 78 52 92 62 94C74 97 84 88 76 76C66 62 50 52 50 52Z' },
+  paw:       { e:'🐾', n:'Paw',       d:'M50 40C60 40 68 52 68 64C68 76 60 84 50 84C40 84 32 76 32 64C32 52 40 40 50 40ZM23 16C29 16 34 22 34 30C34 38 29 44 23 44C17 44 12 38 12 30C12 22 17 16 23 16ZM77 16C83 16 88 22 88 30C88 38 83 44 77 44C71 44 66 38 66 30C66 22 71 16 77 16ZM12 46C18 40 27 42 30 50C33 58 28 66 22 68C16 70 8 66 8 59C8 52 7 51 12 46ZM88 46C93 51 92 52 92 59C92 66 84 70 78 68C72 66 67 58 70 50C73 42 82 40 88 46Z' },
+  music:     { e:'🎵', n:'Music',     d:'M36 72C36 82 28 90 18 90C8 90 0 82 0 72C0 62 8 54 18 54C24 54 28 57 36 54V22L76 12V44C84 41 88 44 94 44C104 44 98 56 92 59C86 62 78 57 76 50V80C76 90 68 98 58 98C48 98 40 90 40 80C40 70 48 62 58 62C64 62 68 65 76 62Z' },
+  clover:    { e:'🍀', n:'Clover',    d:'M50 50C50 36 36 22 22 22C8 22 8 36 22 42C8 42 8 56 22 56C36 56 36 70 22 70C8 70 8 84 22 78C36 72 50 86 50 86C50 86 64 72 78 78C92 84 92 70 78 70C64 70 64 56 78 56C92 56 92 42 78 42C64 36 64 22 50 22C50 22 50 36 50 50Z' },
+  flame:     { e:'🔥', n:'Flame',     d:'M50 5C50 5 76 28 72 52C70 62 62 68 58 76C64 66 55 55 50 60C45 55 36 66 42 76C38 68 30 62 28 52C24 28 50 5 50 5Z' },
+  rainbow:   { e:'🌈', n:'Rainbow',   d:'M5 78C5 40 25 8 50 8C75 8 95 40 95 78H78C78 48 66 24 50 24C34 24 22 48 22 78Z' },
+  coffee:    { e:'☕', n:'Coffee',    d:'M12 30H72L62 88H22ZM72 45H84C93 45 93 65 84 65H72Z' },
+  confetti:  { e:'🎉', n:'Party',     d:'M16 24L24 14L32 24L24 34ZM52 8L58 2L64 8L58 14ZM78 26L85 18L92 26L85 34ZM8 60L14 52L20 60L14 68ZM68 64L76 56L84 64L76 72ZM34 82L42 74L50 82L42 90ZM82 80L88 72L94 80L88 88Z' },
+  ornament:  { e:'🎁', n:'Ornament',  d:'M42 4H58V18C74 18 90 33 90 52C90 73 72 90 50 90C28 90 10 73 10 52C10 33 26 18 42 18Z' },
+  sun:       { e:'☀️', n:'Sun',       d:'M50 18A32 32 0 1 1 49.9 18ZM50 2V14M50 86V98M98 50H86M14 50H2M83 17L75 25M25 75L17 83M83 83L75 75M25 25L17 17' },
+  blob:      { e:'🫧', n:'Blob',      d:'M72 12C88 20 98 40 94 58C90 76 74 90 56 94C38 98 18 90 10 74C2 58 8 36 20 22C32 8 56 4 72 12Z' },
+};
+
+function generatePatternSVG(key, baseColor) {
+  const shape = PATTERN_SHAPES[key];
+  if (!shape || !baseColor) return '';
+  const r = parseInt(baseColor.slice(1,3),16);
+  const g = parseInt(baseColor.slice(3,5),16);
+  const b = parseInt(baseColor.slice(5,7),16);
+  const lum = (r*299 + g*587 + b*114) / 255000;
+  const isDark = lum < 0.45;
+  const amt1 = isDark ? 65 : -35;
+  const amt2 = isDark ? 40 : -20;
+  const clamp = (v,lo=0,hi=255) => Math.min(hi,Math.max(lo,v));
+  const c1 = 'rgba(' + clamp(r+amt1) + ',' + clamp(g+amt1) + ',' + clamp(b+amt1) + ',' + (isDark?0.52:0.22) + ')';
+  const c2 = 'rgba(' + clamp(r+amt2) + ',' + clamp(g+amt2) + ',' + clamp(b+amt2) + ',' + (isDark?0.38:0.14) + ')';
+  let seed = key.split('').reduce((a,c,i) => a + c.charCodeAt(0)*(i+1), 0);
+  const rand = () => { seed = (seed * 1664525 + 1013904223) & 0xffffffff; return (seed>>>0)/4294967296; };
+  const shapes = [];
+  for (let i=0;i<4;i++) {
+    const cx = -40 + rand()*440;
+    const cy = -60 + rand()*760;
+    const sz = 140 + rand()*140;
+    const rot = rand()*360;
+    const sc = (sz/100).toFixed(3);
+    shapes.push('<g transform="translate(' + cx.toFixed(0) + ',' + cy.toFixed(0) + ') rotate(' + rot.toFixed(0) + ') scale(' + sc + ') translate(-50,-50)"><path d="' + shape.d + '" fill="' + c1 + '"/></g>');
+  }
+  for (let i=0;i<3;i++) {
+    const cx = -20 + rand()*400;
+    const cy = -40 + rand()*720;
+    const sz = 90 + rand()*100;
+    const rot = rand()*360;
+    const sc = (sz/100).toFixed(3);
+    shapes.push('<g transform="translate(' + cx.toFixed(0) + ',' + cy.toFixed(0) + ') rotate(' + rot.toFixed(0) + ') scale(' + sc + ') translate(-50,-50)"><path d="' + shape.d + '" fill="' + c2 + '"/></g>');
+  }
+  return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 640" width="360" height="640" style="position:absolute;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none" class="pattern-bg">' + shapes.join('') + '</svg>';
+}
+
+function applyPatternBg() {
+  const old = $poster.querySelector('.pattern-bg');
+  if (old) old.remove();
+  if (!posterPattern) return;
+  const svgStr = generatePatternSVG(posterPattern, bgColor);
+  if (!svgStr) return;
+  const parser = new DOMParser();
+  const svgEl = parser.parseFromString(svgStr,'image/svg+xml').documentElement;
+  $poster.insertBefore(svgEl, $poster.firstChild);
+}
+
 /* ════════════════════════════════════════════════════════════════════════════
    RENDER
    ════════════════════════════════════════════════════════════════════════════ */
@@ -566,6 +702,7 @@ function render() {
   void $poster.offsetWidth;
   $poster.classList.add('poster-focus-in');
   updateDlBtn();
+  applyPatternBg();
 }
 
 function v(fid) { const e = id('f-' + fid); return e ? e.value.trim() : ''; }
@@ -579,7 +716,6 @@ function hs() { return `font-family:var(--hf);font-style:var(--hs);font-weight:v
 /* ── EVENT ── */
 function renderEvent() {
   if (design === 'bold')        return renderEventBold();
-  if (design === 'frame')       return renderEventFrame();
   if (design === 'illustrated') return renderEventIllustrated();
   /* editorial — Swiss/International Typographic Style */
   const brand    = v('brand') || 'MINDSPACE HOUR';
@@ -634,20 +770,6 @@ function renderEventBold() {
     </div>`;
 }
 
-function renderEventFrame() {
-  const brand = v('brand') || 'MINDSPACE', headline = v('headline'),
-        date = v('date'), time = v('time'), loc = v('location'), photo = imgs['photo'] || '';
-  $poster.innerHTML = `
-    <div class="evf-inner">
-      <div class="evf-top">
-        <div class="evf-title" style="${hs()}">${headline||'<span style="opacity:.28">Event name</span>'}</div>
-      </div>
-      <div class="evf-photo">
-        ${photo?`<img src="${photo}" alt="" crossorigin="anonymous">`:'<div class="evf-photo-empty">Add photo ↑</div>'}
-      </div>
-      <div class="evf-foot">${[date,time,loc].filter(Boolean).map(x).join(' · ')}</div>
-    </div>`;
-}
 
 function renderEventIllustrated() {
   const brand    = v('brand') || 'MINDSPACE HOUR';
@@ -695,7 +817,7 @@ function renderEventIllustrated() {
 function renderSpotlight() {
   if (design === 'cover')   return renderSpotlightCover();
   if (design === 'minimal') return renderSpotlightMinimal();
-  const brand = v('brand') || 'MINDSPACE SPOTLIGHT', name = v('name'),
+  const name = v('name'),
         bio = v('bio'), link = v('link'), photo = imgs['photo'] || '';
   $poster.innerHTML = `
     <div class="sp-name" style="${hs()}">${name||'<span style="opacity:.22">Member name</span>'}</div>
@@ -708,7 +830,7 @@ function renderSpotlight() {
 }
 
 function renderSpotlightCover() {
-  const brand = v('brand') || 'MINDSPACE SPOTLIGHT', name = v('name'),
+  const name = v('name'),
         bio = v('bio'), photo = imgs['photo'] || '';
   $poster.innerHTML = `
     <div class="spc-photo">${photo?`<img src="${photo}" alt="" crossorigin="anonymous">`:''}</div>
@@ -720,7 +842,7 @@ function renderSpotlightCover() {
 }
 
 function renderSpotlightMinimal() {
-  const brand = v('brand') || 'MINDSPACE SPOTLIGHT', name = v('name'),
+  const name = v('name'),
         bio = v('bio'), link = v('link');
   $poster.innerHTML = `
     <div class="spm-name" style="${hs()}">${name||'<span style="opacity:.22">Member name</span>'}</div>
@@ -730,45 +852,87 @@ function renderSpotlightMinimal() {
 }
 
 /* ── OFFER ── */
+/* Parse *accent* markup → styled span */
+function twoTone(text, accentCss) {
+  return x(text).replace(/\*(.*?)\*/g, `<em class="tt-accent" style="${accentCss}">$1</em>`);
+}
+
+function renderOfferBenefit() {
+  const headline    = v('headline');
+  const body        = v('body');
+  const note        = v('note');
+  const photo       = imgs['photo']       || '';
+  const qr          = imgs['qr']          || '';
+  const partnerLogo = imgs['partnerlogo'] || '';
+
+  /* Decide accent colour based on bg lightness */
+  const isDark = bgColor && ['#17','#03','#0c','#1c','#28','#24'].some(p => bgColor.toLowerCase().startsWith(p));
+  const accentCss = isDark
+    ? 'color:#6BCA79;font-style:italic;'
+    : 'color:#17382A;font-style:italic;';
+  const titleStyle = adventure ? hs() : '';
+
+  $poster.innerHTML = `
+    <div class="ofb2-wrap">
+      <div class="ofb2-label">MINDSPACE BENEFIT</div>
+
+      <div class="ofb2-photo">
+        ${photo
+          ? `<img src="${photo}" alt="" crossorigin="anonymous">`
+          : '<div class="ofb2-photo-empty">Add photo ↑</div>'}
+      </div>
+
+      <div class="ofb2-mid">
+        ${qr
+          ? `<div class="ofb2-qr"><img src="${qr}" alt="QR code" crossorigin="anonymous"></div>`
+          : '<div class="ofb2-qr ofb2-qr-empty">Upload QR</div>'}
+      </div>
+
+      <div class="ofb2-body">
+        ${headline ? `<div class="ofb2-headline" style="${titleStyle}">${twoTone(headline, accentCss)}</div>` : '<div class="ofb2-headline" style="opacity:.2;${titleStyle}">Your headline</div>'}
+        ${body     ? `<div class="ofb2-desc">${x(body).replace(/\n/g,'<br>')}</div>` : ''}
+        ${note     ? `<div class="ofb2-note">${x(note)}</div>` : ''}
+      </div>
+
+      <div class="ofb2-footer">
+        <span class="ofb2-wordmark">Mindspace</span>
+        ${partnerLogo
+          ? `<img src="${partnerLogo}" alt="" crossorigin="anonymous" class="ofb2-partner">`
+          : ''}
+      </div>
+    </div>`;
+}
+
 function renderOffer() {
-  if (design === 'bold')  return renderOfferBold();
-  if (design === 'split') return renderOfferSplit();
-  const brand = v('brand') || 'Mindspace', title = v('title'), stat = v('stat'),
-        headline = v('headline'), note = v('note'), photo = imgs['photo'] || '';
+  if (design === 'benefit') return renderOfferBenefit();
+  if (design === 'bold')    return renderOfferBold();
+  if (design === 'split')   return renderOfferSplit();
+  const headline = v('headline'), note = v('note'), photo = imgs['photo'] || '';
   $poster.innerHTML = `
     ${photo ? `<div class="of-bg"><img src="${photo}" alt="" crossorigin="anonymous"></div>` : ''}
     <div class="of-overlay"></div>
     <div class="of-body">
-      ${title    ? `<div class="of-title" style="${hs()}">${x(title)}</div>`   : ''}
-      ${stat     ? `<div class="of-stat"  style="${hs()}">${x(stat)}</div>`   : ''}
-      ${headline ? `<div class="of-desc">${x(headline)}</div>`  : ''}
-      ${note     ? `<div class="of-note">${x(note)}</div>`      : ''}
+      ${headline ? `<div class="of-desc">${x(headline)}</div>` : ''}
+      ${note     ? `<div class="of-note">${x(note)}</div>`     : ''}
     </div>`;
 }
 
 function renderOfferBold() {
-  const brand = v('brand') || 'Mindspace', title = v('title'), stat = v('stat'),
-        headline = v('headline'), note = v('note');
+  const headline = v('headline'), note = v('note');
   $poster.innerHTML = `
     <div class="ofb-body">
-      ${stat     ? `<div class="ofb-stat"  style="${hs()}">${x(stat)}</div>`  : ''}
-      ${title    ? `<div class="ofb-title" style="${hs()}">${x(title)}</div>` : ''}
-      ${headline ? `<div class="ofb-desc">${x(headline)}</div>`  : ''}
-      ${note     ? `<div class="ofb-note">${x(note)}</div>`      : ''}
+      ${headline ? `<div class="ofb-desc">${x(headline)}</div>` : ''}
+      ${note     ? `<div class="ofb-note">${x(note)}</div>`     : ''}
     </div>`;
 }
 
 function renderOfferSplit() {
-  const brand = v('brand') || 'Mindspace', stat = v('stat'),
-        title = v('title'), headline = v('headline'), note = v('note');
+  const headline = v('headline'), note = v('note');
   $poster.innerHTML = `
-    <div class="ofs-top">
-      ${stat ? `<div class="ofs-stat" style="${hs()}">${x(stat)}</div>` : '<div class="ofs-stat" style="opacity:.18;'+hs()+'">0%</div>'}
-    </div>
+    <div class="ofs-top"></div>
     <div class="ofs-bottom">
-      ${title    ? `<div class="ofs-title" style="${hs()}">${x(title)}</div>`   : ''}
-      ${headline ? `<div class="ofs-desc">${x(headline)}</div>`   : ''}
-      ${note     ? `<div class="ofs-note">${x(note)}</div>`       : ''}
+      ${headline ? `<div class="ofs-desc">${x(headline)}</div>` : ''}
+      ${note     ? `<div class="ofs-note">${x(note)}</div>`     : ''}
     </div>`;
 }
 
@@ -776,7 +940,7 @@ function renderOfferSplit() {
 function renderAnnouncement() {
   if (design === 'bold')  return renderAnnouncementBold();
   if (design === 'split') return renderAnnouncementSplit();
-  const brand = v('brand') || 'Mindspace', title = v('headline'),
+  const title = v('headline'),
         body = v('body'), contact = v('contact');
   $poster.innerHTML = `
     <div class="an-title" style="${hs()}">${title?x(title).replace(/\n/g,'<br>'):'<span style="opacity:.28">Your headline</span>'}</div>
@@ -785,7 +949,7 @@ function renderAnnouncement() {
 }
 
 function renderAnnouncementBold() {
-  const brand = v('brand') || 'Mindspace', title = v('headline'),
+  const title = v('headline'),
         body = v('body'), contact = v('contact');
   $poster.innerHTML = `
     <div class="anb-title" style="${hs()}">${title?x(title).replace(/\n/g,'<br>'):'<span style="opacity:.25">Your headline</span>'}</div>
@@ -794,7 +958,7 @@ function renderAnnouncementBold() {
 }
 
 function renderAnnouncementSplit() {
-  const brand = v('brand') || 'Mindspace', title = v('headline'),
+  const title = v('headline'),
         body = v('body'), contact = v('contact');
   $poster.innerHTML = `
     <div class="ans-header">
@@ -982,15 +1146,12 @@ function qsa(s, p) { return Array.from((p||document).querySelectorAll(s)); }
 
 /* ── Intro animation ── */
 (function runIntro() {
-  const nav    = document.querySelector('.nav');
   const h1     = document.querySelector('.pick-hero-h1');
   const sub    = document.querySelector('.pick-hero-sub');
   const panels = qsa('.panel');
-  nav.classList.add('anim-fade-hidden');
   h1.innerHTML = '';
   sub.classList.add('anim-hidden');
   panels.forEach(c => c.classList.add('anim-hidden'));
-  setTimeout(() => { nav.classList.remove('anim-fade-hidden'); nav.classList.add('anim-fade-in'); }, 100);
   const fullText = 'What are you\nmaking today?';
   let i = 0;
   function tick() {
