@@ -118,9 +118,9 @@ const TEMPLATES = {
 
 const DESIGNS = {
   event:        [
-    { key:'editorial', label:'Editorial'  },
-    { key:'bold',      label:'Photo Fill' },
-    { key:'frame',     label:'Frame'      },
+    { key:'editorial',  label:'Editorial'   },
+    { key:'bold',       label:'Photo Fill'  },
+    { key:'illustrated',label:'Illustrated' },
   ],
   spotlight:    [
     { key:'editorial', label:'Editorial'  },
@@ -313,13 +313,15 @@ function makeDesignThumb(tpl, key) {
         </div>
       </div>`;
 
-    case 'event-frame':
+    case 'event-illustrated':
       return wrap(c, `
-        <div style="margin:6px;border:1.5px solid ${dk(.22)};border-radius:2px;flex:1;display:flex;flex-direction:column;padding:5px 5px 0;overflow:hidden">
-          <div style="display:flex;flex-direction:column;gap:4px;margin-bottom:auto">
-            ${row(3,40,dk(.2))} ${row(8,82,dk(.7))} ${row(8,60,dk(.7))}
-          </div>
-          <div style="flex:0 0 38%;background:${dk(.1)};margin:4px -5px 0"></div>
+        <div style="padding:7px 8px 0;display:flex;flex-direction:column;gap:3px">
+          ${row(2.5,34,dk(.18))}
+          ${row(10,90,dk(.8))} ${row(10,72,dk(.8))}
+        </div>
+        <div style="flex:1;display:flex;align-items:center;justify-content:center;font-size:1.6rem;line-height:1;padding:2px 0">🎉</div>
+        <div style="padding:0 8px 7px;border-top:1px solid ${dk(.1)};display:flex;justify-content:space-between;align-items:center;padding-top:5px">
+          ${row(3,28,dk(.55))} ${row(3,20,dk(.3))} ${row(3,22,dk(.3))}
         </div>`);
 
     case 'spotlight-minimal':
@@ -522,8 +524,9 @@ function hs() { return `font-family:var(--hf);font-style:var(--hs);font-weight:v
 
 /* ── EVENT ── */
 function renderEvent() {
-  if (design === 'bold')  return renderEventBold();
-  if (design === 'frame') return renderEventFrame();
+  if (design === 'bold')       return renderEventBold();
+  if (design === 'frame')      return renderEventFrame();
+  if (design === 'illustrated') return renderEventIllustrated();
   const brand = v('brand') || 'MINDSPACE HOUR', headline = v('headline'),
         tagline = v('tagline'), date = v('date'), time = v('time'),
         location = v('location'), photo = imgs['photo'] || '';
@@ -566,6 +569,52 @@ function renderEventFrame() {
         ${photo?`<img src="${photo}" alt="" crossorigin="anonymous">`:'<div class="evf-photo-empty">Add photo ↑</div>'}
       </div>
       <div class="evf-foot">${[date,time,loc].filter(Boolean).map(x).join(' · ')}</div>
+    </div>`;
+}
+
+function renderEventIllustrated() {
+  const brand    = v('brand') || 'MINDSPACE HOUR';
+  const headline = v('headline');
+  const tagline  = v('tagline');
+  const date     = v('date');
+  const time     = v('time');
+  const loc      = v('location');
+  const photo    = imgs['photo'] || '';
+
+  // Emoji fallback illustration scene based on brand/headline content
+  const emojiScene = `<div class="evi-emoji-scene">🎉 ✨ 🎊</div>`;
+
+  $poster.innerHTML = `
+    <div class="evi-wrap">
+      <header class="evi-head">
+        <span class="evi-brand">${x(brand)}</span>
+        ${tagline ? `<span class="evi-tagline">${x(tagline)}</span>` : ''}
+      </header>
+
+      <div class="evi-title" style="${hs()}">${headline||'<span style="opacity:.22">Event name</span>'}</div>
+
+      <div class="evi-illus">
+        ${photo
+          ? `<img src="${photo}" alt="" crossorigin="anonymous" class="evi-photo">`
+          : emojiScene}
+      </div>
+
+      <footer class="evi-foot">
+        <div class="evi-info-block">
+          <span class="evi-info-label">Date</span>
+          <span class="evi-info-val">${x(date)||'—'}</span>
+        </div>
+        <div class="evi-divider"></div>
+        <div class="evi-info-block">
+          <span class="evi-info-label">Time</span>
+          <span class="evi-info-val">${x(time)||'—'}</span>
+        </div>
+        <div class="evi-divider"></div>
+        <div class="evi-info-block">
+          <span class="evi-info-label">Where</span>
+          <span class="evi-info-val">${x(loc)||'—'}</span>
+        </div>
+      </footer>
     </div>`;
 }
 
