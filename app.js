@@ -678,10 +678,10 @@ function qsa(s, p) { return Array.from((p||document).querySelectorAll(s)); }
 /* ── Mobile wall meme randomiser ── */
 (function randomiseMobileWall() {
   const MEMES = [
-    { img:'assets/meme-1.gif', h2:'A poster?<br>On <em>this</em>??',         p:'Come on. Grab your laptop.<br>We\'ll be here.' },
-    { img:'assets/meme-2.jpg', h2:'We see you.',                              p:'Desktop-only tool. Laptop. Now.<br>We promise it\'s worth it.' },
-    { img:'assets/meme-3.jpg', h2:'You want to design<br>on your phone??',   p:'This tool needs a real screen.<br>Go grab your laptop.' },
-    { img:'assets/meme-4.jpg', h2:'Not today.<br>Not like this.',             p:'Bigger screen. Better posters.<br>See you on a laptop.' },
+    { img:'meme-1.gif', h2:'A poster?<br>On <em>this</em>??',         p:'Come on. Grab your laptop.<br>We\'ll be here.' },
+    { img:'meme-2.jpg', h2:'We see you.',                              p:'Desktop-only tool. Laptop. Now.<br>We promise it\'s worth it.' },
+    { img:'meme-3.jpg', h2:'You want to design<br>on your phone??',   p:'This tool needs a real screen.<br>Go grab your laptop.' },
+    { img:'meme-4.jpg', h2:'Not today.<br>Not like this.',             p:'Bigger screen. Better posters.<br>See you on a laptop.' },
   ];
   const m = MEMES[Math.floor(Math.random() * MEMES.length)];
   const wall = id('mobileWall');
