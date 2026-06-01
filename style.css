@@ -2,16 +2,42 @@
 @font-face {
   font-family: 'ABC Diatype';
   src: url('fonts/ABCDiatypeMedium.woff2') format('woff2');
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
+  font-weight: 500; font-style: normal; font-display: swap;
 }
 @font-face {
   font-family: 'PP Right Serif';
   src: url('fonts/PPRightSerifRegular.woff2') format('woff2');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
+  font-weight: 400; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'League Script';
+  src: url('fonts/LeagueScript.woff2') format('woff2');
+  font-weight: 400; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'Oi';
+  src: url('fonts/Oi.woff2') format('woff2');
+  font-weight: 400; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'Anton SC';
+  src: url('fonts/AntonSC.woff2') format('woff2');
+  font-weight: 400; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'Cedarville Cursive';
+  src: url('fonts/CedarvilleCursive.woff2') format('woff2');
+  font-weight: 400; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'Special Elite';
+  src: url('fonts/SpecialElite.woff2') format('woff2');
+  font-weight: 400; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'Erica One';
+  src: url('fonts/EricaOne.woff2') format('woff2');
+  font-weight: 400; font-style: normal; font-display: swap;
 }
 
 /* ── Reset ─────────────────────────────────────────────────────────────────── */
