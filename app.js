@@ -705,13 +705,13 @@ function qsa(s, p) { return Array.from((p||document).querySelectorAll(s)); }
   sub.classList.add('anim-hidden');
   panels.forEach(c => c.classList.add('anim-hidden'));
   setTimeout(() => { nav.classList.remove('anim-fade-hidden'); nav.classList.add('anim-fade-in'); }, 100);
-  const fullText = 'What are you\nmaking today?';
+  const fullText = 'What are you making today?';
   let i = 0;
   function tick() {
     if (i >= fullText.length) { h1.classList.add('typing-done'); afterTyping(); return; }
     const ch = fullText[i++];
-    h1.innerHTML += ch === '\n' ? '<br>' : ch;
-    setTimeout(tick, ch === '\n' ? 100 : 48);
+    h1.innerHTML += ch;
+    setTimeout(tick, 48);
   }
   setTimeout(tick, 400);
   function afterTyping() {

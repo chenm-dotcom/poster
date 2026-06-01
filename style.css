@@ -175,17 +175,19 @@ body {
 
 /* ── Hero text below panels ── */
 .pick-hero {
-  padding: 44px 48px 32px;
-  flex: 1;
+  padding: 28px 48px 20px;
+  display: flex;
+  align-items: baseline;
+  gap: 32px;
 }
 .pick-hero-h1 {
   font-family: 'Instrument Serif', Georgia, serif;
   font-weight: 400;
-  font-size: clamp(3rem, 5vw, 5.5rem);
-  line-height: 1.0; letter-spacing: -.02em;
-  color: var(--ink); margin-bottom: 14px;
+  font-size: clamp(2.2rem, 3.6vw, 4rem);
+  line-height: 1.05; letter-spacing: -.02em;
+  color: var(--ink); margin: 0; white-space: nowrap;
 }
-.pick-hero-sub { font-size: 1rem; color: var(--smoke); }
+.pick-hero-sub { font-size: 1rem; color: var(--smoke); margin: 0; }
 
 /* ── Color splash overlay ── */
 .color-splash {
