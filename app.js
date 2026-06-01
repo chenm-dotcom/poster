@@ -1,6 +1,7 @@
 'use strict';
 
 const UNSPLASH_KEY = '';
+const GIPHY_KEY    = 'dc6zaTOxFJmzC'; /* public test key — get your own at developers.giphy.com */
 
 const PALETTES = {
   event: [
@@ -407,6 +408,23 @@ function buildImageField(fieldId) {
   zone.appendChild(fileInp);
   wrapper.appendChild(zone);
 
+  /* ── Giphy search ── */
+  const gr = mk('div', 'giphy-row');
+  gr.innerHTML = `
+    <span class="giphy-label">🎞 Search Giphy</span>
+    <div class="unsplash-input-row">
+      <input type="text" class="unsplash-input giphy-input" placeholder="e.g. celebration, party" id="gi-${fieldId}">
+      <button type="button" class="unsplash-btn giphy-btn" data-field="${fieldId}">Search</button>
+    </div>
+    <div class="unsplash-results giphy-results" id="gir-${fieldId}"></div>`;
+  wrapper.appendChild(gr);
+  const giInput = gr.querySelector('.giphy-input');
+  const giBtn   = gr.querySelector('.giphy-btn');
+  const giRes   = gr.querySelector('.giphy-results');
+  const doGiphy = () => searchGiphy(giInput.value, fieldId, giRes, zone, fileInp);
+  giBtn.addEventListener('click', doGiphy);
+  giInput.addEventListener('keydown', e => { if (e.key === 'Enter') doGiphy(); });
+
   if (UNSPLASH_KEY) {
     const ur = mk('div', 'unsplash-row');
     ur.innerHTML = `
@@ -425,6 +443,36 @@ function buildImageField(fieldId) {
     usInput.addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
   }
   return wrapper;
+}
+
+async function searchGiphy(query, fieldId, resultEl, zone, fileInp) {
+  if (!query.trim()) return;
+  resultEl.innerHTML = '<span class="us-loading">Searching Giphy…</span>';
+  try {
+    const res  = await fetch(`https://api.giphy.com/v1/gifs/search?api_key=${GIPHY_KEY}&q=${encodeURIComponent(query)}&limit=6&rating=g&lang=en`);
+    const data = await res.json();
+    const gifs = (data.data || []).map(g => ({
+      thumb: g.images.fixed_height_small.url,
+      full:  g.images.original.url,
+    }));
+    if (!gifs.length) { resultEl.innerHTML = '<span class="us-loading">No GIFs found.</span>'; return; }
+    resultEl.innerHTML = '';
+    gifs.forEach(g => {
+      const img = mk('img', 'us-thumb giphy-thumb');
+      img.src = g.thumb;
+      img.addEventListener('click', async () => {
+        resultEl.querySelectorAll('.us-thumb').forEach(t => t.classList.remove('us-selected'));
+        img.classList.add('us-selected');
+        try {
+          const blob = await fetch(g.full).then(r => r.blob());
+          const reader = new FileReader();
+          reader.onload = ev => { imgs[fieldId] = ev.target.result; setZoneThumb(zone, ev.target.result, fileInp); render(); };
+          reader.readAsDataURL(blob);
+        } catch { imgs[fieldId] = g.full; setZoneThumb(zone, g.full, fileInp); render(); }
+      });
+      resultEl.appendChild(img);
+    });
+  } catch (err) { console.error(err); resultEl.innerHTML = '<span class="us-loading">Search failed.</span>'; }
 }
 
 function setZoneThumb(zone, src, fileInp) {
@@ -581,9 +629,6 @@ function renderEventIllustrated() {
   const loc      = v('location');
   const photo    = imgs['photo'] || '';
 
-  // Emoji fallback illustration scene based on brand/headline content
-  const emojiScene = `<div class="evi-emoji-scene">🎉 ✨ 🎊</div>`;
-
   $poster.innerHTML = `
     <div class="evi-wrap">
       <header class="evi-head">
@@ -591,12 +636,12 @@ function renderEventIllustrated() {
         ${tagline ? `<span class="evi-tagline">${x(tagline)}</span>` : ''}
       </header>
 
-      <div class="evi-title" style="${hs()}">${headline||'<span style="opacity:.22">Event name</span>'}</div>
+      <div class="evi-title" style="${hs()}">${headline||'<span style="opacity:.18">Event name</span>'}</div>
 
       <div class="evi-illus">
         ${photo
           ? `<img src="${photo}" alt="" crossorigin="anonymous" class="evi-photo">`
-          : emojiScene}
+          : `<div class="evi-placeholder"><span>🎉</span><span style="font-size:.65rem;opacity:.45;margin-top:8px;font-family:'DM Sans',sans-serif;letter-spacing:.06em;text-transform:uppercase;font-weight:700">Add a photo or GIF above ↑</span></div>`}
       </div>
 
       <footer class="evi-foot">
@@ -610,7 +655,7 @@ function renderEventIllustrated() {
           <span class="evi-info-val">${x(time)||'—'}</span>
         </div>
         <div class="evi-divider"></div>
-        <div class="evi-info-block">
+        <div class="evi-info-block evi-info-block--loc">
           <span class="evi-info-label">Where</span>
           <span class="evi-info-val">${x(loc)||'—'}</span>
         </div>
