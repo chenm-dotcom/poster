@@ -1059,7 +1059,7 @@ button:focus:not(:focus-visible) { outline: none; }
    ══════════════════════════════════════════════════════════════════════════════ */
 .poster.t-announcement.d-bold {
   background: var(--pb, #032416);
-  padding: 32px 28px 36px;
+  padding: 96px 28px 36px;
   justify-content: flex-end;
 }
 .poster.t-announcement.d-bold .anb-brand {
