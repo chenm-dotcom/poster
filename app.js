@@ -55,7 +55,7 @@ const ADV_PALETTES = {
 };
 
 const ADV_FONTS = [
-  { key:'League Script',      label:'League Script', style:'normal', weight:'400' },
+  { key:'Homemade Apple',     label:'Homemade Apple', style:'normal', weight:'400' },
   { key:'Oi',                 label:'Oi',            style:'normal', weight:'400' },
   { key:'Anton SC',           label:'Anton SC',      style:'normal', weight:'400' },
   { key:'Cedarville Cursive', label:'Cedarville',    style:'normal', weight:'400' },
@@ -70,7 +70,8 @@ const TEMPLATES = {
     fields: [
       { id:'brand',    label:'Label',                type:'text',     ph:'MINDSPACE HOUR',                   xl:true },
       { id:'headline', label:'Event name',           type:'text',     ph:'Doggo Playdate',                   xl:true },
-      { id:'tagline',  label:'One-liner (optional)', type:'text',     ph:'Bring your dog & make some friends'        },
+      { id:'tagline',  label:'One-liner (optional)',   type:'text',     ph:'Bring your dog & make some friends'        },
+      { id:'desc',     label:'Description (optional)',type:'textarea', ph:'Social run with snacks, connect and lululemon giveaway' },
       { id:'date',     label:'Date',                 type:'text',     ph:'14/08'                                     },
       { id:'time',     label:'Time',                 type:'text',     ph:'15:00–16:00'                               },
       { id:'location', label:'Location',             type:'text',     ph:'Eventspace'                                },
@@ -96,8 +97,8 @@ const TEMPLATES = {
       { id:'body',     label:'Body text',                               type:'textarea', ph:'Members enjoy 15% OFF with code MIND15\nand free drinks during Mindspace hours'  },
       { id:'note',     label:'Fine print (optional)',                   type:'text',     ph:'Valid for June 2026 only'                           },
       { id:'photo',    label:'Photo (top zone)',                        type:'image'                                                             },
-      { id:'qr',       label:'QR code',                                 type:'image'                                                             },
-      { id:'partnerlogo', label:'Partner logo (optional)',              type:'image'                                                             },
+      { id:'qr',       label:'QR code',                                 type:'image', uploadOnly:true                                               },
+      { id:'partnerlogo', label:'Partner logo (optional)',              type:'image', uploadOnly:true                                            },
     ],
   },
   announcement: {
@@ -108,6 +109,7 @@ const TEMPLATES = {
       { id:'headline', label:'Headline',             type:'text',     ph:"We're on the 4th floor lounge", xl:true },
       { id:'body',     label:'Body text (optional)', type:'textarea', ph:'If needed / bring back cards call:' },
       { id:'contact',  label:'Contact',              type:'textarea', ph:'Anna\n015120511147'                  },
+      { id:'photo',    label:'Photo / GIF (optional)', type:'image'                                            },
     ],
   },
 };
@@ -132,7 +134,7 @@ const DESIGNS = {
   announcement: [
     { key:'editorial', label:'Editorial'  },
     { key:'bold',      label:'Massive'    },
-    { key:'split',     label:'Two-Tone'   },
+    { key:'split',     label:'Photo'      },
   ],
 };
 
@@ -367,7 +369,7 @@ function buildForm(fields) {
     lbl.textContent = f.label;
     wrap.appendChild(lbl);
     if (f.type === 'image') {
-      wrap.appendChild(buildImageField(f.id));
+      wrap.appendChild(buildImageField(f.id, f.uploadOnly));
     } else if (f.type === 'textarea') {
       const ta = mk('textarea', 'tall');
       ta.id = 'f-' + f.id; ta.placeholder = f.ph || '';
@@ -384,21 +386,24 @@ function buildForm(fields) {
   });
 }
 
-function buildImageField(fieldId) {
+function buildImageField(fieldId, uploadOnly) {
   const wrapper = mk('div', 'img-field');
 
-  /* ── Source selector ── */
+  const sources = uploadOnly ? ['upload'] : ['upload','gif','unsplash','pattern'];
+
+  /* ── Source selector (hidden when upload-only) ── */
   const sel = mk('select', 'img-source-select');
   sel.innerHTML = `
     <option value="upload">📁  Upload photo</option>
     <option value="gif">🎞  Search GIFs</option>
     <option value="unsplash">🖼  Search Unsplash</option>
     <option value="pattern">🎨  Icon pattern</option>`;
+  if (uploadOnly) sel.style.display = 'none';
   wrapper.appendChild(sel);
 
   /* ── Panels ── */
   const panels = {};
-  ['upload','gif','unsplash','pattern'].forEach((key, i) => {
+  sources.forEach((key, i) => {
     const p = mk('div', 'img-source-panel' + (i === 0 ? ' on' : ''));
     p.dataset.panel = key;
     panels[key] = p;
@@ -431,6 +436,8 @@ function buildImageField(fieldId) {
   panels['upload'].appendChild(zone);
 
   /* ── GIF panel ── */
+  if (!panels['gif']) { return wrapper; /* upload-only: skip remaining panels */ }
+  /* (non-upload panels follow) */
   panels['gif'].innerHTML = `
     <div class="unsplash-input-row">
       <input type="text" class="unsplash-input giphy-input" placeholder="e.g. celebration, party" id="gi-${fieldId}">
@@ -661,6 +668,35 @@ function applyPatternBg() {
 /* ════════════════════════════════════════════════════════════════════════════
    RENDER
    ════════════════════════════════════════════════════════════════════════════ */
+function isDark(hex) {
+  if (!hex || hex.length < 7) return false;
+  const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+  return (r * 0.299 + g * 0.587 + b * 0.114) / 255 < 0.45;
+}
+
+function fitNameEl(el) {
+  if (!el) return;
+  const parent = el.parentElement;
+  if (!parent) return;
+  const style = getComputedStyle(parent);
+  const maxW = parent.clientWidth - parseFloat(style.paddingLeft||0) - parseFloat(style.paddingRight||0);
+  const words = (el.textContent || '').split(/\s+/).filter(Boolean);
+  if (!words.length) return;
+  const probe = document.createElement('span');
+  const cs = getComputedStyle(el);
+  probe.style.cssText = `position:absolute;visibility:hidden;white-space:nowrap;font-family:${cs.fontFamily};font-weight:${cs.fontWeight};font-style:${cs.fontStyle};letter-spacing:${cs.letterSpacing};`;
+  document.body.appendChild(probe);
+  let fs = parseFloat(cs.fontSize);
+  while (fs > 10) {
+    probe.style.fontSize = fs + 'px';
+    const longest = Math.max(...words.map(w => { probe.textContent = w; return probe.offsetWidth; }));
+    if (longest <= maxW) break;
+    fs -= 0.5;
+  }
+  probe.remove();
+  if (fs < parseFloat(cs.fontSize) - 0.4) el.style.fontSize = fs + 'px';
+}
+
 function render() {
   $poster.className = `poster t-${tpl} d-${design}`;
   $poster.style.setProperty('--pb', bgColor);
@@ -674,6 +710,7 @@ function render() {
   $poster.style.setProperty('--hf', `'${font}', Georgia, serif`);
   $poster.style.setProperty('--hs', fstyle);
   $poster.style.setProperty('--hw', fweight);
+  $poster.classList.toggle('dark-bg', isDark(bgColor));
   ({ event:renderEvent, spotlight:renderSpotlight, offer:renderOffer, announcement:renderAnnouncement })[tpl]();
   $poster.classList.remove('poster-focus-in');
   void $poster.offsetWidth;
@@ -698,6 +735,7 @@ function renderEvent() {
   const brand    = v('brand') || 'MINDSPACE HOUR';
   const headline = v('headline');
   const tagline  = v('tagline');
+  const desc     = v('desc');
   const date     = v('date');
   const time     = v('time');
   const loc      = v('location');
@@ -708,6 +746,7 @@ function renderEvent() {
       <div class="ev-sw-title" style="${titleStyle}">${headline || '<span style="opacity:.18">Event name</span>'}</div>
       <div class="ev-sw-rule"></div>
       ${tagline ? `<div class="ev-sw-tagline">${x(tagline)}</div><div class="ev-sw-rule"></div>` : ''}
+      ${desc    ? `<div class="ev-sw-desc">${x(desc)}</div><div class="ev-sw-rule"></div>` : ''}
       <div class="ev-sw-meta">
         <div class="ev-sw-col"><span class="ev-sw-meta-label">Date</span><span class="ev-sw-meta-val">${x(date) || '—'}</span></div>
         <div class="ev-sw-col"><span class="ev-sw-meta-label">Time</span><span class="ev-sw-meta-val">${x(time) || '—'}</span></div>
@@ -724,6 +763,7 @@ function renderEventBold() {
   const brand    = v('brand') || 'MINDSPACE';
   const headline = v('headline');
   const tagline  = v('tagline');
+  const desc     = v('desc');
   const date     = v('date');
   const time     = v('time');
   const loc      = v('location');
@@ -735,6 +775,7 @@ function renderEventBold() {
     <div class="evb-body">
       <div class="evb-top">
         ${tagline ? `<span class="evb-tagline">${x(tagline)}</span>` : ''}
+        ${desc    ? `<span class="evb-desc">${x(desc)}</span>` : ''}
       </div>
       <div class="evb-bottom">
         <div class="evb-meta-row">
@@ -752,6 +793,7 @@ function renderEventIllustrated() {
   const brand    = v('brand') || 'MINDSPACE HOUR';
   const headline = v('headline');
   const tagline  = v('tagline');
+  const desc     = v('desc');
   const date     = v('date');
   const time     = v('time');
   const loc      = v('location');
@@ -764,6 +806,7 @@ function renderEventIllustrated() {
       </header>
 
       <div class="evi-title" style="${hs()}">${headline||'<span style="opacity:.18">Event name</span>'}</div>
+      ${desc ? `<div class="evi-desc">${x(desc)}</div>` : ''}
 
       <div class="evi-illus">
         ${photo
@@ -794,16 +837,21 @@ function renderEventIllustrated() {
 function renderSpotlight() {
   if (design === 'cover')   return renderSpotlightCover();
   if (design === 'minimal') return renderSpotlightMinimal();
-  const name = v('name'),
+  const name = v('name'), brand = v('brand'),
         bio = v('bio'), link = v('link'), photo = imgs['photo'] || '';
   $poster.innerHTML = `
-    <div class="sp-name" style="${hs()}">${name||'<span style="opacity:.22">Member name</span>'}</div>
-    <div class="sp-photo">
-      ${photo?`<img src="${photo}" alt="" crossorigin="anonymous">`:'<div class="sp-photo-empty">Add portrait ↑</div>'}
+    <div class="sp-photo-full">
+      ${photo
+        ? `<img src="${photo}" alt="" crossorigin="anonymous">`
+        : '<div class="sp-photo-empty-full">Add portrait ↑</div>'}
     </div>
-    <div class="sp-rule"></div>
-    ${bio  ? `<div class="sp-bio">${bioToHtml(bio)}</div>` : ''}
-    ${link ? `<div class="sp-link">${x(link)}</div>` : ''}`;
+    <div class="sp-content">
+      ${brand ? `<div class="sp-label">${x(brand)}</div>` : ''}
+      <div class="sp-name" style="${hs()}">${name||'<span style="opacity:.22">Member name</span>'}</div>
+      ${link ? `<div class="sp-link">${x(link)}</div>` : '<div style="flex:1"></div>'}
+      ${bio  ? `<div class="sp-bio">${bioToHtml(bio)}</div>` : ''}
+    </div>`;
+  fitNameEl($poster.querySelector('.sp-name'));
 }
 
 function renderSpotlightCover() {
@@ -816,16 +864,21 @@ function renderSpotlightCover() {
       <div class="spc-name" style="${hs()}">${name||'<span style="opacity:.3">Member name</span>'}</div>
       ${bio ? `<div class="spc-bio">${x(bio)}</div>` : ''}
     </div>`;
+  fitNameEl($poster.querySelector('.spc-name'));
 }
 
 function renderSpotlightMinimal() {
-  const name = v('name'),
+  const name = v('name'), brand = v('brand'),
         bio = v('bio'), link = v('link');
   $poster.innerHTML = `
+    ${brand ? `<div class="spm-label">${x(brand)}</div>` : ''}
     <div class="spm-name" style="${hs()}">${name||'<span style="opacity:.22">Member name</span>'}</div>
     <div class="spm-rule"></div>
-    ${bio  ? `<div class="spm-bio">${bioToHtml(bio)}</div>` : ''}
-    ${link ? `<div class="spm-link">${x(link)}</div>` : ''}`;
+    <div class="spm-bottom">
+      ${bio  ? `<div class="spm-bio">${bioToHtml(bio)}</div>` : ''}
+      ${link ? `<div class="spm-link">${x(link)}</div>` : ''}
+    </div>`;
+  fitNameEl($poster.querySelector('.spm-name'));
 }
 
 /* ── OFFER ── */
@@ -884,32 +937,86 @@ function renderOffer() {
   if (design === 'benefit') return renderOfferBenefit();
   if (design === 'bold')    return renderOfferBold();
   if (design === 'split')   return renderOfferSplit();
-  const headline = v('headline'), note = v('note'), photo = imgs['photo'] || '';
+  /* editorial / Photo — La Sovrana style */
+  const headline = v('headline'), body = v('body'), note = v('note');
+  const photo = imgs['photo'] || '';
+  const qr = imgs['qr'] || '';
+  const partnerLogo = imgs['partnerlogo'] || '';
+  const isDarkBg = bgColor && isDark(bgColor);
+  const accentCss = isDarkBg ? 'color:#6BCA79;font-style:italic;' : 'color:#17382A;font-style:italic;';
+  const titleStyle = adventure ? hs() : '';
   $poster.innerHTML = `
-    ${photo ? `<div class="of-bg"><img src="${photo}" alt="" crossorigin="anonymous"></div>` : ''}
-    <div class="of-overlay"></div>
-    <div class="of-body">
-      ${headline ? `<div class="of-desc">${x(headline)}</div>` : ''}
-      ${note     ? `<div class="of-note">${x(note)}</div>`     : ''}
+    ${photo ? `<div class="of-bg"><img src="${photo}" alt="" crossorigin="anonymous"></div>` : '<div class="of-bg-empty"></div>'}
+    <div class="of-card">
+      <div class="of-card-headline" style="${titleStyle}">${headline ? twoTone(headline, accentCss) : '<span style="opacity:.25">Your headline</span>'}</div>
+      ${body ? `<div class="of-card-body">${x(body).replace(/\n/g,'<br>')}</div>` : ''}
+      ${note ? `<div class="of-card-note">${x(note)}</div>` : ''}
+      <div class="of-card-footer">
+        <span class="of-wordmark">Mindspace</span>
+        <div style="display:flex;align-items:center;gap:10px">
+          ${partnerLogo ? `<img src="${partnerLogo}" alt="" class="of-partner" crossorigin="anonymous">` : ''}
+          ${qr ? `<div class="of-qr"><img src="${qr}" alt="" crossorigin="anonymous"></div>` : ''}
+        </div>
+      </div>
     </div>`;
 }
 
 function renderOfferBold() {
-  const headline = v('headline'), note = v('note');
+  /* Bold — auction catalog style */
+  const headline = v('headline'), body = v('body'), note = v('note');
+  const photo = imgs['photo'] || '';
+  const qr = imgs['qr'] || '';
+  const partnerLogo = imgs['partnerlogo'] || '';
+  const isDarkBg = bgColor && isDark(bgColor);
+  const accentCss = isDarkBg ? 'color:#6BCA79;font-style:italic;' : 'color:#17382A;font-style:italic;';
+  const titleStyle = adventure ? hs() : '';
   $poster.innerHTML = `
-    <div class="ofb-body">
-      ${headline ? `<div class="ofb-desc">${x(headline)}</div>` : ''}
-      ${note     ? `<div class="ofb-note">${x(note)}</div>`     : ''}
+    <div class="ofbl-photo">
+      ${photo ? `<img src="${photo}" alt="" crossorigin="anonymous">` : '<div class="ofbl-photo-empty">Add photo ↑</div>'}
+    </div>
+    <div class="ofbl-info">
+      <div class="ofbl-label">MINDSPACE BENEFIT</div>
+      <div class="ofbl-headline" style="${titleStyle}">${headline ? twoTone(headline, accentCss) : '<span style="opacity:.25">Your headline</span>'}</div>
+      <div class="ofbl-rule"></div>
+      <div class="ofbl-row">
+        ${qr ? `<div class="ofbl-qr"><img src="${qr}" alt="" crossorigin="anonymous"></div>` : '<div class="ofbl-qr ofbl-qr-empty">Upload QR</div>'}
+        <div class="ofbl-text">
+          ${body ? `<div class="ofbl-desc">${x(body).replace(/\n/g,'<br>')}</div>` : ''}
+          ${note ? `<div class="ofbl-note">${x(note)}</div>` : ''}
+        </div>
+      </div>
+    </div>
+    <div class="ofbl-footer">
+      <span class="ofbl-wordmark">Mindspace</span>
+      ${partnerLogo ? `<img src="${partnerLogo}" alt="" class="ofbl-partner" crossorigin="anonymous">` : ''}
     </div>`;
 }
 
 function renderOfferSplit() {
-  const headline = v('headline'), note = v('note');
+  /* Split — coloured top with headline, white bottom with QR + body */
+  const headline = v('headline'), body = v('body'), note = v('note');
+  const qr = imgs['qr'] || '';
+  const partnerLogo = imgs['partnerlogo'] || '';
+  const isDarkBg = bgColor && isDark(bgColor);
+  const accentCss = isDarkBg ? 'color:#6BCA79;font-style:italic;' : 'color:#fff;font-style:italic;';
+  const titleStyle = adventure ? hs() : '';
   $poster.innerHTML = `
-    <div class="ofs-top"></div>
+    <div class="ofs-top">
+      <div class="ofs-brand">MINDSPACE BENEFIT</div>
+      <div class="ofs-title" style="${titleStyle}">${headline ? twoTone(headline, accentCss) : '<span style="opacity:.4">Your headline</span>'}</div>
+    </div>
     <div class="ofs-bottom">
-      ${headline ? `<div class="ofs-desc">${x(headline)}</div>` : ''}
-      ${note     ? `<div class="ofs-note">${x(note)}</div>`     : ''}
+      <div class="ofs-row">
+        ${qr ? `<div class="ofs-qr"><img src="${qr}" alt="" crossorigin="anonymous"></div>` : '<div class="ofs-qr ofs-qr-empty">Upload QR</div>'}
+        <div class="ofs-text">
+          ${body ? `<div class="ofs-desc">${x(body).replace(/\n/g,'<br>')}</div>` : ''}
+          ${note ? `<div class="ofs-note">${x(note)}</div>` : ''}
+        </div>
+      </div>
+      <div class="ofs-footer">
+        <span class="ofs-wordmark">Mindspace</span>
+        ${partnerLogo ? `<img src="${partnerLogo}" alt="" class="ofs-partner" crossorigin="anonymous">` : ''}
+      </div>
     </div>`;
 }
 
@@ -917,33 +1024,53 @@ function renderOfferSplit() {
 function renderAnnouncement() {
   if (design === 'bold')  return renderAnnouncementBold();
   if (design === 'split') return renderAnnouncementSplit();
-  const title = v('headline'),
-        body = v('body'), contact = v('contact');
+  /* Editorial — centered, Mindspace wordmark top, headline, body, footer */
+  const title = v('headline'), body = v('body'), contact = v('contact');
+  const titleStyle = adventure ? hs() : '';
+  /* Split body/contact into left footer + right footer (contact = right side) */
   $poster.innerHTML = `
-    <div class="an-title" style="${hs()}">${title?x(title).replace(/\n/g,'<br>'):'<span style="opacity:.28">Your headline</span>'}</div>
-    ${body    ? `<div class="an-body">${x(body)}</div>` : ''}
-    ${contact ? `<div class="an-contact">${x(contact)}</div>` : ''}`;
+    <div class="an-wordmark">Mindspace</div>
+    <div class="an-main">
+      <div class="an-title" style="${titleStyle}">${title ? x(title).replace(/\n/g,'<br>') : '<span style="opacity:.28">Your headline</span>'}</div>
+      ${body && !contact ? `<div class="an-body">${x(body)}</div>` : ''}
+    </div>
+    ${(body || contact) ? `<div class="an-footer">
+      <div class="an-footer-left">${body ? x(body) : ''}</div>
+      <div class="an-footer-right">${contact ? x(contact) : ''}</div>
+    </div>` : ''}`;
 }
 
 function renderAnnouncementBold() {
-  const title = v('headline'),
-        body = v('body'), contact = v('contact');
+  /* Massive — headline fills space */
+  const title = v('headline'), body = v('body'), contact = v('contact');
+  const titleStyle = adventure ? hs() : '';
   $poster.innerHTML = `
-    <div class="anb-title" style="${hs()}">${title?x(title).replace(/\n/g,'<br>'):'<span style="opacity:.25">Your headline</span>'}</div>
-    ${body    ? `<div class="anb-body">${x(body)}</div>` : ''}
-    ${contact ? `<div class="anb-contact">${x(contact)}</div>` : ''}`;
+    <div class="anb-wordmark">Mindspace</div>
+    <div class="anb-title" style="${titleStyle}">${title ? x(title).replace(/\n/g,'<br>') : '<span style="opacity:.3">Your headline</span>'}</div>
+    <div class="anb-footer">
+      <div class="anb-footer-left">${body ? x(body) : ''}</div>
+      <div class="anb-footer-right">${contact ? x(contact) : ''}</div>
+    </div>`;
 }
 
 function renderAnnouncementSplit() {
-  const title = v('headline'),
-        body = v('body'), contact = v('contact');
+  /* Photo top + colour bottom */
+  const title = v('headline'), body = v('body'), contact = v('contact');
+  const photo = imgs['photo'] || '';
+  const titleStyle = adventure ? hs() : '';
   $poster.innerHTML = `
-    <div class="ans-header">
-      <div class="ans-title" style="${hs()}">${title?x(title).replace(/\n/g,'<br>'):'<span style="opacity:.3">Your headline</span>'}</div>
+    <div class="ans-photo">
+      ${photo
+        ? `<img src="${photo}" alt="" crossorigin="anonymous">`
+        : '<div class="ans-photo-empty">Add photo or GIF ↑</div>'}
     </div>
     <div class="ans-body-area">
-      ${body    ? `<div class="ans-body">${x(body)}</div>` : ''}
-      ${contact ? `<div class="ans-contact">${x(contact)}</div>` : ''}
+      <div class="ans-title" style="${titleStyle}">${title ? x(title).replace(/\n/g,'<br>') : '<span style="opacity:.3">Your headline</span>'}</div>
+      <div class="ans-wordmark">Mindspace</div>
+      <div class="ans-footer">
+        <div class="ans-footer-left">${body ? x(body) : ''}</div>
+        <div class="ans-footer-right">${contact ? x(contact) : ''}</div>
+      </div>
     </div>`;
 }
 
