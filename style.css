@@ -179,16 +179,17 @@ button:focus:not(:focus-visible) { outline: none; }
 }
 .panel:hover .panel-inner { transform: translateY(-6px); }
 
-.panel-emoji { font-size: 3.2rem; line-height: 1; }
+.panel-emoji { font-size: 2rem; line-height: 1; opacity: .7; }
 .panel-tag {
-  font-size: .58rem; font-weight: 700; letter-spacing: .18em;
-  text-transform: uppercase; opacity: .45; margin-top: 4px;
+  font-family: 'PP Right Serif', Georgia, serif;
+  font-size: clamp(1.6rem, 2.6vw, 2.6rem);
+  font-weight: 400; letter-spacing: -.01em;
+  line-height: 1.05; margin-top: 6px;
 }
 .panel-headline {
-  font-family: 'PP Right Serif', Georgia, serif;
-  font-size: clamp(1rem, 1.4vw, 1.25rem);
-  font-weight: 400; line-height: 1.2;
-  opacity: .8; margin-top: 2px;
+  font-size: clamp(.72rem, .9vw, .85rem);
+  font-weight: 400; line-height: 1.35;
+  opacity: .55; margin-top: 6px;
 }
 .panel-cta {
   margin-top: 8px;
@@ -672,7 +673,7 @@ button:focus:not(:focus-visible) { outline: none; }
 .poster.t-event.d-bold { background: #111; }
 .poster.t-event.d-bold .evb-bg { position: absolute; inset: 0; z-index: 0; }
 .poster.t-event.d-bold .evb-bg img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.poster.t-event.d-bold .evb-bg-empty { width: 100%; height: 100%; background: #1a1a1a; }
+.poster.t-event.d-bold .evb-bg .photo-placeholder { opacity: .2; }
 .poster.t-event.d-bold .evb-overlay {
   position: absolute; inset: 0; z-index: 1;
   background: linear-gradient(to top, rgba(0,0,0,.93) 0%, rgba(0,0,0,.4) 45%, rgba(0,0,0,.08) 100%);
@@ -917,7 +918,7 @@ button:focus:not(:focus-visible) { outline: none; }
    OFFER  ─  editorial (full-bleed photo + overlay)
    ══════════════════════════════════════════════════════════════════════════════ */
 .poster.t-offer {
-  background: #032416;
+  background: var(--pb, #CBF6D2);
   position: relative;
   display: flex;
   flex-direction: column;
@@ -937,12 +938,12 @@ button:focus:not(:focus-visible) { outline: none; }
   position: relative; z-index: 2;
   padding: 28px 26px;
   display: flex; flex-direction: column;
-  height: 100%; color: #fff;
+  height: 100%; color: var(--poster-ink, #FDFCF7);
 }
 .poster.t-offer .of-brand {
   font-size: .78rem; font-weight: 500;
   letter-spacing: .04em;
-  color: rgba(255,255,255,.65);
+  color: var(--poster-ink-faint, rgba(253,252,247,.65));
   margin-bottom: auto;
 }
 .poster.t-offer .of-title {
@@ -963,10 +964,10 @@ button:focus:not(:focus-visible) { outline: none; }
 }
 .poster.t-offer .of-desc {
   font-size: .9rem; line-height: 1.5;
-  color: rgba(255,255,255,.78); margin-bottom: 12px;
+  color: var(--poster-ink-faint, rgba(253,252,247,.78)); margin-bottom: 12px;
 }
 .poster.t-offer .of-note {
-  font-size: .66rem; color: rgba(255,255,255,.4); line-height: 1.55;
+  font-size: .66rem; color: var(--poster-ink-faint, rgba(253,252,247,.4)); line-height: 1.55;
 }
 
 
@@ -979,11 +980,11 @@ button:focus:not(:focus-visible) { outline: none; }
 .poster.t-offer.d-bold .ofb-body {
   padding: 36px 32px;
   display: flex; flex-direction: column;
-  height: 100%; color: #fff;
+  height: 100%; color: var(--poster-ink, #032416);
 }
 .poster.t-offer.d-bold .ofb-brand {
   font-size: .58rem; font-weight: 700; letter-spacing: .22em;
-  text-transform: uppercase; color: rgba(255,255,255,.45);
+  text-transform: uppercase; color: var(--poster-ink-faint, rgba(3,36,22,.45));
   margin-bottom: auto;
 }
 .poster.t-offer.d-bold .ofb-stat {
@@ -1003,10 +1004,10 @@ button:focus:not(:focus-visible) { outline: none; }
 }
 .poster.t-offer.d-bold .ofb-desc {
   font-size: .9rem; line-height: 1.55;
-  color: rgba(255,255,255,.72); margin-bottom: 10px;
+  color: var(--poster-ink-faint, rgba(3,36,22,.72)); margin-bottom: 10px;
 }
 .poster.t-offer.d-bold .ofb-note {
-  font-size: .64rem; color: rgba(255,255,255,.38); line-height: 1.55;
+  font-size: .64rem; color: var(--poster-ink-faint, rgba(3,36,22,.38)); line-height: 1.55;
 }
 
 
@@ -1018,7 +1019,7 @@ button:focus:not(:focus-visible) { outline: none; }
   display: flex;
   flex-direction: column;
   padding: 32px 30px 36px;
-  color: #fff;
+  color: var(--poster-ink, #032416);
 }
 
 .poster.t-announcement .an-brand {
@@ -1386,3 +1387,17 @@ button:focus:not(:focus-visible) { outline: none; }
   transition: background .12s;
 }
 .pattern-none:hover { background: var(--line); }
+
+/* ── Photo placeholder ── */
+.photo-placeholder {
+  width: 100%; height: 100%;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 10px; opacity: .25;
+  color: inherit;
+}
+.photo-placeholder svg { width: 52px; height: 52px; }
+.photo-placeholder span {
+  font-size: .65rem; font-weight: 700; letter-spacing: .1em;
+  text-transform: uppercase; font-family: 'DM Sans', sans-serif;
+}

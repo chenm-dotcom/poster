@@ -17,9 +17,10 @@ const PALETTES = {
     { h:'#E0F5E8', n:'MintMinded 50'   }, { h:'#FDFCF7', n:'White'           },
   ],
   offer: [
+    { h:'#CBF6D2', n:'MintMinded 100'  }, { h:'#6BCA79', n:'MintMinded 300'  },
+    { h:'#D2B1F0', n:'PinkMinded 200'  }, { h:'#ECD8A1', n:'CreamMinded 200' },
+    { h:'#F0DEFD', n:'PinkMinded 100'  }, { h:'#d45c38', n:'Terracotta'      },
     { h:'#17382A', n:'MintMinded 800'  }, { h:'#032416', n:'MintMinded 900'  },
-    { h:'#1c1228', n:'Plum'            }, { h:'#0c1e30', n:'Navy'            },
-    { h:'#281210', n:'Burgundy'        }, { h:'#241c0c', n:'Espresso'        },
   ],
   announcement: [
     { h:'#6BCA79', n:'MintMinded 300'  }, { h:'#17382A', n:'MintMinded 800'  },
@@ -43,9 +44,10 @@ const ADV_PALETTES = {
     { h:'#E0F5E8', n:'MintMinded 50'   }, { h:'#CBF6D2', n:'MintMinded 100'  },
   ],
   offer: [
-    { h:'#032416', n:'MintMinded 900'  }, { h:'#17382A', n:'MintMinded 800'  },
-    { h:'#0d1b2a', n:'Midnight'        }, { h:'#1a0a2e', n:'Deep Plum'       },
-    { h:'#2e0a0a', n:'Deep Red'        }, { h:'#1a1000', n:'Espresso'        },
+    { h:'#E0F5E8', n:'MintMinded 50'   }, { h:'#CBF6D2', n:'MintMinded 100'  },
+    { h:'#F0DEFD', n:'PinkMinded 100'  }, { h:'#D2B1F0', n:'PinkMinded 200'  },
+    { h:'#FBEEC8', n:'CreamMinded 150' }, { h:'#ECD8A1', n:'CreamMinded 200' },
+    { h:'#17382A', n:'MintMinded 800'  }, { h:'#032416', n:'MintMinded 900'  },
   ],
   announcement: [
     { h:'#6BCA79', n:'MintMinded 300'  }, { h:'#17382A', n:'MintMinded 800'  },
@@ -89,7 +91,7 @@ const TEMPLATES = {
     ],
   },
   offer: {
-    title: 'Member Special',
+    title: 'Member Benefit',
     hint:  'Lead with the number. Make the deal look as good as it is.',
     fields: [
       { id:'headline', label:'Headline (use *word* for accent colour)', type:'text',     ph:'Be your best. *Naturally*',                xl:true },
@@ -238,7 +240,8 @@ function launchCard(card, key) {
    OPEN
    ════════════════════════════════════════════════════════════════════════════ */
 function open(key) {
-  tpl = key; imgs = {}; adventure = false; design = 'editorial'; posterPattern = null;
+  tpl = key; imgs = {}; adventure = false; posterPattern = null;
+  design = (DESIGNS[key] && DESIGNS[key][0]) ? DESIGNS[key][0].key : 'editorial';
   qsa('.mt-opt').forEach(b => b.classList.toggle('on', b.dataset.mode === 'regular'));
   $advFontSec.classList.add('hidden');
   const def = TEMPLATES[key];
@@ -294,20 +297,20 @@ function makeDesignThumb(tpl, key) {
     case 'spotlight-editorial':
     case 'offer-editorial':
     case 'announcement-editorial':
-      return wrap(tpl==='offer'?'#17382A':c, `
+      return wrap(c, `
         <div style="padding:9px 8px;display:flex;flex-direction:column;gap:5px">
-          ${row(3,40,tpl==='offer'?lt(.3):dk(.22))}
-          ${row(9,88,tpl==='offer'?lt(.8):dk(.72))}
-          ${row(9,66,tpl==='offer'?lt(.8):dk(.72))}
+          ${row(3,40,dk(.22))}
+          ${row(9,88,dk(.72))}
+          ${row(9,66,dk(.72))}
         </div>
-        <div style="flex:1;background:${tpl==='offer'?dk(.25):dk(.1)};margin-top:auto"></div>`);
+        <div style="flex:1;background:${dk(.1)};margin-top:auto"></div>`);
 
     case 'event-bold':
     case 'spotlight-cover':
-      return `<div style="height:100%;background:#1a1a1a;display:flex;flex-direction:column;justify-content:flex-end;padding:8px;position:relative">
-        <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.9),transparent 60%)"></div>
+      return `<div style="height:100%;background:${c};display:flex;flex-direction:column;justify-content:flex-end;padding:8px;position:relative">
+        <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(3,36,22,.55),transparent 60%)"></div>
         <div style="position:relative;z-index:1;display:flex;flex-direction:column;gap:4px">
-          ${row(3,38,lt(.45))} ${row(11,92,lt(.9))} ${row(11,70,lt(.9))}
+          ${row(3,38,lt(.55))} ${row(11,92,lt(.9))} ${row(11,70,lt(.9))}
         </div>
       </div>`;
 
@@ -343,10 +346,10 @@ function makeDesignThumb(tpl, key) {
     case 'announcement-split':
       return `<div style="height:100%;display:flex;flex-direction:column">
         <div style="height:56%;background:${c};display:flex;flex-direction:column;justify-content:flex-end;padding:5px 7px;gap:3px">
-          ${row(9,88,'rgba(255,255,255,.82)')} ${row(9,68,'rgba(255,255,255,.82)')}
+          ${row(9,88,dk(.75))} ${row(9,68,dk(.75))}
         </div>
-        <div style="flex:1;background:#032416;padding:5px 7px;display:flex;flex-direction:column;justify-content:flex-end;gap:3px">
-          ${row(3,58,'rgba(255,255,255,.35)')} ${row(3,42,'rgba(255,255,255,.35)')}
+        <div style="flex:1;background:${dk(.18)};padding:5px 7px;display:flex;flex-direction:column;justify-content:flex-end;gap:3px">
+          ${row(3,58,dk(.45))} ${row(3,42,dk(.3))}
         </div>
       </div>`;
 
@@ -371,11 +374,13 @@ function buildForm(fields) {
     } else if (f.type === 'textarea') {
       const ta = mk('textarea', 'tall');
       ta.id = 'f-' + f.id; ta.placeholder = f.ph || '';
+      if (f.ph) ta.value = f.ph;
       ta.addEventListener('input', render);
       wrap.appendChild(ta);
     } else {
       const inp = mk('input');
       inp.type = 'text'; inp.id = 'f-' + f.id; inp.placeholder = f.ph || '';
+      if (f.ph) inp.value = f.ph;
       if (f.xl) inp.classList.add('xl');
       inp.addEventListener('input', render);
       wrap.appendChild(inp);
@@ -664,6 +669,12 @@ function applyPatternBg() {
 function render() {
   $poster.className = `poster t-${tpl} d-${design}`;
   $poster.style.setProperty('--pb', bgColor);
+  if (bgColor && bgColor.length >= 4) {
+    const r = parseInt(bgColor.slice(1,3),16), g = parseInt(bgColor.slice(3,5),16), b = parseInt(bgColor.slice(5,7),16);
+    const luma = (0.299*r + 0.587*g + 0.114*b) / 255;
+    $poster.style.setProperty('--poster-ink', luma > 0.45 ? '#032416' : '#FDFCF7');
+    $poster.style.setProperty('--poster-ink-faint', luma > 0.45 ? 'rgba(3,36,22,.55)' : 'rgba(253,252,247,.55)');
+  }
   if ($stage && bgColor && bgColor.length === 7) {
     const r = parseInt(bgColor.slice(1,3),16), g = parseInt(bgColor.slice(3,5),16), b = parseInt(bgColor.slice(5,7),16);
     $stage.style.background = `rgb(${Math.round(r*.18+230*.82)},${Math.round(g*.18+234*.82)},${Math.round(b*.18+230*.82)})`;
@@ -690,6 +701,18 @@ function bioToHtml(t) {
 }
 function hs() { return `font-family:var(--hf);font-style:var(--hs);font-weight:var(--hw);`; }
 
+function photoPlaceholder(label = 'Add a photo') {
+  return `<div class="photo-placeholder">
+    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="4" y="10" width="40" height="30" rx="4" stroke="currentColor" stroke-width="2"/>
+      <circle cx="24" cy="24" r="7" stroke="currentColor" stroke-width="2"/>
+      <circle cx="37" cy="14" r="2.5" fill="currentColor"/>
+      <path d="M4 32l9-9 6 6 6-8 10 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <span>${label}</span>
+  </div>`;
+}
+
 /* ── EVENT ── */
 function renderEvent() {
   if (design === 'bold')        return renderEventBold();
@@ -715,7 +738,7 @@ function renderEvent() {
       </div>
       <div class="ev-sw-rule"></div>
       <div class="ev-sw-photo">
-        ${photo ? `<img src="${photo}" alt="" crossorigin="anonymous">` : '<div class="ev-sw-empty">Add photo or GIF ↑</div>'}
+        ${photo ? `<img src="${photo}" alt="" crossorigin="anonymous">` : photoPlaceholder('Add a photo or GIF')}
       </div>
     </div>`;
 }
@@ -730,7 +753,7 @@ function renderEventBold() {
   const photo    = imgs['photo'] || '';
   const titleStyle = adventure ? hs() : 'font-family:"ABC Diatype","DM Sans",sans-serif;font-weight:500;font-style:normal;';
   $poster.innerHTML = `
-    <div class="evb-bg">${photo ? `<img src="${photo}" alt="" crossorigin="anonymous">` : '<div class="evb-bg-empty"></div>'}</div>
+    <div class="evb-bg">${photo ? `<img src="${photo}" alt="" crossorigin="anonymous">` : photoPlaceholder()}</div>
     <div class="evb-overlay"></div>
     <div class="evb-body">
       <div class="evb-top">
@@ -766,9 +789,7 @@ function renderEventIllustrated() {
       <div class="evi-title" style="${hs()}">${headline||'<span style="opacity:.18">Event name</span>'}</div>
 
       <div class="evi-illus">
-        ${photo
-          ? `<img src="${photo}" alt="" crossorigin="anonymous" class="evi-photo">`
-          : `<div class="evi-placeholder"><span>🎉</span><span style="font-size:.65rem;opacity:.45;margin-top:8px;font-family:'DM Sans',sans-serif;letter-spacing:.06em;text-transform:uppercase;font-weight:700">Add a photo or GIF above ↑</span></div>`}
+        ${photo ? `<img src="${photo}" alt="" crossorigin="anonymous" class="evi-photo">` : photoPlaceholder('Add a photo or GIF')}
       </div>
 
       <footer class="evi-foot">
@@ -799,7 +820,7 @@ function renderSpotlight() {
   $poster.innerHTML = `
     <div class="sp-name" style="${hs()}">${name||'<span style="opacity:.22">Member name</span>'}</div>
     <div class="sp-photo">
-      ${photo?`<img src="${photo}" alt="" crossorigin="anonymous">`:'<div class="sp-photo-empty">Add portrait ↑</div>'}
+      ${photo?`<img src="${photo}" alt="" crossorigin="anonymous">`:photoPlaceholder('Add a portrait')}
     </div>
     <div class="sp-rule"></div>
     ${bio  ? `<div class="sp-bio">${bioToHtml(bio)}</div>` : ''}
@@ -810,7 +831,7 @@ function renderSpotlightCover() {
   const name = v('name'),
         bio = v('bio'), photo = imgs['photo'] || '';
   $poster.innerHTML = `
-    <div class="spc-photo">${photo?`<img src="${photo}" alt="" crossorigin="anonymous">`:''}</div>
+    <div class="spc-photo">${photo?`<img src="${photo}" alt="" crossorigin="anonymous">`:photoPlaceholder('Add a portrait')}</div>
     <div class="spc-overlay"></div>
     <div class="spc-body">
       <div class="spc-name" style="${hs()}">${name||'<span style="opacity:.3">Member name</span>'}</div>
@@ -856,7 +877,7 @@ function renderOfferBenefit() {
       <div class="ofb2-photo">
         ${photo
           ? `<img src="${photo}" alt="" crossorigin="anonymous">`
-          : '<div class="ofb2-photo-empty">Add photo ↑</div>'}
+          : photoPlaceholder('Add a photo')}
       </div>
 
       <div class="ofb2-mid">
