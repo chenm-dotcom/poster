@@ -3,122 +3,142 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Poster Builder — Mindspace</title>
+  <title>Poster Maker — Mindspace</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<!-- ═══ WELCOME (step 0 — full-screen Google-like) ═══════════════════════ -->
-<div class="screen-welcome" id="screenWelcome">
-  <div class="sw-brand">
-    <span class="sw-wordmark">Mindspace</span>
-    <span class="sw-sub">Poster Builder</span>
-  </div>
-  <div class="sw-center">
-    <h1 class="sw-q">What size is<br>your design?</h1>
-    <div class="ratio-cards" id="ratioCards">
-      <button class="ratio-card" data-r="9:16">
-        <div class="rc-shape rc-916"></div>
-        <div class="rc-label">9 × 16</div>
-        <div class="rc-sub">Story / Reel</div>
-      </button>
-      <button class="ratio-card" data-r="16:9">
-        <div class="rc-shape rc-169"></div>
-        <div class="rc-label">16 × 9</div>
-        <div class="rc-sub">Presentation / Screen</div>
-      </button>
-      <button class="ratio-card" data-r="1:1">
-        <div class="rc-shape rc-11"></div>
-        <div class="rc-label">1 × 1</div>
-        <div class="rc-sub">Instagram / Square</div>
+<!-- ═══ WELCOME ═══════════════════════════════════════════════════════════ -->
+<div class="screen" id="screenWelcome">
+  <div class="wl-logo">Mindspace</div>
+  <div class="wl-center">
+    <p class="wl-spark" id="wlSpark"></p>
+    <h1 class="wl-headline">What is the event<br>all about?</h1>
+    <div class="wl-input-row">
+      <input class="wl-input" id="wlInput"
+        placeholder="e.g. Rooftop Yoga at Sunrise"
+        autocomplete="off" maxlength="80">
+      <button class="wl-go" id="wlGo" disabled>
+        <svg viewBox="0 0 20 20" fill="none">
+          <path d="M4 10h12M11 5l5 5-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
       </button>
     </div>
-    <label class="all-ratios-row">
-      <input type="checkbox" id="allRatiosCheck">
-      <span class="ar-mark"></span>
-      <span class="ar-label">Design in all three sizes</span>
-    </label>
   </div>
 </div>
 
-<!-- ═══ BUILDER (steps 1-5 — split view) ════════════════════════════════ -->
-<div class="screen-build hidden" id="screenBuild">
-  <aside class="wizard-panel" id="wizardPanel">
-    <div class="wp-top">
-      <button class="btn-back-step" id="btnBack">← Back</button>
-      <span class="step-counter" id="stepCounter">1 / 5</span>
+<!-- ═══ BUILD ═════════════════════════════════════════════════════════════ -->
+<div class="screen hidden" id="screenBuild">
+
+  <!-- Left wizard -->
+  <aside class="wizard" id="wizard">
+    <div class="wz-top">
+      <button class="wz-back" id="wzBack">
+        <svg viewBox="0 0 20 20" fill="none">
+          <path d="M16 10H4M9 5L4 10l5 5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <div class="wz-dots" id="wzDots">
+        <span class="wz-dot active"></span>
+        <span class="wz-dot"></span>
+        <span class="wz-dot"></span>
+        <span class="wz-dot"></span>
+      </div>
     </div>
-    <div class="wizard-body" id="wizardBody"></div>
-    <div class="wp-foot">
-      <button class="btn-skip hidden" id="btnSkip">Skip</button>
-      <button class="btn-next" id="btnNext" disabled>Next →</button>
+    <div class="wz-body" id="wzBody"></div>
+    <div class="wz-foot">
+      <button class="wz-skip" id="wzSkip">Skip</button>
+      <button class="wz-next" id="wzNext">Continue</button>
     </div>
   </aside>
 
-  <div class="stage-panel" id="stagePanel">
+  <!-- Right stage -->
+  <div class="stage" id="stage">
     <div class="stage-wrap" id="stageWrap">
       <div class="poster" id="poster">
         <div class="p-bg" id="pBg"></div>
-        <div class="p-ov" id="pOv"></div>
-        <div class="p-logo">Mindspace</div>
-        <div class="p-lower">
-          <div class="p-headline" id="pHeadline"></div>
-          <div class="p-body"     id="pBody"></div>
-          <div class="p-meta"     id="pMeta"></div>
+        <div class="p-ov"></div>
+        <div class="p-content" id="pContent">
+          <div class="p-logo">Mindspace</div>
+          <div class="p-title" id="pTitle"></div>
+          <div class="p-desc" id="pDesc"></div>
+          <div class="p-meta" id="pMeta"></div>
         </div>
+        <div class="p-tag" id="pTag">Mindspace</div>
       </div>
     </div>
-    <div class="stage-label" id="stageLabel">9 × 16 — Story</div>
+    <!-- Template strip -->
+    <div class="tpl-strip" id="tplStrip">
+      <button class="tpl-btn active" data-t="0" title="Dark Editorial"></button>
+      <button class="tpl-btn" data-t="1" title="Light Minimal"></button>
+      <button class="tpl-btn" data-t="2" title="Bold Blue"></button>
+      <button class="tpl-btn" data-t="3" title="Warm Gradient"></button>
+      <button class="tpl-btn" data-t="4" title="Mono Type"></button>
+    </div>
   </div>
 </div>
 
-<!-- ═══ DONE SCREEN ═══════════════════════════════════════════════════════ -->
-<div class="screen-done hidden" id="screenDone">
-  <div class="done-left">
-    <div class="done-poster-wrap" id="donePosterWrap"></div>
-    <div class="done-ratio-tabs hidden" id="doneRatioTabs">
-      <button class="drt active" data-r="9:16">9:16</button>
-      <button class="drt" data-r="16:9">16:9</button>
-      <button class="drt" data-r="1:1">1:1</button>
-    </div>
+<!-- ═══ DONE ══════════════════════════════════════════════════════════════ -->
+<div class="screen hidden" id="screenDone">
+  <div class="done-preview" id="donePreview">
+    <div class="done-wrap" id="doneWrap"></div>
   </div>
-  <div class="done-right">
-    <div class="dr-brand">Mindspace</div>
-    <h2 class="dr-title">Your poster<br>is ready.</h2>
-    <p class="dr-sub">Download it or go back to edit any detail.</p>
-    <button class="btn-dl" id="btnDownload">
-      <svg viewBox="0 0 20 20" fill="none"><path d="M10 3v10M6 9l4 4 4-4M3 15h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  <div class="done-side">
+    <div class="ds-logo">Mindspace</div>
+    <h2 class="ds-title">Your poster<br>is ready.</h2>
+    <p class="ds-sub">Pick a format to download.</p>
+    <div class="ds-formats">
+      <button class="ds-fmt active" data-r="9:16" id="fmt916">
+        <div class="fmt-shape fmt-916"></div>
+        <span>9 : 16</span>
+        <small>TV Screen</small>
+      </button>
+      <button class="ds-fmt" data-r="16:9" id="fmt169">
+        <div class="fmt-shape fmt-169"></div>
+        <span>16 : 9</span>
+        <small>Landscape</small>
+      </button>
+      <button class="ds-fmt" data-r="1:1" id="fmt11">
+        <div class="fmt-shape fmt-11"></div>
+        <span>1 : 1</span>
+        <small>Square</small>
+      </button>
+    </div>
+    <button class="ds-dl" id="dsDl">
+      <svg viewBox="0 0 20 20" fill="none">
+        <path d="M10 3v10M6 9l4 4 4-4M3 16h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
       Download PNG
     </button>
-    <button class="btn-edit-done" id="btnEditDone">Edit design</button>
-    <button class="btn-new" id="btnNew">Start over</button>
+    <button class="ds-edit" id="dsEdit">Edit poster</button>
+    <button class="ds-new" id="dsNew">Start over</button>
   </div>
 </div>
 
-<!-- ═══ IMAGE DRAWER ════════════════════════════════════════════════════ -->
-<div class="img-drawer hidden" id="imgDrawer">
-  <div class="idr-backdrop" id="idrBackdrop"></div>
-  <div class="idr-panel">
-    <div class="idr-top">
-      <div class="idr-tabs">
-        <button class="idr-tab active" data-src="giphy">GIF (Giphy)</button>
-        <button class="idr-tab" data-src="unsplash">Photo (Unsplash)</button>
-        <button class="idr-tab" data-src="upload">Upload</button>
+<!-- ═══ IMAGE DRAWER ═══════════════════════════════════════════════════════ -->
+<div class="drawer hidden" id="drawer">
+  <div class="dr-backdrop" id="drBackdrop"></div>
+  <div class="dr-panel">
+    <div class="dr-top">
+      <div class="dr-tabs">
+        <button class="dr-tab active" data-src="unsplash">Photo</button>
+        <button class="dr-tab" data-src="giphy">GIF</button>
+        <button class="dr-tab" data-src="upload">Upload</button>
       </div>
-      <button class="idr-close" id="idrClose">✕</button>
+      <button class="dr-close" id="drClose">✕</button>
     </div>
-    <div class="idr-search-row" id="idrSearchRow">
-      <input class="idr-search-input" id="idrSearchInput" placeholder="Search…" autocomplete="off">
-      <button class="idr-search-btn" id="idrSearchBtn">Search</button>
+    <div class="dr-search-row" id="drSearchRow">
+      <input class="dr-search" id="drSearch" placeholder="Search images…" autocomplete="off">
+      <button class="dr-go" id="drGo">Search</button>
     </div>
-    <div class="idr-upload-row hidden" id="idrUploadRow">
-      <label class="upload-label" for="fileInput">
+    <div class="dr-upload hidden" id="drUpload">
+      <label class="dr-upload-btn" for="fileInput">
         <svg viewBox="0 0 24 24" fill="none"><path d="M12 3v12M7 8l5-5 5 5M3 17h18v2a2 2 0 01-2 2H5a2 2 0 01-2-2v-2z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
         Choose a file
       </label>
       <input type="file" id="fileInput" accept="image/*">
     </div>
-    <div class="idr-results" id="idrResults"></div>
+    <div class="dr-results" id="drResults"></div>
   </div>
 </div>
 
