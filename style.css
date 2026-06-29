@@ -198,8 +198,12 @@ input, textarea, select { font: inherit; color: inherit; background: none; borde
   align-items: center; justify-content: center;
   padding: 40px; gap: 16px; overflow: hidden;
 }
+/* stage-wrap MUST NOT use flexbox centering — the poster is placed at top-left
+   and scaled from transform-origin: top left. Flexbox centering would move the
+   layout box off-center before scaling, making only a sliver visible. */
 .stage-wrap {
-  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
 }
 .stage-label { font-size: 11px; color: var(--idim); letter-spacing: .07em; text-transform: uppercase; }
 
@@ -355,8 +359,10 @@ input, textarea, select { font: inherit; color: inherit; background: none; borde
   background: #0d0803;  /* darker than poster bg so poster always stands out */
 }
 .done-poster-wrap {
-  display: flex; align-items: center; justify-content: center;
-  flex: 1; min-height: 0; width: 100%;
+  /* Same rule as stage-wrap: NO flexbox centering — poster is at top-left,
+     scaled from transform-origin: top left. The wrap is centered by done-left. */
+  flex-shrink: 0;
+  overflow: hidden;
 }
 
 /* Make the poster visually pop against the dark background */

@@ -372,19 +372,35 @@ async function doSearch() {
         `https://api.giphy.com/v1/gifs/search?api_key=${GIPHY_KEY}&q=${encodeURIComponent(q)}&limit=18&rating=g`,
         { mode: 'cors' }
       );
-      if (!res.ok) throw new Error(`Giphy ${res.status}`);
+      if (!res.ok) throw new Error(`Giphy error ${res.status}`);
       const data = await res.json();
       items = (data.data || []).map(g => ({
         thumb: g.images.fixed_width_small.url,
         full:  g.images.original.url,
         type:  'gif',
       }));
-      if (!items.length) throw new Error('No GIFs found — try a different search term.');
+      if (!items.length) throw new Error('No GIFs found — try a different term.');
     } else {
-      /* Unsplash random — no API key, no CORS issues */
-      items = Array.from({ length: 12 }, (_, i) => ({
-        thumb: `https://picsum.photos/seed/${encodeURIComponent(q)}${i}/200/200`,
-        full:  `https://picsum.photos/seed/${encodeURIComponent(q)}${i}/1920/1920`,
+      /* Curated Unsplash photos — reliable CDN, no API key, CORS-friendly */
+      const PHOTOS = [
+        '1540575467063-178a50c2df87','1492684223066-81342ee5ff30','1531058020387-3be344556be6',
+        '1511578314322-379afb476865','1470229722913-7c0e2dbbafd3','1514525253161-7a46d19cd819',
+        '1519741497674-611571de1d87','1524368535928-5b5e00ddc76b','1499951360447-b19be8fe80f5',
+        '1516450360452-9312f5e86fc7','1486325212027-8081e485255e','1497366216548-37526070297c',
+        '1497366412874-3415097a27e7','1575429198097-0414ec08e8cd','1582063289852-62450b9ab12e',
+        '1496337589254-7e19d01cec44','1598300042247-d088f8ab3a91','1506905925346-21bda4d32df4',
+        '1477959858617-67f85cf4f1df','1478720568477-152d9b92543a',
+      ];
+      /* Shuffle deterministically based on query so different searches feel different */
+      const seed = q.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+      const shuffled = [...PHOTOS].sort((a, b) => {
+        const ha = (seed * 1103515245 + a.charCodeAt(0)) & 0x7fffffff;
+        const hb = (seed * 1103515245 + b.charCodeAt(0)) & 0x7fffffff;
+        return ha - hb;
+      });
+      items = shuffled.slice(0, 12).map(id => ({
+        thumb: `https://images.unsplash.com/photo-${id}?w=200&h=200&fit=crop&auto=format&q=70`,
+        full:  `https://images.unsplash.com/photo-${id}?w=1920&h=1920&fit=crop&auto=format&q=85`,
         type:  'photo',
       }));
     }
