@@ -1,7 +1,5 @@
 'use strict';
 
-const GIPHY_KEY = 'dc6zaTOxFJmzC';
-
 const SPARKS = [
   "This day seems like a perfect day to make a poster.",
   "Every great event deserves a great poster.",
@@ -440,10 +438,11 @@ function setDrawerTab(src) {
   S.imgSrc = src;
   document.querySelectorAll('.dr-tab').forEach(t =>
     t.classList.toggle('active', t.dataset.src === src));
-  $('drSearchRow').classList.toggle('hidden', src === 'upload');
-  $('drUpload').classList.toggle('hidden', src !== 'upload');
+  const isUpload = src === 'upload';
+  $('drSearchRow').classList.toggle('hidden', isUpload);
+  $('drUpload').classList.toggle('hidden', !isUpload);
   $('drResults').innerHTML = '';
-  if (src !== 'upload') $('drSearch').focus();
+  if (!isUpload) $('drSearch').focus();
 }
 
 async function doSearch() {
@@ -456,20 +455,7 @@ async function doSearch() {
   try {
     let items = [];
 
-    if (S.imgSrc === 'giphy') {
-      const res  = await fetch(
-        `https://api.giphy.com/v1/gifs/search?api_key=${GIPHY_KEY}&q=${encodeURIComponent(q)}&limit=18&rating=g`,
-        { mode: 'cors' }
-      );
-      if (!res.ok) throw new Error(`Giphy error ${res.status}`);
-      const data = await res.json();
-      items = (data.data || []).map(g => ({
-        thumb: g.images.fixed_width_small.url,
-        full:  g.images.original.url,
-        type:  'gif',
-      }));
-      if (!items.length) throw new Error('No GIFs found — try a different keyword.');
-    } else {
+    {
       const PHOTOS = [
         '1540575467063-178a50c2df87','1492684223066-81342ee5ff30','1531058020387-3be344556be6',
         '1511578314322-379afb476865','1470229722913-7c0e2dbbafd3','1514525253161-7a46d19cd819',
