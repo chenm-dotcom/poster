@@ -15,6 +15,13 @@ const SPARKS = [
   "Time to design something your community will love.",
 ];
 
+const MOBILE_MSGS = [
+  "You're on a phone. This tool needs a real screen.",
+  "Put the phone down. Open a laptop. Make a poster.",
+  "Mobile? Seriously? Grab your laptop and come back.",
+  "This needs a bigger canvas. Find a desktop, friend.",
+];
+
 const RATIO_DIM = {
   '9:16':  [1080, 1920],
   '16:9':  [1920, 1080],
@@ -43,8 +50,10 @@ const poster        = $('poster');
 const wzBody        = $('wzBody');
 const wzNext        = $('wzNext');
 const wzSkip        = $('wzSkip');
-const wzDots        = $('wzDots');
 const drawer        = $('drawer');
+
+/* ── Mobile block ───────────────────────────────────────────────────────── */
+$('mbMsg').textContent = MOBILE_MSGS[Math.floor(Math.random() * MOBILE_MSGS.length)];
 
 /* ── Spark sentence ─────────────────────────────────────────────────────── */
 $('wlSpark').textContent = SPARKS[Math.floor(Date.now() / 86400000) % SPARKS.length];
@@ -162,8 +171,11 @@ function startBuild() {
 
 function loadStep(idx, dir) {
   S.step = idx;
-  updateDots(idx);
-  wzSkip.style.visibility = STEPS[idx].skippable ? 'visible' : 'hidden';
+  /* progress bar */
+  $('wzFill').style.width = ((idx + 1) / STEPS.length * 100) + '%';
+  $('wzStepLabel').textContent = `Step ${idx + 1} of ${STEPS.length}`;
+  /* skip visibility */
+  wzSkip.classList.toggle('visible', !!STEPS[idx].skippable);
   enableNext(STEPS[idx].skippable);
 
   wzBody.classList.remove('wz-enter-fwd','wz-enter-bwd','wz-exit-fwd','wz-exit-bwd');
@@ -175,14 +187,8 @@ function loadStep(idx, dir) {
     void wzBody.offsetWidth;
     wzBody.classList.add(dir > 0 ? 'wz-enter-fwd' : 'wz-enter-bwd');
     STEPS[idx].mount();
-    wzNext.textContent = idx < STEPS.length - 1 ? 'Continue' : 'See poster →';
+    wzNext.textContent = idx < STEPS.length - 1 ? 'Continue' : 'See my poster →';
   }, 150);
-}
-
-function updateDots(active) {
-  wzDots.querySelectorAll('.wz-dot').forEach((d, i) => {
-    d.classList.toggle('active', i === active);
-  });
 }
 
 function enableNext(on) { wzNext.disabled = !on; }

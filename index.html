@@ -8,23 +8,43 @@
 </head>
 <body>
 
+<!-- ═══ MOBILE BLOCK ══════════════════════════════════════════════════════ -->
+<div class="mobile-block" id="mobileBlock">
+  <div class="mb-inner">
+    <div class="mb-gif" id="mbGif">
+      <img src="https://media.giphy.com/media/l3q2Z6S6n38zjPswo/giphy.gif" alt="" id="mbGifImg">
+    </div>
+    <p class="mb-title">Seriously?</p>
+    <p class="mb-msg" id="mbMsg"></p>
+    <p class="mb-hint">Open on a desktop or laptop to use Mindspace Poster Maker.</p>
+  </div>
+</div>
+
 <!-- ═══ WELCOME ═══════════════════════════════════════════════════════════ -->
 <div class="screen" id="screenWelcome">
-  <div class="wl-logo">Mindspace</div>
+  <div class="wl-logo">
+    <span class="wl-wordmark">Mindspace</span>
+    <span class="wl-dot">·</span>
+    <span class="wl-sub">Poster Maker</span>
+  </div>
   <div class="wl-center">
     <p class="wl-spark" id="wlSpark"></p>
     <h1 class="wl-headline">What is the event<br>all about?</h1>
-    <div class="wl-input-row">
-      <input class="wl-input" id="wlInput"
-        placeholder="e.g. Rooftop Yoga at Sunrise"
-        autocomplete="off" maxlength="80">
-      <button class="wl-go" id="wlGo" disabled>
-        <svg viewBox="0 0 20 20" fill="none">
-          <path d="M4 10h12M11 5l5 5-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </button>
+    <div class="wl-input-wrap">
+      <div class="wl-input-row">
+        <input class="wl-input" id="wlInput"
+          placeholder="e.g. Rooftop Yoga at Sunrise"
+          autocomplete="off" maxlength="80">
+        <button class="wl-go" id="wlGo" disabled aria-label="Start">
+          <svg viewBox="0 0 20 20" fill="none">
+            <path d="M4 10h12M11 5l5 5-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+      <p class="wl-enter-hint">Press Enter or click →</p>
     </div>
   </div>
+  <div class="wl-footer">Made with love for Mindspace communities.</div>
 </div>
 
 <!-- ═══ BUILD ═════════════════════════════════════════════════════════════ -->
@@ -33,77 +53,117 @@
   <!-- Left wizard -->
   <aside class="wizard" id="wizard">
     <div class="wz-top">
-      <button class="wz-back" id="wzBack">
+      <button class="wz-back" id="wzBack" title="Back">
         <svg viewBox="0 0 20 20" fill="none">
           <path d="M16 10H4M9 5L4 10l5 5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </button>
-      <div class="wz-dots" id="wzDots">
-        <span class="wz-dot active"></span>
-        <span class="wz-dot"></span>
-        <span class="wz-dot"></span>
-        <span class="wz-dot"></span>
+      <div class="wz-progress">
+        <div class="wz-track"><div class="wz-fill" id="wzFill"></div></div>
+        <span class="wz-step-label" id="wzStepLabel">Step 1 of 4</span>
       </div>
     </div>
     <div class="wz-body" id="wzBody"></div>
     <div class="wz-foot">
       <button class="wz-skip" id="wzSkip">Skip</button>
-      <button class="wz-next" id="wzNext">Continue</button>
+      <button class="wz-next" id="wzNext" disabled>Continue</button>
     </div>
   </aside>
 
   <!-- Right stage -->
   <div class="stage" id="stage">
-    <div class="stage-wrap" id="stageWrap">
-      <div class="poster" id="poster">
-        <div class="p-bg" id="pBg"></div>
-        <div class="p-ov"></div>
-        <div class="p-content" id="pContent">
-          <div class="p-logo">Mindspace</div>
-          <div class="p-title" id="pTitle"></div>
-          <div class="p-desc" id="pDesc"></div>
-          <div class="p-meta" id="pMeta"></div>
+    <!-- TV mockup wrapper -->
+    <div class="tv-scene" id="tvScene">
+      <div class="tv-frame">
+        <div class="tv-bezel">
+          <div class="tv-screen" id="tvScreen">
+            <div class="stage-wrap" id="stageWrap">
+              <div class="poster" id="poster">
+                <div class="p-bg" id="pBg"></div>
+                <div class="p-ov"></div>
+                <div class="p-content" id="pContent">
+                  <div class="p-logo">Mindspace</div>
+                  <div class="p-title" id="pTitle"></div>
+                  <div class="p-desc" id="pDesc"></div>
+                  <div class="p-meta" id="pMeta"></div>
+                </div>
+                <div class="p-tag" id="pTag">Mindspace</div>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="p-tag" id="pTag">Mindspace</div>
+        <div class="tv-stand">
+          <div class="tv-neck"></div>
+          <div class="tv-base"></div>
+        </div>
       </div>
     </div>
+
     <!-- Template strip -->
     <div class="tpl-strip" id="tplStrip">
-      <button class="tpl-btn active" data-t="0" title="Dark Editorial"></button>
-      <button class="tpl-btn" data-t="1" title="Light Minimal"></button>
-      <button class="tpl-btn" data-t="2" title="Bold Blue"></button>
-      <button class="tpl-btn" data-t="3" title="Warm Gradient"></button>
-      <button class="tpl-btn" data-t="4" title="Mono Type"></button>
+      <span class="tpl-label">Style</span>
+      <button class="tpl-btn active" data-t="0" title="Dark Editorial">
+        <span class="tpl-swatch t0-swatch"></span>Dark
+      </button>
+      <button class="tpl-btn" data-t="1" title="Light Minimal">
+        <span class="tpl-swatch t1-swatch"></span>Light
+      </button>
+      <button class="tpl-btn" data-t="2" title="Bold Blue">
+        <span class="tpl-swatch t2-swatch"></span>Blue
+      </button>
+      <button class="tpl-btn" data-t="3" title="Warm Gradient">
+        <span class="tpl-swatch t3-swatch"></span>Warm
+      </button>
+      <button class="tpl-btn" data-t="4" title="Mono">
+        <span class="tpl-swatch t4-swatch"></span>Mono
+      </button>
     </div>
   </div>
 </div>
 
 <!-- ═══ DONE ══════════════════════════════════════════════════════════════ -->
 <div class="screen hidden" id="screenDone">
-  <div class="done-preview" id="donePreview">
-    <div class="done-wrap" id="doneWrap"></div>
+
+  <!-- TV mockup on done screen -->
+  <div class="done-left" id="doneLeft">
+    <div class="tv-scene done-tv-scene">
+      <div class="tv-frame">
+        <div class="tv-bezel">
+          <div class="tv-screen">
+            <div class="done-wrap" id="doneWrap"></div>
+          </div>
+        </div>
+        <div class="tv-stand">
+          <div class="tv-neck"></div>
+          <div class="tv-base"></div>
+        </div>
+      </div>
+    </div>
   </div>
+
   <div class="done-side">
     <div class="ds-logo">Mindspace</div>
     <h2 class="ds-title">Your poster<br>is ready.</h2>
-    <p class="ds-sub">Pick a format to download.</p>
+    <p class="ds-sub">Pick a format, then download.</p>
+
     <div class="ds-formats">
-      <button class="ds-fmt active" data-r="9:16" id="fmt916">
+      <button class="ds-fmt active" data-r="9:16">
         <div class="fmt-shape fmt-916"></div>
         <span>9 : 16</span>
         <small>TV Screen</small>
       </button>
-      <button class="ds-fmt" data-r="16:9" id="fmt169">
+      <button class="ds-fmt" data-r="16:9">
         <div class="fmt-shape fmt-169"></div>
         <span>16 : 9</span>
         <small>Landscape</small>
       </button>
-      <button class="ds-fmt" data-r="1:1" id="fmt11">
+      <button class="ds-fmt" data-r="1:1">
         <div class="fmt-shape fmt-11"></div>
         <span>1 : 1</span>
         <small>Square</small>
       </button>
     </div>
+
     <button class="ds-dl" id="dsDl">
       <svg viewBox="0 0 20 20" fill="none">
         <path d="M10 3v10M6 9l4 4 4-4M3 16h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
@@ -111,7 +171,7 @@
       Download PNG
     </button>
     <button class="ds-edit" id="dsEdit">Edit poster</button>
-    <button class="ds-new" id="dsNew">Start over</button>
+    <button class="ds-new"  id="dsNew">Start over</button>
   </div>
 </div>
 
