@@ -155,6 +155,8 @@ function startBuild() {
     renderPoster();
     S.step = 0;
     loadStep(0, 1);
+    /* wait one frame so the panel has real dimensions before scaling */
+    requestAnimationFrame(() => requestAnimationFrame(() => scalePoster()));
   }, 220);
 }
 
@@ -269,7 +271,7 @@ function scalePoster() {
   if (!wrap || !stage) return;
   const pw = stage.clientWidth  - 80;
   const ph = stage.clientHeight - 100;  /* leave room for template strip */
-  const r  = S.doneRatio || '9:16';
+  const r  = '9:16';   /* build preview always shows 9:16 */
   const [nw, nh] = RATIO_DIM[r];
   const scale = Math.min(pw / nw, ph / nh, 1);
   poster.style.transform = `scale(${scale})`;
