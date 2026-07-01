@@ -445,22 +445,83 @@ $('dsDl').addEventListener('click', async () => {
 
 $('dsDlGif').addEventListener('click', async () => {
   const btn = $('dsDlGif');
-  btn.textContent = 'Downloading…';
   btn.disabled = true;
-  try {
-    const res = await fetch(S.image.url);
-    const blob = await res.blob();
+
+  const ratio = S.doneRatio;
+  const [nw, nh] = RATIO_DIM[ratio];
+  const SCALE = 0.5;
+  const W = Math.round(nw * SCALE), H = Math.round(nh * SCALE);
+
+  const off = poster.cloneNode(true);
+  off.id = '';
+  off.classList.remove('r-169', 'r-11');
+  if (ratio === '16:9') off.classList.add('r-169');
+  if (ratio === '1:1')  off.classList.add('r-11');
+  off.style.cssText = `position:fixed;left:-9999px;top:0;width:${nw}px;height:${nh}px;transform:none;`;
+  document.body.appendChild(off);
+  await document.fonts.ready;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+
+  const mimeType = ['video/mp4', 'video/webm;codecs=vp9', 'video/webm']
+    .find(m => MediaRecorder.isTypeSupported(m));
+
+  if (!mimeType) {
+    alert('Video recording not supported in this browser — please use Chrome.');
+    document.body.removeChild(off);
+    btn.disabled = false;
+    return;
+  }
+
+  const stream = canvas.captureStream(25);
+  const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 4000000 });
+  const chunks = [];
+  recorder.ondataavailable = e => e.data.size > 0 && chunks.push(e.data);
+
+  recorder.onstop = () => {
+    document.body.removeChild(off);
+    const ext = mimeType.startsWith('video/mp4') ? 'mp4' : 'webm';
+    const blob = new Blob(chunks, { type: mimeType });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = 'mindspace-poster.gif';
+    a.download = `mindspace-poster.${ext}`;
     a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 5000);
-  } catch(e) {
-    alert('GIF download failed — try right-clicking the image and saving.');
-  } finally {
-    btn.innerHTML = `<svg viewBox="0 0 20 20" fill="none"><path d="M10 3v10M6 9l4 4 4-4M3 16h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg> Download GIF`;
+    btn.innerHTML = `<svg viewBox="0 0 20 20" fill="none"><path d="M10 3v10M6 9l4 4 4-4M3 16h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg> Download Video`;
     btn.disabled = false;
-  }
+  };
+
+  recorder.start(200);
+
+  const DURATION = 4000;
+  const startTime = performance.now();
+  let secs = 4;
+  const tick = setInterval(() => {
+    secs--;
+    if (secs > 0) btn.textContent = `Recording ${secs}s…`;
+  }, 1000);
+  btn.textContent = `Recording 4s…`;
+
+  const captureLoop = async () => {
+    if (performance.now() - startTime >= DURATION) {
+      clearInterval(tick);
+      recorder.stop();
+      return;
+    }
+    try {
+      const c = await html2canvas(off, {
+        width: nw, height: nh, scale: SCALE,
+        useCORS: true, allowTaint: false,
+        backgroundColor: null, logging: false,
+      });
+      ctx.drawImage(c, 0, 0);
+    } catch(e) { /* skip frame */ }
+    captureLoop();
+  };
+
+  captureLoop();
 });
 
 /* ── Image drawer ────────────────────────────────────────────────────────── */
