@@ -275,8 +275,15 @@ function renderPoster() {
 
   const bgEl = $('pBg');
   if (S.image) {
-    bgEl.style.backgroundImage = `url('${S.image.url}')`;
+    if (S.image.type === 'gif') {
+      bgEl.style.backgroundImage = '';
+      bgEl.innerHTML = `<img src="${S.image.url}" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;" alt="">`;
+    } else {
+      bgEl.innerHTML = '';
+      bgEl.style.backgroundImage = `url('${S.image.url}')`;
+    }
   } else {
+    bgEl.innerHTML = '';
     bgEl.style.backgroundImage = '';
   }
 }
@@ -498,7 +505,7 @@ async function doSearch() {
         return ha - hb;
       });
       items = shuffled.slice(0, 12).map(id => ({
-        thumb: `https://media.giphy.com/media/${id}/giphy_s.gif`,
+        thumb: `https://media.giphy.com/media/${id}/200.gif`,
         full:  `https://media.giphy.com/media/${id}/giphy.gif`,
         type:  'gif',
       }));
