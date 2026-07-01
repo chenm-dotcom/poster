@@ -488,25 +488,14 @@ async function doSearch() {
     let items = [];
 
     if (S.imgSrc === 'giphy') {
-      const GIFS = [
-        'l3q2Z6S6n38zjPswo','xT9IgG50Lg7rusyTC4','3o7TKSjRrfIPjeiVyM',
-        'l0HlBO7eyXzSZkJri','26BRuo6sLetdllPAQ','xT9IgDECMFKQdGwdoA',
-        '3o6Zt481isNVuQI1l6','l0MYt5jPR6QX5pnqM','26BRCiV1PmcKxHUkg',
-        'xT9IgxGqQzgFKfSlMs','3oEjHV0z8S7WM4MwnK','l0HlNQ03J5JxqkiVy',
-        'xT9IgwSfTBMWmfnBIk','26ufdipQqU84VcpkI','3o6ZtpxSZbQRRnpFku',
-        'l46Cy1rHbQ92uuLXa','xT9IgG6el5RtEpGoBi','3o7TKMeCOV3oXCMqZi',
-        'l0HlFZ3yOXCbPuOhG','26tknCqiJrBQG6bxC',
-      ];
       const keyword = q || 'celebrate';
-      const seed = keyword.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
-      const shuffled = [...GIFS].sort((a, b) => {
-        const ha = (seed * 1103515245 + a.charCodeAt(0)) & 0x7fffffff;
-        const hb = (seed * 1103515245 + b.charCodeAt(0)) & 0x7fffffff;
-        return ha - hb;
-      });
-      items = shuffled.slice(0, 12).map(id => ({
-        thumb: `https://media.giphy.com/media/${id}/200.gif`,
-        full:  `https://media.giphy.com/media/${id}/giphy.gif`,
+      const url = `https://api.giphy.com/v1/gifs/search?api_key=dc6zaTOxFJmzC&q=${encodeURIComponent(keyword)}&limit=20&rating=g&lang=en`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('Giphy search failed');
+      const json = await res.json();
+      items = json.data.map(g => ({
+        thumb: g.images.fixed_width_small.url,
+        full:  g.images.original.url,
         type:  'gif',
       }));
     } else {
