@@ -409,10 +409,8 @@ input, textarea { font: inherit; color: inherit; background: none; border: none;
 }
 .p-ov { position: absolute; inset: 0; }
 .p-content { position: absolute; display: flex; flex-direction: column; }
-.p-logo {
-  font-family: var(--U);
-  letter-spacing: .14em; text-transform: uppercase; white-space: nowrap;
-}
+.p-logo { display: none !important; }
+.p-tag  { display: none !important; }
 .p-title {
   font-family: var(--S); line-height: .95;
   letter-spacing: -.02em; word-break: break-word; white-space: pre-wrap;

@@ -6,7 +6,6 @@ const SPARKS = [
   "Ready to make something people will stop and stare at?",
   "Your community is waiting to hear about this.",
   "Let's turn this event into something beautiful.",
-  "Great posters get people through the door.",
   "Make it bold. Make it Mindspace.",
   "Something amazing is about to happen. Let's tell the world.",
   "The best events start with a killer poster.",
