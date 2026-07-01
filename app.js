@@ -131,11 +131,11 @@ const STEPS = [
     render() {
       const has = !!S.image;
       return `
-        <p class="step-q">Add an image?</p>
-        <p class="step-hint">A photo or GIF as the poster background — totally optional.</p>
+        <p class="step-q">Add a background?</p>
+        <p class="step-hint">Pick a GIF, search Unsplash photos, or upload your own.</p>
         <button class="img-pick ${has ? 'picked' : ''}" id="openDrawer">
           ${has ? `<img class="img-pick-thumb" src="${S.image.thumb}" alt="">` : ''}
-          <span>${has ? '✓ Image selected — tap to change' : 'Search photos or upload'}</span>
+          <span>${has ? '✓ Background selected — tap to change' : 'GIF, image or upload background'}</span>
         </button>`;
     },
     mount() {
