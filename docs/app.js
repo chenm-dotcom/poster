@@ -480,9 +480,9 @@ $('dsDlGif').addEventListener('click', async () => {
     const workerCode = await fetch('https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.worker.js').then(r => r.text());
     const workerUrl = URL.createObjectURL(new Blob([workerCode], { type: 'application/javascript' }));
 
-    const gif = new GIF({ workers: 2, quality: 10, workerScript: workerUrl, width: W, height: H });
+    const gif = new GIF({ workers: 2, quality: 5, repeat: 0, workerScript: workerUrl, width: W, height: H });
 
-    const FRAMES = 16, DELAY = 150;
+    const FRAMES = 20, DELAY = 120;
     for (let i = 0; i < FRAMES; i++) {
       btn.textContent = `Frame ${i + 1}/${FRAMES}…`;
       const c = await html2canvas(off, {
