@@ -395,24 +395,6 @@ input, textarea { font: inherit; color: inherit; background: none; border: none;
   background: rgba(255,255,255,.1);
   margin: 0 4px; flex-shrink: 0;
 }
-.pos-btn {
-  padding: 7px 14px; border-radius: 100px;
-  border: 1.5px solid rgba(255,255,255,.08);
-  font-size: 12px; color: var(--dim);
-  transition: all var(--t);
-}
-.pos-btn:hover { border-color: rgba(255,255,255,.2); color: var(--ivory); }
-.pos-btn.active { border-color: var(--blue); color: var(--blue); background: rgba(196,181,232,.07); }
-
-/* ── Text position overrides ────────────────────────────────────────────── */
-/* Default (pos-low) = existing styles, no override needed */
-.poster.pos-mid .p-content {
-  top: 50% !important; bottom: auto !important;
-  transform: translateY(-50%);
-}
-.poster.pos-top .p-content {
-  top: 120px !important; bottom: auto !important;
-}
 
 /* Done screen TV */
 .done-tv-scene {
@@ -438,6 +420,7 @@ input, textarea { font: inherit; color: inherit; background: none; border: none;
   background-size: cover; background-position: center;
 }
 .p-ov { position: absolute; inset: 0; }
+.p-card { display: none; position: absolute; inset: 0; pointer-events: none; }
 .p-content {
   position: absolute; display: flex; flex-direction: column;
   transition: top .45s cubic-bezier(.22,1,.36,1),
@@ -485,168 +468,60 @@ input, textarea { font: inherit; color: inherit; background: none; border: none;
 .poster.t-0.r-11  .p-desc   { font-size:36px; margin-bottom:32px; }
 .poster.t-0.r-11  .p-meta   { font-size:36px; }
 
-/* ── T1 Light Minimal ───────────────────────────────────────────────── */
-.poster.t-1 { background: #F5EFE3; }
-.poster.t-1 .p-bg  { opacity:.1; }
-.poster.t-1 .p-ov  { display:none; }
-.poster.t-1 .p-content { inset:auto 84px 120px 84px; top:auto; gap:0; }
-.poster.t-1 .p-logo { position:absolute; top:72px; left:84px; font-size:64px; color:rgba(14,11,8,.3); }
-.poster.t-1 .p-title { color:#0A0806; font-size:144px; margin-bottom:44px; }
-.poster.t-1 .p-desc  { font-size:52px; color:rgba(14,11,8,.55); margin-bottom:48px; }
-.poster.t-1 .p-meta  { font-size:52px; color:rgba(14,11,8,.38); }
-.poster.t-1 .p-tag   { bottom:72px; right:84px; font-size:58px; color:rgba(14,11,8,.18); }
-.poster.t-1.r-169 .p-content { left:96px; right:860px; bottom:88px; }
-.poster.t-1.r-169 .p-logo  { left:96px; top:60px; }
-.poster.t-1.r-169 .p-title { font-size:144px; }
-.poster.t-1.r-169 .p-desc  { font-size:52px; }
-.poster.t-1.r-169 .p-meta  { font-size:52px; }
-.poster.t-1.r-11  .p-content { left:72px; right:72px; bottom:88px; }
-.poster.t-1.r-11  .p-logo  { left:72px; top:60px; }
-.poster.t-1.r-11  .p-title { font-size:96px; margin-bottom:28px; }
-.poster.t-1.r-11  .p-desc  { font-size:36px; margin-bottom:32px; }
-.poster.t-1.r-11  .p-meta  { font-size:36px; }
-
-/* ── T2 Bold Blue ───────────────────────────────────────────────────── */
-.poster.t-2 { background: #1A3A6B; }
-.poster.t-2 .p-bg  { opacity:.07; mix-blend-mode:luminosity; }
-.poster.t-2 .p-ov  {
-  background: linear-gradient(to top,
-    rgba(10,18,42,.92) 0%, rgba(10,18,42,.48) 40%, transparent 80%);
-}
-.poster.t-2 .p-content { inset:auto 84px 120px 84px; top:auto; gap:0; }
-.poster.t-2 .p-logo  { position:absolute; top:72px; right:84px; font-size:64px; color:rgba(255,255,255,.28); }
-.poster.t-2 .p-title { color:#FFFFFF; font-size:144px; margin-bottom:44px; }
-.poster.t-2 .p-desc  { font-size:52px; color:rgba(255,255,255,.68); margin-bottom:52px; }
-.poster.t-2 .p-meta  { font-size:52px; color:rgba(255,255,255,.45); }
-.poster.t-2 .p-tag   { display:none; }
-.poster.t-2.r-169 .p-content { left:96px; right:860px; bottom:90px; }
-.poster.t-2.r-169 .p-title  { font-size:144px; }
-.poster.t-2.r-169 .p-desc   { font-size:52px; }
-.poster.t-2.r-169 .p-meta   { font-size:52px; }
-.poster.t-2.r-11  .p-content { left:72px; right:72px; bottom:88px; }
-.poster.t-2.r-11  .p-title  { font-size:96px; margin-bottom:28px; }
-.poster.t-2.r-11  .p-desc   { font-size:36px; margin-bottom:32px; }
-.poster.t-2.r-11  .p-meta   { font-size:36px; }
-
-/* ── T3 Warm Gradient ───────────────────────────────────────────────── */
-.poster.t-3 { background: linear-gradient(158deg, #D4702A 0%, #C4486B 58%, #7B2D8B 100%); }
-.poster.t-3 .p-bg  { opacity:.14; mix-blend-mode:overlay; }
-.poster.t-3 .p-ov  {
-  background: linear-gradient(to top,
-    rgba(0,0,0,.76) 0%, rgba(0,0,0,.32) 40%, transparent 80%);
-}
-.poster.t-3 .p-content { inset:auto 84px 120px 84px; top:auto; gap:0; }
-.poster.t-3 .p-logo  { position:absolute; top:72px; right:84px; font-size:64px; color:rgba(255,255,255,.42); }
-.poster.t-3 .p-title { color:#FFFFFF; font-size:144px; margin-bottom:44px; }
-.poster.t-3 .p-desc  { font-size:52px; color:rgba(255,255,255,.75); margin-bottom:52px; }
-.poster.t-3 .p-meta  { font-size:52px; color:rgba(255,255,255,.48); }
-.poster.t-3 .p-tag   { display:none; }
-.poster.t-3.r-169 .p-content { left:96px; right:860px; bottom:90px; }
-.poster.t-3.r-169 .p-title  { font-size:144px; }
-.poster.t-3.r-169 .p-desc   { font-size:52px; }
-.poster.t-3.r-169 .p-meta   { font-size:52px; }
-.poster.t-3.r-11  .p-content { left:72px; right:72px; bottom:88px; }
-.poster.t-3.r-11  .p-title  { font-size:96px; margin-bottom:28px; }
-.poster.t-3.r-11  .p-desc   { font-size:36px; margin-bottom:32px; }
-.poster.t-3.r-11  .p-meta   { font-size:36px; }
-
-/* ── T4 Mono ────────────────────────────────────────────────────────── */
-.poster.t-4 { background: #070707; }
-.poster.t-4 .p-bg  { display:none; }
-.poster.t-4 .p-ov  { display:none; }
-.poster.t-4 .p-content { inset:auto 80px 108px 80px; top:auto; gap:0; }
-.poster.t-4 .p-logo  { position:absolute; top:72px; left:80px; font-size:64px; color:rgba(255,255,255,.16); }
-.poster.t-4 .p-title {
-  color:#FFFFFF; font-size:60px; margin-bottom:0;
-  border-top: 2px solid rgba(255,255,255,.1);
-  padding-top:48px;
-}
-.poster.t-4 .p-desc  { font-size:52px; color:rgba(255,255,255,.5); margin-top:44px; margin-bottom:56px; }
-.poster.t-4 .p-meta  { font-size:52px; color:rgba(255,255,255,.28); }
-.poster.t-4 .p-tag   { bottom:72px; right:80px; font-size:544px; line-height:1; color:rgba(255,255,255,.025); font-family:var(--S); pointer-events:none; }
-.poster.t-4.r-169 .p-content { left:96px; right:860px; bottom:88px; }
-.poster.t-4.r-169 .p-logo  { left:96px; top:60px; }
-.poster.t-4.r-169 .p-title { font-size:144px; padding-top:52px; }
-.poster.t-4.r-169 .p-desc  { font-size:52px; margin-top:36px; }
-.poster.t-4.r-169 .p-meta  { font-size:52px; }
-.poster.t-4.r-11  .p-content { left:72px; right:72px; bottom:80px; }
-.poster.t-4.r-11  .p-logo  { left:72px; top:58px; }
-.poster.t-4.r-11  .p-title { font-size:96px; padding-top:28px; }
-.poster.t-4.r-11  .p-desc  { font-size:36px; margin-top:28px; margin-bottom:32px; }
-.poster.t-4.r-11  .p-meta  { font-size:36px; }
-
-/* ── T5 Card ─────────────────────────────────────────────────────────── */
-.p-card { display: none; position: absolute; inset: 0; pointer-events: none; }
-.t5-swatch { background: linear-gradient(135deg, #e8e0d4 50%, #b8a898 100%); }
-
-.poster.t-5 { background: #2a2a2a; }
-.poster.t-5 .p-bg  { opacity: 1; }
-.poster.t-5 .p-ov  { display: none; }
-.poster.t-5 .p-card {
+/* ── T1 Card ────────────────────────────────────────────────────────── */
+.poster.t-1 { background: #1a1a1a; }
+.poster.t-1 .p-bg { opacity: 1; }
+.poster.t-1 .p-ov { display: none; }
+.poster.t-1 .p-card {
   display: block;
-  inset: 152px 60px;
-  background: rgba(244, 240, 232, 0.97);
-  border-radius: 6px;
+  inset: 140px 48px;
+  background: rgba(242, 239, 232, 0.98);
+  border-radius: 0;
+  box-shadow: 0 8px 48px rgba(0,0,0,.28);
   z-index: 1;
 }
-.poster.t-5 .p-content {
-  inset: auto 130px 250px 130px; top: auto;
-  z-index: 2; gap: 0;
-  align-items: flex-start; text-align: left;
+.poster.t-1 .p-content {
+  inset: auto 108px 190px 108px; top: auto;
+  z-index: 2; gap: 0; align-items: flex-start;
 }
-.poster.t-5 .p-title { color: #0A0806; font-size: 150px; font-weight: 700; margin-bottom: 44px; }
-.poster.t-5 .p-desc  { font-size: 50px; color: rgba(14,11,8,.6); margin-bottom: 48px; }
-.poster.t-5 .p-meta  { font-size: 46px; color: rgba(14,11,8,.4); }
-.poster.t-5 .p-tag   { display: none; }
+.poster.t-1 .p-title { color: #0A0806; font-size: 156px; font-weight: 700; line-height: 1.05; margin-bottom: 40px; }
+.poster.t-1 .p-desc  { font-size: 52px; color: rgba(14,11,8,.6); margin-bottom: 44px; }
+.poster.t-1 .p-meta  { font-size: 42px; color: rgba(14,11,8,.38); }
+.poster.t-1 .p-tag   { display: none; }
+/* r-11 */
+.poster.t-1.r-11 .p-card    { inset: 80px 44px; }
+.poster.t-1.r-11 .p-content { inset: auto 100px 160px 100px; top: auto; }
+.poster.t-1.r-11 .p-title   { font-size: 96px; margin-bottom: 28px; }
+.poster.t-1.r-11 .p-desc    { font-size: 36px; margin-bottom: 32px; }
+.poster.t-1.r-11 .p-meta    { font-size: 32px; }
 
-.poster.t-5.r-169 .p-card    { inset: 120px 60px; }
-.poster.t-5.r-169 .p-content { left: 130px; right: 860px; bottom: 190px; }
-.poster.t-5.r-169 .p-title   { font-size: 130px; }
-.poster.t-5.r-169 .p-desc    { font-size: 46px; }
-.poster.t-5.r-169 .p-meta    { font-size: 42px; }
-
-.poster.t-5.r-11 .p-card    { inset: 100px 48px; }
-.poster.t-5.r-11 .p-content { left: 100px; right: 100px; bottom: 180px; }
-.poster.t-5.r-11 .p-title   { font-size: 96px; margin-bottom: 28px; }
-.poster.t-5.r-11 .p-desc    { font-size: 34px; margin-bottom: 32px; }
-.poster.t-5.r-11 .p-meta    { font-size: 32px; }
-
-/* ── T6 Strips ───────────────────────────────────────────────────────── */
-/* Layout: [color top strip] [photo middle] [color bottom strip]         */
-.poster.t-6 { background: #2A5C3E; }
-.poster.t-6 .p-bg  { top: 520px; bottom: 400px; opacity: 1; }
-.poster.t-6 .p-ov  { background: #2A5C3E; bottom: auto; height: 520px; }
-.poster.t-6 .p-card {
+/* ── T2 Strips ───────────────────────────────────────────────────────── */
+.poster.t-2 { background: #2A5E42; }
+.poster.t-2 .p-bg  { top: 800px; bottom: 220px; opacity: 1; }
+.poster.t-2 .p-ov  { background: #2A5E42; bottom: auto; height: 800px; }
+.poster.t-2 .p-card {
   display: block;
-  inset: auto; top: auto; left: 0; right: 0; bottom: 0; height: 400px;
-  background: #C4BDDF; border-radius: 0; z-index: 1;
+  inset: auto; top: auto; left: 0; right: 0; bottom: 0; height: 220px;
+  background: #8FC4A4; border-radius: 0; z-index: 1;
 }
-.poster.t-6 .p-content {
-  inset: 60px 80px 56px 80px; z-index: 2; gap: 0;
+.poster.t-2 .p-content {
+  inset: 72px 80px 56px 80px; z-index: 2; gap: 0;
 }
-.poster.t-6 .p-title {
-  color: #FFFFFF; font-size: 156px; font-weight: 800;
-  line-height: 1; margin-bottom: 32px; text-transform: uppercase;
+.poster.t-2 .p-title {
+  color: #FFFFFF; font-size: 190px; font-weight: 900;
+  line-height: 0.92; margin-bottom: 40px; text-transform: uppercase;
 }
-.poster.t-6 .p-desc  { font-size: 56px; color: rgba(255,255,255,.88); margin-bottom: 0; }
-.poster.t-6 .p-meta  { font-size: 42px; color: rgba(14,8,30,.68); margin-top: auto; }
-.poster.t-6 .p-tag   { display: none; }
-
-.poster.t-6.r-169 .p-bg   { top: 0; bottom: 0; left: 480px; right: 0; }
-.poster.t-6.r-169 .p-ov   { width: 480px; height: auto; right: auto; bottom: 0; }
-.poster.t-6.r-169 .p-card { top: 0; left: auto; right: 0; bottom: 0; width: 360px; height: auto; }
-.poster.t-6.r-169 .p-content { inset: 56px 400px 56px 56px; }
-.poster.t-6.r-169 .p-title { font-size: 120px; }
-.poster.t-6.r-169 .p-desc  { font-size: 44px; }
-.poster.t-6.r-169 .p-meta  { font-size: 34px; }
-
-.poster.t-6.r-11 .p-bg   { top: 320px; bottom: 300px; }
-.poster.t-6.r-11 .p-ov   { height: 320px; }
-.poster.t-6.r-11 .p-card { height: 300px; }
-.poster.t-6.r-11 .p-content { inset: 40px 72px 44px 72px; }
-.poster.t-6.r-11 .p-title { font-size: 96px; margin-bottom: 20px; }
-.poster.t-6.r-11 .p-desc  { font-size: 36px; }
-.poster.t-6.r-11 .p-meta  { font-size: 30px; }
+.poster.t-2 .p-desc  { font-size: 88px; color: rgba(255,255,255,.88); line-height: 1.1; }
+.poster.t-2 .p-meta  { font-size: 38px; color: rgba(10,30,16,.7); margin-top: auto; }
+.poster.t-2 .p-tag   { display: none; }
+/* r-11 */
+.poster.t-2.r-11 .p-bg   { top: 380px; bottom: 180px; }
+.poster.t-2.r-11 .p-ov   { height: 380px; }
+.poster.t-2.r-11 .p-card { height: 180px; }
+.poster.t-2.r-11 .p-content { inset: 44px 72px 44px 72px; }
+.poster.t-2.r-11 .p-title { font-size: 110px; margin-bottom: 24px; }
+.poster.t-2.r-11 .p-desc  { font-size: 52px; }
+.poster.t-2.r-11 .p-meta  { font-size: 30px; }
 
 /* ════════════════════════════════════════════════════════════════════════
    DONE SCREEN

@@ -27,7 +27,7 @@ const RATIO_DIM = {
 
 /* ── State ──────────────────────────────────────────────────────────────── */
 const S = {
-  step: 0,        // 0=desc, 1=date, 2=location, 3=image
+  step: 0,
   template: 0,
   title: '',
   desc: '',
@@ -37,7 +37,6 @@ const S = {
   image: null,
   imgSrc: 'unsplash',
   doneRatio: '9:16',
-  textPos: 'low',  // 'low' | 'mid' | 'top'
 };
 
 /* ── DOM shortcuts ──────────────────────────────────────────────────────── */
@@ -166,7 +165,6 @@ function startBuild() {
     setTimeout(() => screenBuild.classList.remove('sc-enter'), 400);
 
     applyTemplate(S.template);
-    applyTextPos();
     renderPoster();
     S.step = 0;
     loadStep(0, 1);
@@ -238,28 +236,12 @@ document.querySelectorAll('.tpl-btn').forEach(btn => {
   });
 });
 
-/* ── Text position picker ───────────────────────────────────────────────── */
-document.querySelectorAll('.pos-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.pos-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    S.textPos = btn.dataset.pos;
-    applyTextPos();
-  });
-});
-
-function applyTextPos() {
-  poster.classList.remove('pos-low', 'pos-mid', 'pos-top');
-  poster.classList.add('pos-' + S.textPos);
-}
-
 function applyTemplate(idx) {
   S.template = idx;
   poster.classList.add('poster-flash');
   setTimeout(() => poster.classList.remove('poster-flash'), 350);
   poster.className = poster.className.replace(/\bt-\d\b/g, '').trim();
   poster.classList.add(`t-${idx}`);
-  applyTextPos();
   renderPoster();
 }
 
@@ -506,16 +488,17 @@ async function doSearch() {
         type:  'gif',
       })).filter(g => g.thumb && g.full);
     } else {
-      // picsum.photos: CORS-enabled, always works, seeded per keyword for consistency
-      const seed = q.replace(/\s+/g, '-').toLowerCase();
-      items = Array.from({length: 12}, (_, i) => {
-        const s = `${seed}-${i}`;
-        return {
-          thumb: `https://picsum.photos/seed/${s}/400/400`,
-          full:  `https://picsum.photos/seed/${s}/1920/1920`,
-          type:  'photo',
-        };
-      });
+      if (!q) { results.className = 'dr-results'; results.innerHTML = '<span class="dr-msg">Type something to search photos.</span>'; return; }
+      const url = `https://api.openverse.org/v1/images/?q=${encodeURIComponent(q)}&page_size=12&format=json`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('Photo search failed');
+      const json = await res.json();
+      items = (json.results || []).map(img => ({
+        thumb: img.thumbnail || img.url,
+        full:  img.url,
+        type:  'photo',
+      })).filter(i => i.thumb && i.full);
+      if (!items.length) throw new Error('No photos found — try different keywords.');
     }
 
     results.className = 'dr-results';
