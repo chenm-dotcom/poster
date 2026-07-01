@@ -478,9 +478,9 @@ input, textarea { font: inherit; color: inherit; background: none; border: none;
 .poster.t-0 .p-meta   { font-size:52px; color:rgba(240,233,214,.5); }
 .poster.t-0 .p-tag    { display:none; }
 .poster.t-0.r-169 .p-content { left:96px; right:860px; bottom:90px; }
-.poster.t-0.r-169 .p-title  { font-size:144px; }
-.poster.t-0.r-169 .p-desc   { font-size:42px; }
-.poster.t-0.r-169 .p-meta   { font-size:42px; }
+.poster.t-0.r-169 .p-title  { font-size:88px; }
+.poster.t-0.r-169 .p-desc   { font-size:32px; margin-bottom:32px; }
+.poster.t-0.r-169 .p-meta   { font-size:30px; }
 .poster.t-0.r-11  .p-content { left:72px; right:72px; bottom:88px; }
 .poster.t-0.r-11  .p-title  { font-size:96px; margin-bottom:28px; }
 .poster.t-0.r-11  .p-desc   { font-size:36px; margin-bottom:32px; }
