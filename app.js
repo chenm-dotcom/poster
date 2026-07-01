@@ -489,34 +489,22 @@ async function doSearch() {
 
     if (S.imgSrc === 'giphy') {
       const keyword = q || 'celebrate';
-      const url = `https://api.giphy.com/v1/gifs/search?api_key=dc6zaTOxFJmzC&q=${encodeURIComponent(keyword)}&limit=20&rating=g&lang=en`;
+      const url = `https://tenor.googleapis.com/v2/search?q=${encodeURIComponent(keyword)}&key=AIzaSyAyimkuYQYF_FXVALexPuGQctUWRURdCRA&limit=20&media_filter=tinygif,gif`;
       const res = await fetch(url);
-      if (!res.ok) throw new Error('Giphy search failed');
+      if (!res.ok) throw new Error('GIF search failed');
       const json = await res.json();
-      items = json.data.map(g => ({
-        thumb: g.images.fixed_width_small.url,
-        full:  g.images.original.url,
+      items = json.results.map(g => ({
+        thumb: g.media_formats.tinygif?.url || g.media_formats.gif.url,
+        full:  g.media_formats.gif.url,
         type:  'gif',
       }));
     } else {
-      const PHOTOS = [
-        '1540575467063-178a50c2df87','1492684223066-81342ee5ff30','1531058020387-3be344556be6',
-        '1511578314322-379afb476865','1470229722913-7c0e2dbbafd3','1514525253161-7a46d19cd819',
-        '1519741497674-611571de1d87','1524368535928-5b5e00ddc76b','1499951360447-b19be8fe80f5',
-        '1516450360452-9312f5e86fc7','1486325212027-8081e485255e','1497366216548-37526070297c',
-        '1497366412874-3415097a27e7','1575429198097-0414ec08e8cd','1582063289852-62450b9ab12e',
-        '1496337589254-7e19d01cec44','1598300042247-d088f8ab3a91','1506905925346-21bda4d32df4',
-        '1477959858617-67f85cf4f1df','1478720568477-152d9b92543a',
-      ];
-      const seed = q.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
-      const shuffled = [...PHOTOS].sort((a, b) => {
-        const ha = (seed * 1103515245 + a.charCodeAt(0)) & 0x7fffffff;
-        const hb = (seed * 1103515245 + b.charCodeAt(0)) & 0x7fffffff;
-        return ha - hb;
-      });
-      items = shuffled.slice(0, 12).map(id => ({
-        thumb: `https://images.unsplash.com/photo-${id}?w=200&h=200&fit=crop&auto=format&q=70`,
-        full:  `https://images.unsplash.com/photo-${id}?w=1920&h=1920&fit=crop&auto=format&q=85`,
+      const res = await fetch(`https://unsplash.com/napi/search/photos?query=${encodeURIComponent(q)}&per_page=12&xp=`);
+      if (!res.ok) throw new Error('Photo search failed');
+      const json = await res.json();
+      items = json.results.map(p => ({
+        thumb: p.urls.small,
+        full:  p.urls.regular,
         type:  'photo',
       }));
     }
