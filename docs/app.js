@@ -489,7 +489,7 @@ async function doSearch() {
 
     if (S.imgSrc === 'giphy') {
       const keyword = q || 'celebrate';
-      const url = `https://api.tenor.com/v1/search?q=${encodeURIComponent(keyword)}&key=LIVDSRZULELA&limit=20&contentfilter=medium&media_filter=minimal`;
+      const url = `https://api.tenor.com/v1/search?q=${encodeURIComponent(keyword)}&key=LIVDSRZULELA&limit=20&contentfilter=medium`;
       const res = await fetch(url);
       if (!res.ok) throw new Error('GIF search failed');
       const json = await res.json();
@@ -499,13 +499,10 @@ async function doSearch() {
         type:  'gif',
       })).filter(g => g.thumb && g.full);
     } else {
-      const target = `https://unsplash.com/napi/search/photos?query=${encodeURIComponent(q)}&per_page=12`;
-      const res = await fetch(`https://corsproxy.io/?${encodeURIComponent(target)}`);
-      if (!res.ok) throw new Error('Photo search failed');
-      const json = await res.json();
-      items = json.results.map(p => ({
-        thumb: p.urls.small,
-        full:  p.urls.regular,
+      const kw = encodeURIComponent(q);
+      items = Array.from({length: 12}, (_, i) => ({
+        thumb: `https://source.unsplash.com/featured/300x300/?${kw}&sig=${i}`,
+        full:  `https://source.unsplash.com/featured/1920x1080/?${kw}&sig=${i}`,
         type:  'photo',
       }));
     }
