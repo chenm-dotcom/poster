@@ -361,6 +361,30 @@ input, textarea { font: inherit; color: inherit; background: none; border: none;
 .t3-swatch { background: linear-gradient(135deg, #D4702A, #C4486B); }
 .t4-swatch { background: #080808; border: 1px solid rgba(255,255,255,.25); }
 
+.tpl-divider {
+  width: 1px; height: 20px;
+  background: rgba(255,255,255,.1);
+  margin: 0 4px; flex-shrink: 0;
+}
+.pos-btn {
+  padding: 7px 14px; border-radius: 100px;
+  border: 1.5px solid rgba(255,255,255,.08);
+  font-size: 12px; color: var(--dim);
+  transition: all var(--t);
+}
+.pos-btn:hover { border-color: rgba(255,255,255,.2); color: var(--ivory); }
+.pos-btn.active { border-color: var(--blue); color: var(--blue); background: rgba(196,181,232,.07); }
+
+/* ── Text position overrides ────────────────────────────────────────────── */
+/* Default (pos-low) = existing styles, no override needed */
+.poster.pos-mid .p-content {
+  top: 50% !important; bottom: auto !important;
+  transform: translateY(-50%);
+}
+.poster.pos-top .p-content {
+  top: 120px !important; bottom: auto !important;
+}
+
 /* Done screen TV */
 .done-tv-scene {
   width: 100%; height: 100%;
@@ -415,40 +439,40 @@ input, textarea { font: inherit; color: inherit; background: none; border: none;
     rgba(4,2,1,.18) 60%, transparent 100%);
 }
 .poster.t-0 .p-content { inset: auto 80px 120px 80px; top: auto; gap: 0; }
-.poster.t-0 .p-logo   { position:absolute; top:72px; right:72px; font-size:44px; color:rgba(253,250,245,.35); }
-.poster.t-0 .p-title  { color:#FDFAF5; font-size:264px; margin-bottom:48px; }
-.poster.t-0 .p-desc   { font-size:92px; color:rgba(240,233,214,.75); margin-bottom:52px; }
-.poster.t-0 .p-meta   { font-size:72px; color:rgba(240,233,214,.5); }
+.poster.t-0 .p-logo   { position:absolute; top:72px; right:72px; font-size:88px; color:rgba(253,250,245,.35); }
+.poster.t-0 .p-title  { color:#FDFAF5; font-size:528px; margin-bottom:48px; }
+.poster.t-0 .p-desc   { font-size:184px; color:rgba(240,233,214,.75); margin-bottom:52px; }
+.poster.t-0 .p-meta   { font-size:144px; color:rgba(240,233,214,.5); }
 .poster.t-0 .p-tag    { display:none; }
 .poster.t-0.r-169 .p-content { left:96px; right:860px; bottom:90px; }
-.poster.t-0.r-169 .p-title  { font-size:296px; }
-.poster.t-0.r-169 .p-desc   { font-size:88px; }
-.poster.t-0.r-169 .p-meta   { font-size:64px; }
+.poster.t-0.r-169 .p-title  { font-size:592px; }
+.poster.t-0.r-169 .p-desc   { font-size:176px; }
+.poster.t-0.r-169 .p-meta   { font-size:128px; }
 .poster.t-0.r-11  .p-content { left:72px; right:72px; bottom:88px; }
-.poster.t-0.r-11  .p-title  { font-size:224px; margin-bottom:36px; }
-.poster.t-0.r-11  .p-desc   { font-size:80px; margin-bottom:44px; }
-.poster.t-0.r-11  .p-meta   { font-size:60px; }
+.poster.t-0.r-11  .p-title  { font-size:448px; margin-bottom:36px; }
+.poster.t-0.r-11  .p-desc   { font-size:160px; margin-bottom:44px; }
+.poster.t-0.r-11  .p-meta   { font-size:120px; }
 
 /* ── T1 Light Minimal ───────────────────────────────────────────────── */
 .poster.t-1 { background: #F5EFE3; }
 .poster.t-1 .p-bg  { opacity:.1; }
 .poster.t-1 .p-ov  { display:none; }
 .poster.t-1 .p-content { inset:auto 84px 120px 84px; top:auto; gap:0; }
-.poster.t-1 .p-logo { position:absolute; top:72px; left:84px; font-size:40px; color:rgba(14,11,8,.3); }
-.poster.t-1 .p-title { color:#0A0806; font-size:256px; margin-bottom:44px; }
-.poster.t-1 .p-desc  { font-size:88px; color:rgba(14,11,8,.55); margin-bottom:48px; }
-.poster.t-1 .p-meta  { font-size:68px; color:rgba(14,11,8,.38); }
-.poster.t-1 .p-tag   { bottom:72px; right:84px; font-size:36px; color:rgba(14,11,8,.18); }
+.poster.t-1 .p-logo { position:absolute; top:72px; left:84px; font-size:80px; color:rgba(14,11,8,.3); }
+.poster.t-1 .p-title { color:#0A0806; font-size:512px; margin-bottom:44px; }
+.poster.t-1 .p-desc  { font-size:176px; color:rgba(14,11,8,.55); margin-bottom:48px; }
+.poster.t-1 .p-meta  { font-size:136px; color:rgba(14,11,8,.38); }
+.poster.t-1 .p-tag   { bottom:72px; right:84px; font-size:72px; color:rgba(14,11,8,.18); }
 .poster.t-1.r-169 .p-content { left:96px; right:860px; bottom:88px; }
 .poster.t-1.r-169 .p-logo  { left:96px; top:60px; }
-.poster.t-1.r-169 .p-title { font-size:280px; }
-.poster.t-1.r-169 .p-desc  { font-size:84px; }
-.poster.t-1.r-169 .p-meta  { font-size:60px; }
+.poster.t-1.r-169 .p-title { font-size:560px; }
+.poster.t-1.r-169 .p-desc  { font-size:168px; }
+.poster.t-1.r-169 .p-meta  { font-size:120px; }
 .poster.t-1.r-11  .p-content { left:72px; right:72px; bottom:88px; }
 .poster.t-1.r-11  .p-logo  { left:72px; top:60px; }
-.poster.t-1.r-11  .p-title { font-size:216px; margin-bottom:36px; }
-.poster.t-1.r-11  .p-desc  { font-size:76px; margin-bottom:42px; }
-.poster.t-1.r-11  .p-meta  { font-size:56px; }
+.poster.t-1.r-11  .p-title { font-size:432px; margin-bottom:36px; }
+.poster.t-1.r-11  .p-desc  { font-size:152px; margin-bottom:42px; }
+.poster.t-1.r-11  .p-meta  { font-size:112px; }
 
 /* ── T2 Bold Blue ───────────────────────────────────────────────────── */
 .poster.t-2 { background: #1A3A6B; }
@@ -458,19 +482,19 @@ input, textarea { font: inherit; color: inherit; background: none; border: none;
     rgba(10,18,42,.92) 0%, rgba(10,18,42,.48) 40%, transparent 80%);
 }
 .poster.t-2 .p-content { inset:auto 84px 120px 84px; top:auto; gap:0; }
-.poster.t-2 .p-logo  { position:absolute; top:72px; right:84px; font-size:40px; color:rgba(255,255,255,.28); }
-.poster.t-2 .p-title { color:#FFFFFF; font-size:264px; margin-bottom:44px; }
-.poster.t-2 .p-desc  { font-size:92px; color:rgba(255,255,255,.68); margin-bottom:52px; }
-.poster.t-2 .p-meta  { font-size:68px; color:rgba(255,255,255,.45); }
+.poster.t-2 .p-logo  { position:absolute; top:72px; right:84px; font-size:80px; color:rgba(255,255,255,.28); }
+.poster.t-2 .p-title { color:#FFFFFF; font-size:528px; margin-bottom:44px; }
+.poster.t-2 .p-desc  { font-size:184px; color:rgba(255,255,255,.68); margin-bottom:52px; }
+.poster.t-2 .p-meta  { font-size:136px; color:rgba(255,255,255,.45); }
 .poster.t-2 .p-tag   { display:none; }
 .poster.t-2.r-169 .p-content { left:96px; right:860px; bottom:90px; }
-.poster.t-2.r-169 .p-title  { font-size:288px; }
-.poster.t-2.r-169 .p-desc   { font-size:88px; }
-.poster.t-2.r-169 .p-meta   { font-size:64px; }
+.poster.t-2.r-169 .p-title  { font-size:576px; }
+.poster.t-2.r-169 .p-desc   { font-size:176px; }
+.poster.t-2.r-169 .p-meta   { font-size:128px; }
 .poster.t-2.r-11  .p-content { left:72px; right:72px; bottom:88px; }
-.poster.t-2.r-11  .p-title  { font-size:220px; margin-bottom:36px; }
-.poster.t-2.r-11  .p-desc   { font-size:80px; margin-bottom:44px; }
-.poster.t-2.r-11  .p-meta   { font-size:60px; }
+.poster.t-2.r-11  .p-title  { font-size:440px; margin-bottom:36px; }
+.poster.t-2.r-11  .p-desc   { font-size:160px; margin-bottom:44px; }
+.poster.t-2.r-11  .p-meta   { font-size:120px; }
 
 /* ── T3 Warm Gradient ───────────────────────────────────────────────── */
 .poster.t-3 { background: linear-gradient(158deg, #D4702A 0%, #C4486B 58%, #7B2D8B 100%); }
@@ -480,44 +504,44 @@ input, textarea { font: inherit; color: inherit; background: none; border: none;
     rgba(0,0,0,.76) 0%, rgba(0,0,0,.32) 40%, transparent 80%);
 }
 .poster.t-3 .p-content { inset:auto 84px 120px 84px; top:auto; gap:0; }
-.poster.t-3 .p-logo  { position:absolute; top:72px; right:84px; font-size:40px; color:rgba(255,255,255,.42); }
-.poster.t-3 .p-title { color:#FFFFFF; font-size:260px; margin-bottom:44px; }
-.poster.t-3 .p-desc  { font-size:92px; color:rgba(255,255,255,.75); margin-bottom:52px; }
-.poster.t-3 .p-meta  { font-size:68px; color:rgba(255,255,255,.48); }
+.poster.t-3 .p-logo  { position:absolute; top:72px; right:84px; font-size:80px; color:rgba(255,255,255,.42); }
+.poster.t-3 .p-title { color:#FFFFFF; font-size:520px; margin-bottom:44px; }
+.poster.t-3 .p-desc  { font-size:184px; color:rgba(255,255,255,.75); margin-bottom:52px; }
+.poster.t-3 .p-meta  { font-size:136px; color:rgba(255,255,255,.48); }
 .poster.t-3 .p-tag   { display:none; }
 .poster.t-3.r-169 .p-content { left:96px; right:860px; bottom:90px; }
-.poster.t-3.r-169 .p-title  { font-size:284px; }
-.poster.t-3.r-169 .p-desc   { font-size:88px; }
-.poster.t-3.r-169 .p-meta   { font-size:64px; }
+.poster.t-3.r-169 .p-title  { font-size:568px; }
+.poster.t-3.r-169 .p-desc   { font-size:176px; }
+.poster.t-3.r-169 .p-meta   { font-size:128px; }
 .poster.t-3.r-11  .p-content { left:72px; right:72px; bottom:88px; }
-.poster.t-3.r-11  .p-title  { font-size:216px; margin-bottom:36px; }
-.poster.t-3.r-11  .p-desc   { font-size:80px; margin-bottom:44px; }
-.poster.t-3.r-11  .p-meta   { font-size:60px; }
+.poster.t-3.r-11  .p-title  { font-size:432px; margin-bottom:36px; }
+.poster.t-3.r-11  .p-desc   { font-size:160px; margin-bottom:44px; }
+.poster.t-3.r-11  .p-meta   { font-size:120px; }
 
 /* ── T4 Mono ────────────────────────────────────────────────────────── */
 .poster.t-4 { background: #070707; }
 .poster.t-4 .p-bg  { display:none; }
 .poster.t-4 .p-ov  { display:none; }
 .poster.t-4 .p-content { inset:auto 80px 108px 80px; top:auto; gap:0; }
-.poster.t-4 .p-logo  { position:absolute; top:72px; left:80px; font-size:40px; color:rgba(255,255,255,.16); }
+.poster.t-4 .p-logo  { position:absolute; top:72px; left:80px; font-size:80px; color:rgba(255,255,255,.16); }
 .poster.t-4 .p-title {
-  color:#FFFFFF; font-size:272px; margin-bottom:0;
+  color:#FFFFFF; font-size:544px; margin-bottom:0;
   border-top: 2px solid rgba(255,255,255,.1);
   padding-top:48px;
 }
-.poster.t-4 .p-desc  { font-size:92px; color:rgba(255,255,255,.5); margin-top:44px; margin-bottom:56px; }
-.poster.t-4 .p-meta  { font-size:68px; color:rgba(255,255,255,.28); }
-.poster.t-4 .p-tag   { bottom:72px; right:80px; font-size:340px; line-height:1; color:rgba(255,255,255,.025); font-family:var(--S); pointer-events:none; }
+.poster.t-4 .p-desc  { font-size:184px; color:rgba(255,255,255,.5); margin-top:44px; margin-bottom:56px; }
+.poster.t-4 .p-meta  { font-size:136px; color:rgba(255,255,255,.28); }
+.poster.t-4 .p-tag   { bottom:72px; right:80px; font-size:680px; line-height:1; color:rgba(255,255,255,.025); font-family:var(--S); pointer-events:none; }
 .poster.t-4.r-169 .p-content { left:96px; right:860px; bottom:88px; }
 .poster.t-4.r-169 .p-logo  { left:96px; top:60px; }
-.poster.t-4.r-169 .p-title { font-size:296px; padding-top:52px; }
-.poster.t-4.r-169 .p-desc  { font-size:88px; margin-top:36px; }
-.poster.t-4.r-169 .p-meta  { font-size:64px; }
+.poster.t-4.r-169 .p-title { font-size:592px; padding-top:52px; }
+.poster.t-4.r-169 .p-desc  { font-size:176px; margin-top:36px; }
+.poster.t-4.r-169 .p-meta  { font-size:128px; }
 .poster.t-4.r-11  .p-content { left:72px; right:72px; bottom:80px; }
 .poster.t-4.r-11  .p-logo  { left:72px; top:58px; }
-.poster.t-4.r-11  .p-title { font-size:224px; padding-top:40px; }
-.poster.t-4.r-11  .p-desc  { font-size:80px; margin-top:36px; margin-bottom:44px; }
-.poster.t-4.r-11  .p-meta  { font-size:60px; }
+.poster.t-4.r-11  .p-title { font-size:448px; padding-top:40px; }
+.poster.t-4.r-11  .p-desc  { font-size:160px; margin-top:36px; margin-bottom:44px; }
+.poster.t-4.r-11  .p-meta  { font-size:120px; }
 
 /* ════════════════════════════════════════════════════════════════════════
    DONE SCREEN

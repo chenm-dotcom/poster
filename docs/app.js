@@ -37,6 +37,7 @@ const S = {
   image: null,
   imgSrc: 'unsplash',
   doneRatio: '9:16',
+  textPos: 'low',  // 'low' | 'mid' | 'top'
 };
 
 /* ── DOM shortcuts ──────────────────────────────────────────────────────── */
@@ -159,6 +160,7 @@ function startBuild() {
     setTimeout(() => screenBuild.classList.remove('sc-enter'), 400);
 
     applyTemplate(S.template);
+    applyTextPos();
     renderPoster();
     S.step = 0;
     loadStep(0, 1);
@@ -230,10 +232,26 @@ document.querySelectorAll('.tpl-btn').forEach(btn => {
   });
 });
 
+/* ── Text position picker ───────────────────────────────────────────────── */
+document.querySelectorAll('.pos-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.pos-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    S.textPos = btn.dataset.pos;
+    applyTextPos();
+  });
+});
+
+function applyTextPos() {
+  poster.classList.remove('pos-low', 'pos-mid', 'pos-top');
+  poster.classList.add('pos-' + S.textPos);
+}
+
 function applyTemplate(idx) {
   S.template = idx;
   poster.className = poster.className.replace(/\bt-\d\b/g, '').trim();
   poster.classList.add(`t-${idx}`);
+  applyTextPos();
   renderPoster();
 }
 
@@ -442,12 +460,18 @@ function setDrawerTab(src) {
   $('drSearchRow').classList.toggle('hidden', isUpload);
   $('drUpload').classList.toggle('hidden', !isUpload);
   $('drResults').innerHTML = '';
+  if (src === 'giphy') {
+    $('drSearch').placeholder = 'Search GIFs… (party, yoga, celebrate…)';
+    doSearch();
+  } else if (src === 'unsplash') {
+    $('drSearch').placeholder = 'Search images…';
+  }
   if (!isUpload) $('drSearch').focus();
 }
 
 async function doSearch() {
   const q = $('drSearch').value.trim();
-  if (!q) return;
+  if (!q && S.imgSrc !== 'giphy') return;
   const results = $('drResults');
   results.className = 'dr-results loading';
   results.innerHTML = 'Searching…';
@@ -455,7 +479,29 @@ async function doSearch() {
   try {
     let items = [];
 
-    {
+    if (S.imgSrc === 'giphy') {
+      const GIFS = [
+        'l3q2Z6S6n38zjPswo','xT9IgG50Lg7rusyTC4','3o7TKSjRrfIPjeiVyM',
+        'l0HlBO7eyXzSZkJri','26BRuo6sLetdllPAQ','xT9IgDECMFKQdGwdoA',
+        '3o6Zt481isNVuQI1l6','l0MYt5jPR6QX5pnqM','26BRCiV1PmcKxHUkg',
+        'xT9IgxGqQzgFKfSlMs','3oEjHV0z8S7WM4MwnK','l0HlNQ03J5JxqkiVy',
+        'xT9IgwSfTBMWmfnBIk','26ufdipQqU84VcpkI','3o6ZtpxSZbQRRnpFku',
+        'l46Cy1rHbQ92uuLXa','xT9IgG6el5RtEpGoBi','3o7TKMeCOV3oXCMqZi',
+        'l0HlFZ3yOXCbPuOhG','26tknCqiJrBQG6bxC',
+      ];
+      const keyword = q || 'celebrate';
+      const seed = keyword.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+      const shuffled = [...GIFS].sort((a, b) => {
+        const ha = (seed * 1103515245 + a.charCodeAt(0)) & 0x7fffffff;
+        const hb = (seed * 1103515245 + b.charCodeAt(0)) & 0x7fffffff;
+        return ha - hb;
+      });
+      items = shuffled.slice(0, 12).map(id => ({
+        thumb: `https://media.giphy.com/media/${id}/giphy_s.gif`,
+        full:  `https://media.giphy.com/media/${id}/giphy.gif`,
+        type:  'gif',
+      }));
+    } else {
       const PHOTOS = [
         '1540575467063-178a50c2df87','1492684223066-81342ee5ff30','1531058020387-3be344556be6',
         '1511578314322-379afb476865','1470229722913-7c0e2dbbafd3','1514525253161-7a46d19cd819',
