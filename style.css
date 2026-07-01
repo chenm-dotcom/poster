@@ -414,7 +414,10 @@ input, textarea { font: inherit; color: inherit; background: none; border: none;
 /* Done screen TV */
 .done-tv-scene {
   width: 100%; height: 100%;
+  background: transparent !important;
 }
+.done-tv-scene::before,
+.done-tv-scene::after { display: none !important; }
 .done-tv-scene .tv-bezel { padding: 16px; }
 
 /* ════════════════════════════════════════════════════════════════════════
@@ -476,8 +479,8 @@ input, textarea { font: inherit; color: inherit; background: none; border: none;
 .poster.t-0 .p-tag    { display:none; }
 .poster.t-0.r-169 .p-content { left:96px; right:860px; bottom:90px; }
 .poster.t-0.r-169 .p-title  { font-size:144px; }
-.poster.t-0.r-169 .p-desc   { font-size:52px; }
-.poster.t-0.r-169 .p-meta   { font-size:52px; }
+.poster.t-0.r-169 .p-desc   { font-size:42px; }
+.poster.t-0.r-169 .p-meta   { font-size:42px; }
 .poster.t-0.r-11  .p-content { left:72px; right:72px; bottom:88px; }
 .poster.t-0.r-11  .p-title  { font-size:96px; margin-bottom:28px; }
 .poster.t-0.r-11  .p-desc   { font-size:36px; margin-bottom:32px; }
@@ -546,8 +549,24 @@ input, textarea { font: inherit; color: inherit; background: none; border: none;
 .done-left {
   flex: 1; display: flex; align-items: center; justify-content: center;
   padding: 48px 40px;
-  background: radial-gradient(ellipse at 50% 40%, rgba(30,20,10,.8) 0%, #070503 70%);
+  position: relative;
+  background: linear-gradient(160deg, #6b6560 0%, #5a5450 40%, #504c48 100%);
+  overflow: hidden;
 }
+.done-left::before {
+  content: '';
+  position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.32' numOctaves='6' seed='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23p)' opacity='1'/%3E%3C/svg%3E");
+  opacity: 0.22;
+}
+.done-left::after {
+  content: '';
+  position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.82' numOctaves='4' seed='8' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23g)' opacity='1'/%3E%3C/svg%3E");
+  opacity: 0.28;
+  mix-blend-mode: overlay;
+}
+.done-left > * { position: relative; z-index: 1; }
 
 .done-wrap { overflow: hidden; flex-shrink: 0; }
 

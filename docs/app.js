@@ -322,7 +322,7 @@ function goToDone() {
 function updateGifBtn() {
   const isGif = S.image && S.image.type === 'gif';
   $('dsDlGif').classList.toggle('hidden', !isGif);
-  $('dsDl').style.display = isGif ? 'none' : '';
+  $('dsDl').classList.toggle('hidden', isGif);
 }
 
 function renderDonePoster(ratio) {
@@ -346,7 +346,7 @@ function renderDonePoster(ratio) {
     const ph = window.innerHeight - PAD;
     if (pw <= 0 || ph <= 0) { requestAnimationFrame(measure); return; }
     const [nw, nh] = RATIO_DIM[ratio];
-    const scale = Math.min(pw / nw, ph / nh, 1);
+    const scale = Math.min(pw / nw, ph / nh, 1) * 0.78;
     clone.style.transform = `scale(${scale})`;
     clone.style.transformOrigin = 'top left';
     wrap.style.width  = (nw * scale) + 'px';
