@@ -289,10 +289,10 @@ function scalePoster() {
   const stage = $('stage');
   if (!wrap || !stage) return;
   const pw = stage.clientWidth  - 80;
-  const ph = stage.clientHeight - 100;  /* leave room for template strip */
-  const r  = '9:16';   /* build preview always shows 9:16 */
+  const ph = stage.clientHeight - 100;
+  const r  = '9:16';
   const [nw, nh] = RATIO_DIM[r];
-  const scale = Math.min(pw / nw, ph / nh, 1);
+  const scale = Math.min(pw / nw, ph / nh, 1) * 0.9;
   poster.style.transform = `scale(${scale})`;
   wrap.style.width  = (nw * scale) + 'px';
   wrap.style.height = (nh * scale) + 'px';
