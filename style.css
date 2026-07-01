@@ -493,7 +493,7 @@ input, textarea { font: inherit; color: inherit; background: none; border: none;
 .poster.t-1 .p-card {
   display: block;
   inset: 140px 48px;
-  background: rgba(242, 239, 232, 0.98);
+  background: #F2EFE8;
   border-radius: 0;
   box-shadow: 0 8px 48px rgba(0,0,0,.28);
   z-index: 1;

@@ -461,67 +461,48 @@ $('dsDlGif').addEventListener('click', async () => {
   document.body.appendChild(off);
   await document.fonts.ready;
 
-  const canvas = document.createElement('canvas');
-  canvas.width = W; canvas.height = H;
-  const ctx = canvas.getContext('2d');
+  const GIF_SVG = `<svg viewBox="0 0 20 20" fill="none"><path d="M10 3v10M6 9l4 4 4-4M3 16h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
-  const mimeType = ['video/mp4', 'video/webm;codecs=vp9', 'video/webm']
-    .find(m => MediaRecorder.isTypeSupported(m));
+  try {
+    btn.textContent = 'Loading…';
+    const workerCode = await fetch('https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.worker.js').then(r => r.text());
+    const workerUrl = URL.createObjectURL(new Blob([workerCode], { type: 'application/javascript' }));
 
-  if (!mimeType) {
-    alert('Video recording not supported in this browser — please use Chrome.');
-    document.body.removeChild(off);
-    btn.disabled = false;
-    return;
-  }
+    const gif = new GIF({ workers: 2, quality: 10, workerScript: workerUrl, width: W, height: H });
 
-  const stream = canvas.captureStream(25);
-  const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 4000000 });
-  const chunks = [];
-  recorder.ondataavailable = e => e.data.size > 0 && chunks.push(e.data);
-
-  recorder.onstop = () => {
-    document.body.removeChild(off);
-    const ext = mimeType.startsWith('video/mp4') ? 'mp4' : 'webm';
-    const blob = new Blob(chunks, { type: mimeType });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `mindspace-poster.${ext}`;
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
-    btn.innerHTML = `<svg viewBox="0 0 20 20" fill="none"><path d="M10 3v10M6 9l4 4 4-4M3 16h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg> Download Video`;
-    btn.disabled = false;
-  };
-
-  recorder.start(200);
-
-  const DURATION = 4000;
-  const startTime = performance.now();
-  let secs = 4;
-  const tick = setInterval(() => {
-    secs--;
-    if (secs > 0) btn.textContent = `Recording ${secs}s…`;
-  }, 1000);
-  btn.textContent = `Recording 4s…`;
-
-  const captureLoop = async () => {
-    if (performance.now() - startTime >= DURATION) {
-      clearInterval(tick);
-      recorder.stop();
-      return;
-    }
-    try {
+    const FRAMES = 16, DELAY = 150;
+    for (let i = 0; i < FRAMES; i++) {
+      btn.textContent = `Frame ${i + 1}/${FRAMES}…`;
       const c = await html2canvas(off, {
         width: nw, height: nh, scale: SCALE,
         useCORS: true, allowTaint: false,
         backgroundColor: null, logging: false,
       });
-      ctx.drawImage(c, 0, 0);
-    } catch(e) { /* skip frame */ }
-    captureLoop();
-  };
+      gif.addFrame(c, { delay: DELAY, copy: true });
+      await new Promise(r => setTimeout(r, 80));
+    }
 
-  captureLoop();
+    btn.textContent = 'Encoding…';
+    gif.on('finished', blob => {
+      URL.revokeObjectURL(workerUrl);
+      document.body.removeChild(off);
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'mindspace-poster.gif';
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+      btn.innerHTML = `${GIF_SVG} Download GIF`;
+      btn.disabled = false;
+    });
+    gif.render();
+
+  } catch(e) {
+    console.error(e);
+    if (document.body.contains(off)) document.body.removeChild(off);
+    alert('GIF creation failed — check your connection and try again.');
+    btn.innerHTML = `${GIF_SVG} Download GIF`;
+    btn.disabled = false;
+  }
 });
 
 /* ── Image drawer ────────────────────────────────────────────────────────── */
