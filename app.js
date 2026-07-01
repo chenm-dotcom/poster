@@ -489,17 +489,18 @@ async function doSearch() {
 
     if (S.imgSrc === 'giphy') {
       const keyword = q || 'celebrate';
-      const url = `https://tenor.googleapis.com/v2/search?q=${encodeURIComponent(keyword)}&key=AIzaSyAyimkuYQYF_FXVALexPuGQctUWRURdCRA&limit=20&media_filter=tinygif,gif`;
+      const url = `https://api.giphy.com/v1/gifs/search?api_key=dc6zaTOxFJmzC&q=${encodeURIComponent(keyword)}&limit=20&rating=g`;
       const res = await fetch(url);
       if (!res.ok) throw new Error('GIF search failed');
       const json = await res.json();
-      items = json.results.map(g => ({
-        thumb: g.media_formats.tinygif?.url || g.media_formats.gif.url,
-        full:  g.media_formats.gif.url,
+      items = json.data.map(g => ({
+        thumb: g.images.fixed_width_small.url,
+        full:  g.images.original.url,
         type:  'gif',
       }));
     } else {
-      const res = await fetch(`https://unsplash.com/napi/search/photos?query=${encodeURIComponent(q)}&per_page=12&xp=`);
+      const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(`https://unsplash.com/napi/search/photos?query=${q}&per_page=12`)}`;
+      const res = await fetch(proxyUrl);
       if (!res.ok) throw new Error('Photo search failed');
       const json = await res.json();
       items = json.results.map(p => ({
