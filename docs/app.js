@@ -32,6 +32,7 @@ const S = {
   title: '',
   desc: '',
   date: '',
+  day: '',
   location: '',
   image: null,
   imgSrc: 'unsplash',
@@ -97,15 +98,21 @@ const STEPS = [
         <p class="step-hint">Add the date and time — or skip for now.</p>
         <div class="meta-group">
           <div class="meta-row">
-            <span class="meta-label">Date</span>
-            <input class="step-input" id="inputDate" placeholder="Thursday, July 10" value="${S.date}">
+            <span class="meta-label">Day</span>
+            <input class="step-input" id="inputDay" placeholder="Thursday" value="${S.day}">
+          </div>
+          <div class="meta-row">
+            <span class="meta-label">Date & time</span>
+            <input class="step-input" id="inputDate" placeholder="July 10 · 7pm" value="${S.date}">
           </div>
         </div>`;
     },
     mount() {
-      const el = $('inputDate');
-      el.focus();
-      el.addEventListener('input', () => { S.date = el.value; renderPoster(); });
+      const day = $('inputDay');
+      const date = $('inputDate');
+      day.focus();
+      day.addEventListener('input',  () => { S.day  = day.value;  renderPoster(); });
+      date.addEventListener('input', () => { S.date = date.value; renderPoster(); });
       enableNext(true);
     },
   },
@@ -264,7 +271,7 @@ function renderPoster() {
   descEl.textContent = S.desc;
   descEl.style.display = S.desc.trim() ? '' : 'none';
 
-  const metaParts = [S.date, S.location].filter(Boolean);
+  const metaParts = [S.day, S.date, S.location].filter(Boolean);
   const metaEl = $('pMeta');
   metaEl.innerHTML = metaParts.map((p, i) =>
     (i > 0 ? '<span class="p-meta-dot">·</span>' : '') + `<span>${p}</span>`

@@ -388,6 +388,7 @@ input, textarea { font: inherit; color: inherit; background: none; border: none;
 .t2-swatch { background: #2254A3; }
 .t3-swatch { background: linear-gradient(135deg, #D4702A, #C4486B); }
 .t4-swatch { background: #080808; border: 1px solid rgba(255,255,255,.25); }
+.t6-swatch { background: linear-gradient(to bottom, #2A5C3E 55%, #B8AFDC 45%); }
 
 .tpl-divider {
   width: 1px; height: 20px;
@@ -609,6 +610,43 @@ input, textarea { font: inherit; color: inherit; background: none; border: none;
 .poster.t-5.r-11 .p-title   { font-size: 96px; margin-bottom: 28px; }
 .poster.t-5.r-11 .p-desc    { font-size: 34px; margin-bottom: 32px; }
 .poster.t-5.r-11 .p-meta    { font-size: 32px; }
+
+/* ── T6 Strips ───────────────────────────────────────────────────────── */
+/* Layout: [color top strip] [photo middle] [color bottom strip]         */
+.poster.t-6 { background: #2A5C3E; }
+.poster.t-6 .p-bg  { top: 520px; bottom: 400px; opacity: 1; }
+.poster.t-6 .p-ov  { background: #2A5C3E; bottom: auto; height: 520px; }
+.poster.t-6 .p-card {
+  display: block;
+  inset: auto; top: auto; left: 0; right: 0; bottom: 0; height: 400px;
+  background: #C4BDDF; border-radius: 0; z-index: 1;
+}
+.poster.t-6 .p-content {
+  inset: 60px 80px 56px 80px; z-index: 2; gap: 0;
+}
+.poster.t-6 .p-title {
+  color: #FFFFFF; font-size: 156px; font-weight: 800;
+  line-height: 1; margin-bottom: 32px; text-transform: uppercase;
+}
+.poster.t-6 .p-desc  { font-size: 56px; color: rgba(255,255,255,.88); margin-bottom: 0; }
+.poster.t-6 .p-meta  { font-size: 42px; color: rgba(14,8,30,.68); margin-top: auto; }
+.poster.t-6 .p-tag   { display: none; }
+
+.poster.t-6.r-169 .p-bg   { top: 0; bottom: 0; left: 480px; right: 0; }
+.poster.t-6.r-169 .p-ov   { width: 480px; height: auto; right: auto; bottom: 0; }
+.poster.t-6.r-169 .p-card { top: 0; left: auto; right: 0; bottom: 0; width: 360px; height: auto; }
+.poster.t-6.r-169 .p-content { inset: 56px 400px 56px 56px; }
+.poster.t-6.r-169 .p-title { font-size: 120px; }
+.poster.t-6.r-169 .p-desc  { font-size: 44px; }
+.poster.t-6.r-169 .p-meta  { font-size: 34px; }
+
+.poster.t-6.r-11 .p-bg   { top: 320px; bottom: 300px; }
+.poster.t-6.r-11 .p-ov   { height: 320px; }
+.poster.t-6.r-11 .p-card { height: 300px; }
+.poster.t-6.r-11 .p-content { inset: 40px 72px 44px 72px; }
+.poster.t-6.r-11 .p-title { font-size: 96px; margin-bottom: 20px; }
+.poster.t-6.r-11 .p-desc  { font-size: 36px; }
+.poster.t-6.r-11 .p-meta  { font-size: 30px; }
 
 /* ════════════════════════════════════════════════════════════════════════
    DONE SCREEN
