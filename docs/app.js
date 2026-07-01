@@ -452,16 +452,28 @@ $('dsDlGif').addEventListener('click', async () => {
   const SCALE = 0.5;
   const W = Math.round(nw * SCALE), H = Math.round(nh * SCALE);
 
+  const GIF_SVG = `<svg viewBox="0 0 20 20" fill="none"><path d="M10 3v10M6 9l4 4 4-4M3 16h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+  /* Black cover so user doesn't see the full-size poster flash on screen */
+  const cover = document.createElement('div');
+  cover.style.cssText = 'position:fixed;inset:0;z-index:9998;background:#000;';
+  document.body.appendChild(cover);
+
+  /* Clone must be ON-SCREEN (z-index:9999) so the browser keeps the GIF animating */
   const off = poster.cloneNode(true);
   off.id = '';
   off.classList.remove('r-169', 'r-11');
   if (ratio === '16:9') off.classList.add('r-169');
   if (ratio === '1:1')  off.classList.add('r-11');
-  off.style.cssText = `position:fixed;left:-9999px;top:0;width:${nw}px;height:${nh}px;transform:none;`;
+  off.style.cssText = `position:fixed;left:0;top:0;width:${nw}px;height:${nh}px;transform:none;z-index:9999;`;
   document.body.appendChild(off);
   await document.fonts.ready;
+  await new Promise(r => setTimeout(r, 400)); /* let GIF start animating */
 
-  const GIF_SVG = `<svg viewBox="0 0 20 20" fill="none"><path d="M10 3v10M6 9l4 4 4-4M3 16h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  const cleanup = () => {
+    if (document.body.contains(off)) document.body.removeChild(off);
+    if (document.body.contains(cover)) document.body.removeChild(cover);
+  };
 
   try {
     btn.textContent = 'Loading…';
@@ -479,13 +491,13 @@ $('dsDlGif').addEventListener('click', async () => {
         backgroundColor: null, logging: false,
       });
       gif.addFrame(c, { delay: DELAY, copy: true });
-      await new Promise(r => setTimeout(r, 80));
+      await new Promise(r => setTimeout(r, DELAY));
     }
 
     btn.textContent = 'Encoding…';
     gif.on('finished', blob => {
       URL.revokeObjectURL(workerUrl);
-      document.body.removeChild(off);
+      cleanup();
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
       a.download = 'mindspace-poster.gif';
@@ -498,7 +510,7 @@ $('dsDlGif').addEventListener('click', async () => {
 
   } catch(e) {
     console.error(e);
-    if (document.body.contains(off)) document.body.removeChild(off);
+    cleanup();
     alert('GIF creation failed — check your connection and try again.');
     btn.innerHTML = `${GIF_SVG} Download GIF`;
     btn.disabled = false;
