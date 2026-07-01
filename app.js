@@ -54,7 +54,7 @@ const drawer        = $('drawer');
 $('mbMsg').textContent = MOBILE_MSGS[Math.floor(Math.random() * MOBILE_MSGS.length)];
 
 /* ── Spark sentence ─────────────────────────────────────────────────────── */
-$('wlSpark').textContent = SPARKS[Math.floor(Date.now() / 86400000) % SPARKS.length];
+
 
 /* ── Welcome input ──────────────────────────────────────────────────────── */
 const wlInput = $('wlInput');
@@ -386,7 +386,7 @@ $('dsNew').addEventListener('click', () => {
   Object.assign(S, { step:0, title:'', desc:'', date:'', location:'', image:null, doneRatio:'9:16' });
   wlInput.value = '';
   wlGo.disabled = true;
-  $('wlSpark').textContent = SPARKS[Math.floor(Math.random() * SPARKS.length)];
+  
 
   screenDone.classList.add('sc-exit');
   setTimeout(() => {
