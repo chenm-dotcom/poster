@@ -320,7 +320,8 @@ function goToDone() {
 }
 
 function updateGifBtn() {
-  const isGif = S.image && S.image.type === 'gif';
+  const isGif = S.image && (S.image.type === 'gif' || (S.image.url || '').toLowerCase().includes('.gif'));
+  console.log('[updateGifBtn] image:', S.image, 'isGif:', isGif);
   $('dsDlGif').classList.toggle('hidden', !isGif);
   $('dsDl').classList.toggle('hidden', isGif);
 }
