@@ -489,18 +489,18 @@ async function doSearch() {
 
     if (S.imgSrc === 'giphy') {
       const keyword = q || 'celebrate';
-      const url = `https://api.giphy.com/v1/gifs/search?api_key=dc6zaTOxFJmzC&q=${encodeURIComponent(keyword)}&limit=20&rating=g`;
+      const url = `https://api.tenor.com/v1/search?q=${encodeURIComponent(keyword)}&key=LIVDSRZULELA&limit=20&contentfilter=medium&media_filter=minimal`;
       const res = await fetch(url);
       if (!res.ok) throw new Error('GIF search failed');
       const json = await res.json();
-      items = json.data.map(g => ({
-        thumb: g.images.fixed_width_small.url,
-        full:  g.images.original.url,
+      items = json.results.map(g => ({
+        thumb: g.media[0].tinygif?.url || g.media[0].gif?.url,
+        full:  g.media[0].gif?.url,
         type:  'gif',
-      }));
+      })).filter(g => g.thumb && g.full);
     } else {
-      const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(`https://unsplash.com/napi/search/photos?query=${q}&per_page=12`)}`;
-      const res = await fetch(proxyUrl);
+      const target = `https://unsplash.com/napi/search/photos?query=${encodeURIComponent(q)}&per_page=12`;
+      const res = await fetch(`https://corsproxy.io/?${encodeURIComponent(target)}`);
       if (!res.ok) throw new Error('Photo search failed');
       const json = await res.json();
       items = json.results.map(p => ({
