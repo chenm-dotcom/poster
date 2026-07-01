@@ -379,7 +379,7 @@ $('dsEdit').addEventListener('click', () => {
 });
 
 $('dsNew').addEventListener('click', () => {
-  Object.assign(S, { step:0, title:'', desc:'', date:'', location:'', image:null, doneRatio:'9:16' });
+  Object.assign(S, { step:0, title:'', desc:'', date:'', day:'', location:'', image:null, doneRatio:'9:16' });
   wlInput.value = '';
   wlGo.disabled = true;
   
@@ -468,7 +468,7 @@ function setDrawerTab(src) {
 
 async function doSearch() {
   const q = $('drSearch').value.trim();
-  if (!q && S.imgSrc !== 'giphy') return;
+  if (!q && S.imgSrc === 'unsplash') { $('drSearch').focus(); return; }
   const results = $('drResults');
   results.className = 'dr-results loading';
   results.innerHTML = 'Searching…';
