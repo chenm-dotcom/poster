@@ -315,7 +315,14 @@ function goToDone() {
     setTimeout(() => screenDone.classList.remove('sc-enter'), 400);
     renderDonePoster('9:16');
     updateFmtBtns('9:16');
+    updateGifBtn();
   }, 220);
+}
+
+function updateGifBtn() {
+  const isGif = S.image && S.image.type === 'gif';
+  $('dsDlGif').classList.toggle('hidden', !isGif);
+  $('dsDl').style.display = isGif ? 'none' : '';
 }
 
 function renderDonePoster(ratio) {
@@ -431,6 +438,26 @@ $('dsDl').addEventListener('click', async () => {
   } finally {
     document.body.removeChild(off);
     btn.innerHTML = `<svg viewBox="0 0 20 20" fill="none"><path d="M10 3v10M6 9l4 4 4-4M3 16h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg> Download PNG`;
+    btn.disabled = false;
+  }
+});
+
+$('dsDlGif').addEventListener('click', async () => {
+  const btn = $('dsDlGif');
+  btn.textContent = 'Downloading…';
+  btn.disabled = true;
+  try {
+    const res = await fetch(S.image.url);
+    const blob = await res.blob();
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'mindspace-poster.gif';
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  } catch(e) {
+    alert('GIF download failed — try right-clicking the image and saving.');
+  } finally {
+    btn.innerHTML = `<svg viewBox="0 0 20 20" fill="none"><path d="M10 3v10M6 9l4 4 4-4M3 16h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg> Download GIF`;
     btn.disabled = false;
   }
 });
