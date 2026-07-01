@@ -248,6 +248,8 @@ function applyTextPos() {
 
 function applyTemplate(idx) {
   S.template = idx;
+  poster.classList.add('poster-flash');
+  setTimeout(() => poster.classList.remove('poster-flash'), 350);
   poster.className = poster.className.replace(/\bt-\d\b/g, '').trim();
   poster.classList.add(`t-${idx}`);
   applyTextPos();

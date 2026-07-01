@@ -206,8 +206,25 @@ input, textarea { font: inherit; color: inherit; background: none; border: none;
 
 .wz-foot {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 18px 30px 30px;
+  padding: 18px 30px 20px;
   border-top: 1px solid rgba(255,255,255,.04);
+}
+
+.wz-controls {
+  padding: 16px 30px 28px;
+  display: flex; flex-direction: column; gap: 12px;
+  border-top: 1px solid rgba(255,255,255,.04);
+}
+.wz-ctrl-row {
+  display: flex; align-items: center; gap: 10px;
+}
+.wz-ctrl-label {
+  font-size: 10px; color: var(--dim);
+  letter-spacing: .07em; text-transform: uppercase;
+  min-width: 52px; flex-shrink: 0;
+}
+.wz-ctrl-btns {
+  display: flex; flex-wrap: wrap; gap: 6px;
 }
 
 .wz-skip {
@@ -270,6 +287,14 @@ input, textarea { font: inherit; color: inherit; background: none; border: none;
   object-fit: cover; flex-shrink: 0; display: none;
 }
 .img-pick.picked .img-pick-thumb { display: block; }
+
+/* Poster flash on template switch */
+@keyframes posterFlash {
+  0%   { opacity: 1; }
+  30%  { opacity: .55; }
+  100% { opacity: 1; }
+}
+.poster-flash { animation: posterFlash .35s ease; }
 
 /* ── Stage + TV mockup ────────────────────────────────────────────────── */
 .stage {
@@ -405,10 +430,15 @@ input, textarea { font: inherit; color: inherit; background: none; border: none;
 
 .p-bg {
   position: absolute; inset: 0;
+  transition: opacity .4s ease;
   background-size: cover; background-position: center;
 }
 .p-ov { position: absolute; inset: 0; }
-.p-content { position: absolute; display: flex; flex-direction: column; }
+.p-content {
+  position: absolute; display: flex; flex-direction: column;
+  transition: top .45s cubic-bezier(.22,1,.36,1),
+              bottom .45s cubic-bezier(.22,1,.36,1);
+}
 .p-logo { display: none !important; }
 .p-tag  { display: none !important; }
 .p-title {
