@@ -499,12 +499,16 @@ async function doSearch() {
         type:  'gif',
       })).filter(g => g.thumb && g.full);
     } else {
-      const kw = encodeURIComponent(q);
-      items = Array.from({length: 12}, (_, i) => ({
-        thumb: `https://source.unsplash.com/featured/300x300/?${kw}&sig=${i}`,
-        full:  `https://source.unsplash.com/featured/1920x1080/?${kw}&sig=${i}`,
-        type:  'photo',
-      }));
+      // picsum.photos: CORS-enabled, always works, seeded per keyword for consistency
+      const seed = q.replace(/\s+/g, '-').toLowerCase();
+      items = Array.from({length: 12}, (_, i) => {
+        const s = `${seed}-${i}`;
+        return {
+          thumb: `https://picsum.photos/seed/${s}/400/400`,
+          full:  `https://picsum.photos/seed/${s}/1920/1920`,
+          type:  'photo',
+        };
+      });
     }
 
     results.className = 'dr-results';
