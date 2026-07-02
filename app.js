@@ -446,76 +446,190 @@ $('dsDl').addEventListener('click', async () => {
 $('dsDlGif').addEventListener('click', async () => {
   const btn = $('dsDlGif');
   btn.disabled = true;
+  const GIF_SVG = `<svg viewBox="0 0 20 20" fill="none"><path d="M10 3v10M6 9l4 4 4-4M3 16h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  const resetBtn = () => { btn.innerHTML = `${GIF_SVG} Download GIF`; btn.disabled = false; };
 
   const ratio = S.doneRatio;
   const [nw, nh] = RATIO_DIM[ratio];
   const SCALE = 0.5;
   const W = Math.round(nw * SCALE), H = Math.round(nh * SCALE);
 
-  const GIF_SVG = `<svg viewBox="0 0 20 20" fill="none"><path d="M10 3v10M6 9l4 4 4-4M3 16h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-
-  /* Black cover so user doesn't see the full-size poster flash on screen */
+  /* Black cover + on-screen clone so browser keeps GIF frame-advancing */
   const cover = document.createElement('div');
   cover.style.cssText = 'position:fixed;inset:0;z-index:9998;background:#000;';
   document.body.appendChild(cover);
-
-  /* Clone must be ON-SCREEN (z-index:9999) so the browser keeps the GIF animating */
   const off = poster.cloneNode(true);
   off.id = '';
-  off.classList.remove('r-169', 'r-11');
-  if (ratio === '16:9') off.classList.add('r-169');
-  if (ratio === '1:1')  off.classList.add('r-11');
+  off.classList.remove('r-169','r-11');
+  if (ratio==='16:9') off.classList.add('r-169');
+  if (ratio==='1:1')  off.classList.add('r-11');
   off.style.cssText = `position:fixed;left:0;top:0;width:${nw}px;height:${nh}px;transform:none;z-index:9999;`;
   document.body.appendChild(off);
   await document.fonts.ready;
-  await new Promise(r => setTimeout(r, 400)); /* let GIF start animating */
+  await new Promise(r => setTimeout(r, 400));
 
   const cleanup = () => {
-    if (document.body.contains(off)) document.body.removeChild(off);
-    if (document.body.contains(cover)) document.body.removeChild(cover);
+    [off, cover].forEach(el => document.body.contains(el) && document.body.removeChild(el));
   };
 
+  /* Capture frames */
+  const FRAMES = 18, DELAY = 130;
+  const frames = [];
   try {
-    btn.textContent = 'Loading…';
-    const workerCode = await fetch('https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.worker.js').then(r => r.text());
-    const workerUrl = URL.createObjectURL(new Blob([workerCode], { type: 'application/javascript' }));
-
-    const gif = new GIF({ workers: 2, quality: 5, repeat: 0, workerScript: workerUrl, width: W, height: H });
-
-    const FRAMES = 20, DELAY = 120;
     for (let i = 0; i < FRAMES; i++) {
-      btn.textContent = `Frame ${i + 1}/${FRAMES}…`;
+      btn.textContent = `Frame ${i+1}/${FRAMES}…`;
       const c = await html2canvas(off, {
         width: nw, height: nh, scale: SCALE,
-        useCORS: true, allowTaint: false,
+        useCORS: true, allowTaint: true,   /* allowTaint:true — we read pixels ourselves */
         backgroundColor: null, logging: false,
       });
-      gif.addFrame(c, { delay: DELAY, copy: true });
+      frames.push(c);
       await new Promise(r => setTimeout(r, DELAY));
     }
-
-    btn.textContent = 'Encoding…';
-    gif.on('finished', blob => {
-      URL.revokeObjectURL(workerUrl);
-      cleanup();
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = 'mindspace-poster.gif';
-      a.click();
-      setTimeout(() => URL.revokeObjectURL(a.href), 5000);
-      btn.innerHTML = `${GIF_SVG} Download GIF`;
-      btn.disabled = false;
-    });
-    gif.render();
-
   } catch(e) {
-    console.error(e);
-    cleanup();
-    alert('GIF creation failed — check your connection and try again.');
-    btn.innerHTML = `${GIF_SVG} Download GIF`;
-    btn.disabled = false;
+    cleanup(); console.error(e);
+    alert('Capture failed: ' + e.message); resetBtn(); return;
   }
+  cleanup();
+
+  /* Encode animated GIF using omggif (inline) */
+  btn.textContent = 'Encoding…';
+  try {
+    const gifBytes = encodeAnimatedGif(frames, DELAY, W, H);
+    const blob = new Blob([gifBytes], { type: 'image/gif' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'mindspace-poster.gif';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+  } catch(e) {
+    console.error(e); alert('Encoding failed: ' + e.message);
+  }
+  resetBtn();
 });
+
+/* ── Minimal animated GIF encoder (LZW + GIF89a) ─────────────────────────── */
+function encodeAnimatedGif(canvases, delayMs, w, h) {
+  const delay = Math.round(delayMs / 10); /* GIF delay unit = 10ms */
+
+  /* Build global palette from first frame */
+  const palette = buildPalette(canvases[0], w, h);
+  const palSize = 256;
+
+  const out = [];
+  const wr = (v) => out.push(v & 0xff);
+  const wrBytes = (arr) => arr.forEach(v => out.push(v & 0xff));
+  const wrStr = (s) => { for (let i=0;i<s.length;i++) out.push(s.charCodeAt(i)); };
+
+  /* Header */
+  wrStr('GIF89a');
+  wrBytes([w&0xff,(w>>8)&0xff, h&0xff,(h>>8)&0xff]);
+  wr(0xf7); /* global color table, 256 colors */
+  wr(0); wr(0); /* bg, aspect */
+  palette.table.forEach(([r,g,b]) => { wr(r); wr(g); wr(b); });
+
+  /* Netscape loop extension */
+  wrBytes([0x21,0xff,0x0b]);
+  wrStr('NETSCAPE2.0');
+  wrBytes([0x03,0x01,0x00,0x00,0x00]);
+
+  for (const canvas of canvases) {
+    /* Graphic Control Extension */
+    wrBytes([0x21,0xf9,0x04,0x00]);
+    wrBytes([delay&0xff,(delay>>8)&0xff]);
+    wr(0); wr(0);
+
+    /* Image Descriptor */
+    wrBytes([0x2c, 0,0, 0,0, w&0xff,(w>>8)&0xff, h&0xff,(h>>8)&0xff, 0x00]);
+
+    /* LZW-compressed pixels */
+    const pixels = quantize(canvas, w, h, palette);
+    const lzw = lzwEncode(pixels, 8);
+    wr(8); /* min code size */
+    for (let i=0; i<lzw.length; i+=255) {
+      const chunk = lzw.slice(i, i+255);
+      wr(chunk.length);
+      wrBytes(chunk);
+    }
+    wr(0);
+  }
+
+  wr(0x3b); /* trailer */
+  return new Uint8Array(out);
+}
+
+function buildPalette(canvas, w, h) {
+  const ctx = canvas.getContext('2d');
+  const data = ctx.getImageData(0, 0, w, h).data;
+  /* median-cut palette (simplified: sample pixels, deduplicate to 256) */
+  const seen = new Map();
+  for (let i=0; i<data.length; i+=4) {
+    const r=data[i]&0xf8, g=data[i+1]&0xf8, b=data[i+2]&0xf8;
+    const k=(r<<16)|(g<<8)|b;
+    seen.set(k, [r,g,b]);
+    if (seen.size>=255) break;
+  }
+  const table = [[0,0,0], ...seen.values()].slice(0,256);
+  while (table.length<256) table.push([0,0,0]);
+  return { table };
+}
+
+function quantize(canvas, w, h, palette) {
+  const ctx = canvas.getContext('2d');
+  const data = ctx.getImageData(0, 0, w, h).data;
+  const pixels = new Uint8Array(w * h);
+  for (let i=0, p=0; i<data.length; i+=4, p++) {
+    const r=data[i], g=data[i+1], b=data[i+2];
+    let best=0, bestDist=1e9;
+    for (let j=1; j<palette.table.length; j++) {
+      const [pr,pg,pb]=palette.table[j];
+      const d=(r-pr)**2+(g-pg)**2+(b-pb)**2;
+      if (d<bestDist) { bestDist=d; best=j; }
+    }
+    pixels[p]=best;
+  }
+  return pixels;
+}
+
+function lzwEncode(pixels, minCodeSize) {
+  const clear = 1 << minCodeSize;
+  const eoi = clear + 1;
+  let codeSize = minCodeSize + 1;
+  let nextCode = eoi + 1;
+  const table = new Map();
+  const out = [];
+  let buf = 0, bufBits = 0;
+
+  const emit = (code) => {
+    buf |= code << bufBits;
+    bufBits += codeSize;
+    while (bufBits >= 8) { out.push(buf & 0xff); buf >>= 8; bufBits -= 8; }
+  };
+
+  const reset = () => {
+    table.clear(); codeSize = minCodeSize + 1; nextCode = eoi + 1;
+    for (let i=0; i<clear; i++) table.set(String(i), i);
+  };
+
+  reset(); emit(clear);
+  let str = String(pixels[0]);
+  for (let i=1; i<pixels.length; i++) {
+    const next = str + ',' + pixels[i];
+    if (table.has(next)) { str = next; continue; }
+    emit(table.get(str));
+    if (nextCode < 4096) {
+      table.set(next, nextCode++);
+      if (nextCode > (1 << codeSize) && codeSize < 12) codeSize++;
+    } else {
+      emit(clear); reset();
+    }
+    str = String(pixels[i]);
+  }
+  emit(table.get(str));
+  emit(eoi);
+  if (bufBits > 0) out.push(buf & 0xff);
+  return out;
+}
 
 /* ── Image drawer ────────────────────────────────────────────────────────── */
 function openDrawer() {
@@ -600,8 +714,24 @@ async function doSearch() {
   }
 }
 
-function selectImage({ full, thumb, type }) {
-  S.image = { url: full, thumb, type };
+async function selectImage({ full, thumb, type }) {
+  if (type === 'gif') {
+    // Convert to data URL so html2canvas can capture it (avoids CORS taint)
+    try {
+      const res = await fetch(full);
+      const blob = await res.blob();
+      const dataUrl = await new Promise(resolve => {
+        const reader = new FileReader();
+        reader.onload = e => resolve(e.target.result);
+        reader.readAsDataURL(blob);
+      });
+      S.image = { url: dataUrl, thumb, type };
+    } catch(e) {
+      S.image = { url: full, thumb, type };
+    }
+  } else {
+    S.image = { url: full, thumb, type };
+  }
   renderPoster();
   closeDrawer();
   if (S.step === 3) {
