@@ -508,131 +508,117 @@ $('dsDlGif').addEventListener('click', async () => {
   resetBtn();
 });
 
-/* ── Minimal animated GIF encoder (LZW + GIF89a) ─────────────────────────── */
+/* ── Animated GIF encoder (GIF89a, fixed 6×6×6 palette) ────────────────── */
 function encodeAnimatedGif(canvases, delayMs, w, h) {
-  const delay = Math.round(delayMs / 10); /* GIF delay unit = 10ms */
+  const delay = Math.round(delayMs / 10);
+  const PAL   = buildFixedPalette(); /* 216-color cube + 40 grays = 256 */
 
-  /* Build global palette from first frame */
-  const palette = buildPalette(canvases[0], w, h);
-  const palSize = 256;
+  const out   = [];
+  const wr    = v => out.push(v & 0xff);
+  const wrStr = s => { for (let i=0;i<s.length;i++) out.push(s.charCodeAt(i)); };
 
-  const out = [];
-  const wr = (v) => out.push(v & 0xff);
-  const wrBytes = (arr) => arr.forEach(v => out.push(v & 0xff));
-  const wrStr = (s) => { for (let i=0;i<s.length;i++) out.push(s.charCodeAt(i)); };
-
-  /* Header */
+  /* Header + logical screen descriptor + global palette */
   wrStr('GIF89a');
-  wrBytes([w&0xff,(w>>8)&0xff, h&0xff,(h>>8)&0xff]);
-  wr(0xf7); /* global color table, 256 colors */
-  wr(0); wr(0); /* bg, aspect */
-  palette.table.forEach(([r,g,b]) => { wr(r); wr(g); wr(b); });
+  out.push(w&0xff,(w>>8)&0xff, h&0xff,(h>>8)&0xff, 0xf7, 0, 0);
+  for (let i=0; i<768; i++) wr(PAL[i]);
 
-  /* Netscape loop extension */
-  wrBytes([0x21,0xff,0x0b]);
+  /* Netscape loop-forever extension */
+  out.push(0x21,0xff,0x0b);
   wrStr('NETSCAPE2.0');
-  wrBytes([0x03,0x01,0x00,0x00,0x00]);
+  out.push(0x03,0x01,0x00,0x00,0x00);
 
   for (const canvas of canvases) {
     /* Graphic Control Extension */
-    wrBytes([0x21,0xf9,0x04,0x00]);
-    wrBytes([delay&0xff,(delay>>8)&0xff]);
-    wr(0); wr(0);
-
+    out.push(0x21,0xf9,0x04,0x00, delay&0xff,(delay>>8)&0xff, 0x00,0x00);
     /* Image Descriptor */
-    wrBytes([0x2c, 0,0, 0,0, w&0xff,(w>>8)&0xff, h&0xff,(h>>8)&0xff, 0x00]);
-
-    /* LZW-compressed pixels */
-    const pixels = quantize(canvas, w, h, palette);
-    const lzw = lzwEncode(pixels, 8);
-    wr(8); /* min code size */
+    out.push(0x2c, 0,0,0,0, w&0xff,(w>>8)&0xff, h&0xff,(h>>8)&0xff, 0x00);
+    /* Pixels */
+    const pixels = quantizeFixed(canvas, w, h, PAL);
+    const lzw    = lzwEncode(pixels, 8);
+    wr(8);
     for (let i=0; i<lzw.length; i+=255) {
-      const chunk = lzw.slice(i, i+255);
-      wr(chunk.length);
-      wrBytes(chunk);
+      const end = Math.min(i+255, lzw.length);
+      wr(end - i);
+      for (let j=i; j<end; j++) wr(lzw[j]);
     }
     wr(0);
   }
 
-  wr(0x3b); /* trailer */
+  wr(0x3b);
   return new Uint8Array(out);
 }
 
-function buildPalette(canvas, w, h) {
-  const ctx = canvas.getContext('2d');
-  const data = ctx.getImageData(0, 0, w, h).data;
-  /* Sample evenly across the entire image (every ~8th pixel) to cover all color areas */
-  const step = Math.max(1, Math.floor(data.length / 4 / 2000)) * 4;
-  const seen = new Map();
-  for (let i=0; i<data.length; i+=step) {
-    const r=data[i]&0xf8, g=data[i+1]&0xf8, b=data[i+2]&0xf8;
-    const k=(r<<16)|(g<<8)|b;
-    if (!seen.has(k)) seen.set(k, [r,g,b]);
+/* Fixed palette: 6×6×6 RGB cube (0,51,102,153,204,255) + 40 evenly-spaced grays.
+   Guarantees white, black, and all common poster colors are always present. */
+function buildFixedPalette() {
+  const buf   = new Uint8Array(768);
+  const steps = [0,51,102,153,204,255];
+  let idx = 0;
+  for (let r=0;r<6;r++) for (let g=0;g<6;g++) for (let b=0;b<6;b++) {
+    buf[idx*3]=steps[r]; buf[idx*3+1]=steps[g]; buf[idx*3+2]=steps[b]; idx++;
   }
-  const table = [[0,0,0], ...seen.values()].slice(0,256);
-  while (table.length<256) table.push([0,0,0]);
-  return { table };
+  for (let i=0; i<40; i++) {
+    const v = Math.round(i * 255 / 39);
+    buf[idx*3]=v; buf[idx*3+1]=v; buf[idx*3+2]=v; idx++;
+  }
+  return buf;
 }
 
-function quantize(canvas, w, h, palette) {
-  const ctx = canvas.getContext('2d');
+/* O(1) quantize: snap each channel to nearest cube step, compare to nearest gray */
+function quantizeFixed(canvas, w, h, PAL) {
+  const ctx  = canvas.getContext('2d');
   const data = ctx.getImageData(0, 0, w, h).data;
-  const pixels = new Uint8Array(w * h);
-  /* Cache nearest-palette lookup keyed by 6-bit-per-channel quantized color */
-  const cache = new Map();
+  const out  = new Uint8Array(w * h);
   for (let i=0, p=0; i<data.length; i+=4, p++) {
     const r=data[i], g=data[i+1], b=data[i+2];
-    const cacheKey = (r>>2)<<16 | (g>>2)<<8 | (b>>2);
-    let best = cache.get(cacheKey);
-    if (best === undefined) {
-      best = 0; let bestDist = 1e9;
-      for (let j=0; j<palette.table.length; j++) {
-        const [pr,pg,pb]=palette.table[j];
-        const d=(r-pr)**2+(g-pg)**2+(b-pb)**2;
-        if (d<bestDist) { bestDist=d; best=j; }
-      }
-      cache.set(cacheKey, best);
-    }
-    pixels[p]=best;
+    const ri=Math.round(r/51), gi=Math.round(g/51), bi=Math.round(b/51);
+    const ci = ri*36 + gi*6 + bi;
+    const pr=PAL[ci*3], pg=PAL[ci*3+1], pb=PAL[ci*3+2];
+    const dCube = (r-pr)**2 + (g-pg)**2 + (b-pb)**2;
+    const lum   = r*0.299 + g*0.587 + b*0.114;
+    const gi2   = 216 + Math.min(39, Math.round(lum * 39 / 255));
+    const gv    = PAL[gi2*3];
+    const dGray = (r-gv)**2 + (g-gv)**2 + (b-gv)**2;
+    out[p] = dGray < dCube ? gi2 : ci;
   }
-  return pixels;
+  return out;
 }
 
+/* LZW encoder — integer-keyed Map, no string concatenation */
 function lzwEncode(pixels, minCodeSize) {
   const clear = 1 << minCodeSize;
-  const eoi = clear + 1;
+  const eoi   = clear + 1;
   let codeSize = minCodeSize + 1;
   let nextCode = eoi + 1;
-  const table = new Map();
-  const out = [];
+  let table    = new Map();
+  const out    = [];
   let buf = 0, bufBits = 0;
 
-  const emit = (code) => {
+  const emit = code => {
     buf |= code << bufBits;
     bufBits += codeSize;
     while (bufBits >= 8) { out.push(buf & 0xff); buf >>= 8; bufBits -= 8; }
   };
 
-  const reset = () => {
-    table.clear(); codeSize = minCodeSize + 1; nextCode = eoi + 1;
-    for (let i=0; i<clear; i++) table.set(String(i), i);
-  };
+  const reset = () => { table = new Map(); codeSize = minCodeSize + 1; nextCode = eoi + 1; };
 
-  reset(); emit(clear);
-  let str = String(pixels[0]);
+  emit(clear);
+  let prefix = pixels[0];
   for (let i=1; i<pixels.length; i++) {
-    const next = str + ',' + pixels[i];
-    if (table.has(next)) { str = next; continue; }
-    emit(table.get(str));
+    const sym = pixels[i];
+    const key = (prefix << 8) | sym;
+    const hit = table.get(key);
+    if (hit !== undefined) { prefix = hit; continue; }
+    emit(prefix);
     if (nextCode < 4096) {
-      table.set(next, nextCode++);
+      table.set(key, nextCode++);
       if (nextCode > (1 << codeSize) && codeSize < 12) codeSize++;
     } else {
       emit(clear); reset();
     }
-    str = String(pixels[i]);
+    prefix = sym;
   }
-  emit(table.get(str));
+  emit(prefix);
   emit(eoi);
   if (bufBits > 0) out.push(buf & 0xff);
   return out;
