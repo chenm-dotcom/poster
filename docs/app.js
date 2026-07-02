@@ -561,13 +561,13 @@ function encodeAnimatedGif(canvases, delayMs, w, h) {
 function buildPalette(canvas, w, h) {
   const ctx = canvas.getContext('2d');
   const data = ctx.getImageData(0, 0, w, h).data;
-  /* median-cut palette (simplified: sample pixels, deduplicate to 256) */
+  /* Sample evenly across the entire image (every ~8th pixel) to cover all color areas */
+  const step = Math.max(1, Math.floor(data.length / 4 / 2000)) * 4;
   const seen = new Map();
-  for (let i=0; i<data.length; i+=4) {
+  for (let i=0; i<data.length; i+=step) {
     const r=data[i]&0xf8, g=data[i+1]&0xf8, b=data[i+2]&0xf8;
     const k=(r<<16)|(g<<8)|b;
-    seen.set(k, [r,g,b]);
-    if (seen.size>=255) break;
+    if (!seen.has(k)) seen.set(k, [r,g,b]);
   }
   const table = [[0,0,0], ...seen.values()].slice(0,256);
   while (table.length<256) table.push([0,0,0]);
@@ -578,13 +578,20 @@ function quantize(canvas, w, h, palette) {
   const ctx = canvas.getContext('2d');
   const data = ctx.getImageData(0, 0, w, h).data;
   const pixels = new Uint8Array(w * h);
+  /* Cache nearest-palette lookup keyed by 6-bit-per-channel quantized color */
+  const cache = new Map();
   for (let i=0, p=0; i<data.length; i+=4, p++) {
     const r=data[i], g=data[i+1], b=data[i+2];
-    let best=0, bestDist=1e9;
-    for (let j=1; j<palette.table.length; j++) {
-      const [pr,pg,pb]=palette.table[j];
-      const d=(r-pr)**2+(g-pg)**2+(b-pb)**2;
-      if (d<bestDist) { bestDist=d; best=j; }
+    const cacheKey = (r>>2)<<16 | (g>>2)<<8 | (b>>2);
+    let best = cache.get(cacheKey);
+    if (best === undefined) {
+      best = 0; let bestDist = 1e9;
+      for (let j=0; j<palette.table.length; j++) {
+        const [pr,pg,pb]=palette.table[j];
+        const d=(r-pr)**2+(g-pg)**2+(b-pb)**2;
+        if (d<bestDist) { bestDist=d; best=j; }
+      }
+      cache.set(cacheKey, best);
     }
     pixels[p]=best;
   }
