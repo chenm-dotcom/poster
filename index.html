@@ -2,7 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="The Cleaner">
+  <meta name="theme-color" content="#000000">
+  <link rel="apple-touch-icon" href="icon.png">
   <title>The Cleaner</title>
   <style>
     html, body {
@@ -12,7 +18,43 @@
       overflow: hidden;
       touch-action: none;
       user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      -webkit-tap-highlight-color: transparent;
     }
+    body { position: fixed; inset: 0; }
+    /* read by script to keep the HUD clear of the notch / home indicator */
+    #safe {
+      position: fixed;
+      visibility: hidden;
+      pointer-events: none;
+      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    }
+    .overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 2;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      padding: 24px;
+      background: #000;
+      color: #ddd;
+      font: 18px/1.4 -apple-system, "Helvetica Neue", sans-serif;
+      text-align: center;
+    }
+    .overlay b { font: 800 40px "Avenir Next Condensed", Impact, "Arial Black", sans-serif; color: #e8e8e8; letter-spacing: 1px; }
+    .overlay .phone {
+      width: 46px; height: 86px;
+      border: 4px solid #c3141f;
+      border-radius: 10px;
+      animation: turn 1.8s ease-in-out infinite;
+    }
+    @keyframes turn { 0%, 30% { transform: rotate(0); } 60%, 100% { transform: rotate(-90deg); } }
+    @media (orientation: portrait) { #rotate { display: flex; } }
+    #notphone.show { display: flex; }
     canvas {
       position: absolute;
       left: 50%;
@@ -24,12 +66,24 @@
 </head>
 <body>
 <canvas id="c"></canvas>
+<div id="safe"></div>
+<div class="overlay" id="rotate">
+  <div class="phone"></div>
+  <b>THE CLEANER</b>
+  <div>Turn your iPhone sideways to play.</div>
+</div>
+<div class="overlay" id="notphone">
+  <b>THE CLEANER</b>
+  <div>This is an iPhone game.<br>Open this page on your iPhone and turn it sideways.</div>
+  <div id="url" style="color:#ffd23b"></div>
+</div>
 <script>
 (() => {
   'use strict';
 
   // ─── Setup ────────────────────────────────────────────────────────────────
-  const W = 1280, H = 720;
+  let W = 1280;            // logical width adapts to the screen's aspect ratio
+  const H = 720;
   const WALL_BASE = 560;   // where the building facades meet the sidewalk
   const GROUND = 640;      // feet line for characters
   const G = 1700;          // gravity (px/s²)
@@ -38,15 +92,29 @@
 
   const canvas = document.getElementById('c');
   const ctx = canvas.getContext('2d');
-  canvas.width = W;
-  canvas.height = H;
+  let safeL = 0, safeR = 0, safeB = 0; // notch / home-indicator insets, in canvas units
   function fit() {
-    const s = Math.min(innerWidth / W, innerHeight / H);
+    const vw = innerWidth, vh = innerHeight;
+    W = Math.round(Math.max(1100, Math.min(1700, H * vw / vh)));
+    canvas.width = W;
+    canvas.height = H;
+    const s = Math.min(vw / W, vh / H);
     canvas.style.width = W * s + 'px';
     canvas.style.height = H * s + 'px';
+    const cs = getComputedStyle(document.getElementById('safe'));
+    safeL = (parseFloat(cs.paddingLeft) || 0) / s;
+    safeR = (parseFloat(cs.paddingRight) || 0) / s;
+    safeB = (parseFloat(cs.paddingBottom) || 0) / s;
   }
   addEventListener('resize', fit);
+  addEventListener('orientationchange', () => setTimeout(fit, 300));
   fit();
+
+  const isTouch = navigator.maxTouchPoints > 0 || matchMedia('(pointer: coarse)').matches;
+  if (!isTouch) {
+    document.getElementById('url').textContent = location.href;
+    document.getElementById('notphone').classList.add('show');
+  }
 
   const rand = (a, b) => a + Math.random() * (b - a);
   const pick = a => a[Math.floor(Math.random() * a.length)];
@@ -138,39 +206,57 @@
     thud() { noise(0.25, 180, 'lowpass', 0.7); tone(80, 40, 0.2, 'sine', 0.4); },
   };
 
-  // ─── Input ────────────────────────────────────────────────────────────────
-  const mouse = { x: W * 0.75, y: GROUND - 110 };
-  const keys = {};
+  // ─── Touch input ──────────────────────────────────────────────────────────
+  const mouse = { x: 960, y: GROUND - 110 }; // last aim point, in screen (canvas) coords
+  let tapFade = 0;
+  const held = new Map(); // pointerId -> on-screen button being held
+  const isHeld = name => [...held.values()].includes(name);
+
+  function buttons() {
+    const y = H - 80 - safeB;
+    return {
+      back: { x: safeL + 85, y, r: 54 },
+      fwd: { x: safeL + 210, y, r: 54 },
+      reload: { x: W - safeR - 85, y, r: 54 },
+      pause: { x: W - safeR - 52, y: 118, r: 34 },
+    };
+  }
+  function buttonAt(pt) {
+    for (const [k, b] of Object.entries(buttons())) {
+      if (Math.hypot(pt.x - b.x, pt.y - b.y) < b.r + 12) return k;
+    }
+    return null;
+  }
   function toCanvas(e) {
     const r = canvas.getBoundingClientRect();
     return { x: (e.clientX - r.left) * W / r.width, y: (e.clientY - r.top) * H / r.height };
   }
-  canvas.addEventListener('pointermove', e => Object.assign(mouse, toCanvas(e)));
   canvas.addEventListener('pointerdown', e => {
+    e.preventDefault();
     initAudio();
-    Object.assign(mouse, toCanvas(e));
-    if (e.button === 2) { startReload(); return; }
+    const pt = toCanvas(e);
     if (state === 'title' || (state === 'over' && overT > 1.2)) { startGame(); return; }
-    if (state === 'play') shoot();
+    if (state === 'paused') { state = 'play'; return; }
+    if (state !== 'play') return;
+    const b = buttonAt(pt);
+    if (b === 'pause') { state = 'paused'; return; }
+    if (b === 'reload') { startReload(); return; }
+    if (b) { held.set(e.pointerId, b); return; }
+    Object.assign(mouse, pt);
+    tapFade = 0.7;
+    shoot();
   });
+  const release = e => held.delete(e.pointerId);
+  canvas.addEventListener('pointerup', release);
+  canvas.addEventListener('pointercancel', release);
   canvas.addEventListener('contextmenu', e => e.preventDefault());
-  addEventListener('keydown', e => {
-    keys[e.code] = true;
-    initAudio();
-    if (e.code === 'Space') e.preventDefault();
-    if (e.code === 'KeyR') startReload();
-    if (e.code === 'KeyM') muted = !muted;
-    if (e.code === 'KeyP' || e.code === 'Escape') {
-      if (state === 'play') state = 'paused';
-      else if (state === 'paused') state = 'play';
-    }
-    if (!e.repeat && (e.code === 'Enter' || e.code === 'Space')) {
-      if (state === 'title' || (state === 'over' && overT > 1.2)) startGame();
-      else if (state === 'play' && e.code === 'Space') shoot();
-    }
+  // iOS only unlocks Web Audio reliably from a touchend
+  addEventListener('touchend', initAudio, { passive: true });
+  document.addEventListener('gesturestart', e => e.preventDefault());
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden && state === 'play') state = 'paused';
+    held.clear();
   });
-  addEventListener('keyup', e => { keys[e.code] = false; });
-  addEventListener('blur', () => { if (state === 'play') state = 'paused'; });
 
   // ─── Characters ───────────────────────────────────────────────────────────
   const SKIN = ['#f1c9a5', '#e0ac83', '#c68a5e', '#a0673f', '#7a4a2a', '#4f2f1c'];
@@ -424,7 +510,8 @@
   const SIGN_COLORS = ['#ff3b6b', '#35e0ff', '#ffd23b', '#7dff5a', '#c06bff'];
   const TAGS = ['KING', 'NOVA', 'RAZE', 'ZERO', 'BLAZE', 'SKY', 'ONE', 'VEX', 'REKT', 'LOCO', 'ACE', 'DUSK'];
   const TAG_COLORS = ['#e8455a', '#3fb4ff', '#f7d348', '#7be05a', '#d070ff', '#ff8a2a', '#ffffff'];
-  const FONT = 'Impact, "Arial Black", "Helvetica Neue", sans-serif';
+  // Avenir Next Condensed ships with iOS; Impact covers other browsers
+  const FONT = '"Avenir Next Condensed", Impact, "Arial Black", sans-serif';
 
   const chunkCache = new Map();
   function getChunk(i) {
@@ -562,7 +649,7 @@
         const word = SIGNS[ri(SIGNS.length)], col = SIGN_COLORS[ri(SIGN_COLORS.length)];
         g.fillStyle = '#0c0c10';
         g.fillRect(sx, gf - 52, sw, 42);
-        g.font = `26px ${FONT}`;
+        g.font = `800 26px ${FONT}`;
         g.textAlign = 'center';
         g.textBaseline = 'middle';
         g.shadowColor = col;
@@ -602,7 +689,7 @@
         g.save();
         g.translate(24 + r() * (CHUNK - 190), WALL_BASE - 28 - r() * 50);
         g.rotate(-0.12 + r() * 0.24);
-        g.font = `${30 + ri(16)}px ${FONT}`;
+        g.font = `800 ${30 + ri(16)}px ${FONT}`;
         g.textAlign = 'left';
         g.textBaseline = 'alphabetic';
         g.lineWidth = 7;
@@ -1109,6 +1196,29 @@
     sfx.reload();
   }
 
+  // A fingertip covers a whole head on a phone screen, so snap the shot to the
+  // body part (head, chest or knee) nearest the tap, leading moving targets.
+  function aimAssist(t) {
+    let best = t, bd = 60;
+    for (const e of enemies) {
+      if (!isHittable(e) || !e.P) continue;
+      const P = e.P;
+      const parts = [P.head, { x: (P.hip.x + P.neck.x) / 2, y: (P.hip.y + P.neck.y) / 2 }, P.legs[0].knee, P.legs[1].knee];
+      for (const pt of parts) {
+        const w = toWorld(e, pt.x, pt.y);
+        const d = Math.hypot(w.x - t.x, w.y - t.y);
+        if (d < bd) {
+          bd = d;
+          const lead = Math.hypot(w.x - player.x, w.y - player.gy) / 2600;
+          const vx = e.state === 'walk' ? e.face * e.speed : e.vx || 0;
+          const vy = e.state === 'juggle' ? e.vy : 0;
+          best = { x: w.x + vx * lead, y: w.y + vy * lead };
+        }
+      }
+    }
+    return best;
+  }
+
   function shoot() {
     const p = player;
     if (p.dead || p.reloadT > 0 || p.cool > 0) return;
@@ -1118,7 +1228,7 @@
     p.recoil = 1;
     p.flashT = 0.06;
     const m = muzzleOf(p);
-    const { x: tx, y: ty } = mouseWorld();
+    const { x: tx, y: ty } = aimAssist(mouseWorld());
     let a = Math.atan2(ty - m.y, tx - m.x);
     // crosshair right on top of the gun: just fire along the barrel
     if (Math.hypot(tx - m.x, ty - m.y) < 30) a = Math.atan2(Math.sin(p.aimEff), Math.cos(p.aimEff) * p.face);
@@ -1168,8 +1278,8 @@
 
     let speed = 55;
     if (state === 'play') {
-      if (keys.KeyD || keys.ArrowRight) speed = 130;
-      if (keys.KeyA || keys.ArrowLeft) speed = -90;
+      if (isHeld('fwd')) speed = 130;
+      if (isHeld('back')) speed = -90;
       for (const e of enemies) {
         if (isAlive(e) && Math.sign(e.x - p.x) === Math.sign(speed) && Math.abs(e.x - p.x) < 70) speed = 0;
       }
@@ -1451,7 +1561,7 @@
   }
 
   function text(str, x, y, size, color = '#fff', align = 'center', stroke = true) {
-    ctx.font = `${size}px ${FONT}`;
+    ctx.font = `800 ${size}px ${FONT}`;
     ctx.textAlign = align;
     ctx.textBaseline = 'middle';
     if (stroke) {
@@ -1618,83 +1728,117 @@
       ctx.fillStyle = 'rgba(0,0,0,0.6)';
       ctx.fillRect(0, 0, W, H);
       text('PAUSED', W / 2, H / 2 - 10, 64);
-      text('Press P to resume', W / 2, H / 2 + 45, 22, '#bbb');
+      text('TAP TO RESUME', W / 2, H / 2 + 50, 28, '#bbb');
     }
     if (state === 'over') drawGameOver();
     drawCrosshair();
   }
 
   function drawHUD() {
-    const p = player;
-    text('HEALTH', 30, 32, 18, '#ddd', 'left');
+    const p = player, L = 30 + safeL, R = W - 30 - safeR;
+    text('HEALTH', L, 34, 22, '#ddd', 'left');
     ctx.fillStyle = 'rgba(255,255,255,0.15)';
-    ctx.fillRect(110, 25, 200, 14);
+    ctx.fillRect(L + 92, 25, 220, 18);
     ctx.fillStyle = p.hp > 3 ? '#c3141f' : (Math.sin(tReal * 12) > 0 ? '#ff2a2a' : '#7a0000');
-    ctx.fillRect(110, 25, 200 * Math.max(0, p.hp) / 10, 14);
-    text(String(score), W - 30, 36, 38, '#fff', 'right');
-    text(`KILLS ${kills}`, W - 30, 70, 18, '#bbb', 'right');
+    ctx.fillRect(L + 92, 25, 220 * Math.max(0, p.hp) / 10, 18);
+    text(String(score), R, 38, 42, '#fff', 'right');
+    text(`KILLS ${kills}`, R - 80, 76, 20, '#bbb', 'right');
 
     // magazine
+    const magY = H - 52 - safeB, magR = R - 140; // left of the reload button
     for (let i = 0; i < MAG; i++) {
       ctx.fillStyle = i < p.ammo ? '#d8b25a' : 'rgba(255,255,255,0.15)';
-      ctx.fillRect(W - 30 - (MAG - i) * 9, H - 48, 6, 22);
+      ctx.fillRect(magR - (MAG - i) * 10, magY, 7, 26);
     }
-    if (p.reloadT > 0) text('RELOADING', W - 30, H - 70, 20, '#ffd23b', 'right');
-    else if (p.ammo === 0) text('R TO RELOAD', W - 30, H - 70, 20, '#ff4040', 'right');
-    text('GLOCK 17', W - 30, H - 14, 14, '#888', 'right');
+    if (p.reloadT > 0) text('RELOADING', magR, magY - 22, 22, '#ffd23b', 'right');
+    else if (p.ammo === 0) text('TAP RELOAD', magR, magY - 22, 22, '#ff4040', 'right');
 
     if (slowmoT > 0) {
       ctx.globalAlpha = 0.6 + Math.sin(tReal * 10) * 0.4;
-      text('● SLOW MOTION', 30, 64 * slowAmt + 4, 20, '#ff3030', 'left');
+      text('● SLOW MOTION', L, 64 * slowAmt + 8, 24, '#ff3030', 'left');
       ctx.globalAlpha = 1;
     }
+    if (state === 'play') drawButtons();
     if (playTime < 9 && state === 'play') {
       ctx.globalAlpha = Math.min(1, 9 - playTime);
-      text('AIM: MOUSE   SHOOT: CLICK   RELOAD: R / RIGHT-CLICK   WALK: A / D', W / 2, H - 30, 18, '#ccc');
+      text('TAP AN ATTACKER TO SHOOT — HEAD, CHEST OR KNEE', W / 2, H - 40 - safeB, 26, '#ddd');
       ctx.globalAlpha = 1;
     }
   }
 
+  function drawButtons() {
+    const bs = buttons();
+    for (const [k, b] of Object.entries(bs)) {
+      const on = isHeld(k) || (k === 'reload' && player.reloadT > 0);
+      ctx.fillStyle = on ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.1)';
+      ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = ctx.strokeStyle = 'rgba(255,255,255,0.85)';
+      const s = b.r * 0.38;
+      ctx.beginPath();
+      if (k === 'back' || k === 'fwd') {
+        const d = k === 'fwd' ? 1 : -1;
+        ctx.moveTo(b.x + d * s, b.y);
+        ctx.lineTo(b.x - d * s * 0.7, b.y - s);
+        ctx.lineTo(b.x - d * s * 0.7, b.y + s);
+        ctx.fill();
+      } else if (k === 'pause') {
+        ctx.fillRect(b.x - s * 0.7, b.y - s, s * 0.45, s * 2);
+        ctx.fillRect(b.x + s * 0.25, b.y - s, s * 0.45, s * 2);
+      } else {
+        // reload: circular arrow
+        ctx.lineWidth = 6;
+        ctx.arc(b.x, b.y, s, -Math.PI * 0.35, Math.PI * 1.35);
+        ctx.stroke();
+        const ax = b.x + Math.cos(-Math.PI * 0.35) * s, ay = b.y + Math.sin(-Math.PI * 0.35) * s;
+        ctx.beginPath();
+        ctx.moveTo(ax + 10, ay - 2);
+        ctx.lineTo(ax - 8, ay - 10);
+        ctx.lineTo(ax - 4, ay + 10);
+        ctx.fill();
+      }
+    }
+  }
+
+  // Briefly marks where the finger landed
   function drawCrosshair() {
+    if (tapFade <= 0) return;
     const x = mouse.x, y = mouse.y;
+    ctx.globalAlpha = Math.min(1, tapFade * 2);
     const col = hitMarker > 0 ? '#ff3030' : 'rgba(255,255,255,0.9)';
     ctx.strokeStyle = col;
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.arc(x, y, 11, 0, Math.PI * 2);
-    ctx.moveTo(x - 20, y); ctx.lineTo(x - 6, y);
-    ctx.moveTo(x + 6, y); ctx.lineTo(x + 20, y);
-    ctx.moveTo(x, y - 20); ctx.lineTo(x, y - 6);
-    ctx.moveTo(x, y + 6); ctx.lineTo(x, y + 20);
+    ctx.arc(x, y, 16, 0, Math.PI * 2);
+    ctx.moveTo(x - 26, y); ctx.lineTo(x - 9, y);
+    ctx.moveTo(x + 9, y); ctx.lineTo(x + 26, y);
+    ctx.moveTo(x, y - 26); ctx.lineTo(x, y - 9);
+    ctx.moveTo(x, y + 9); ctx.lineTo(x, y + 26);
     ctx.stroke();
-    if (hitMarker > 0) {
-      ctx.beginPath();
-      ctx.moveTo(x - 14, y - 14); ctx.lineTo(x - 8, y - 8);
-      ctx.moveTo(x + 14, y - 14); ctx.lineTo(x + 8, y - 8);
-      ctx.moveTo(x - 14, y + 14); ctx.lineTo(x - 8, y + 8);
-      ctx.moveTo(x + 14, y + 14); ctx.lineTo(x + 8, y + 8);
-      ctx.stroke();
-    }
-    circle(x, y, 1.5, col);
+    circle(x, y, 2, col);
+    ctx.globalAlpha = 1;
   }
 
   function drawTitle() {
     ctx.fillStyle = 'rgba(0,0,0,0.45)';
     ctx.fillRect(0, 0, W, H);
-    text('THE CLEANER', W / 2, 190, 110, '#e8e8e8');
+    text('THE CLEANER', W / 2, 180, 120, '#e8e8e8');
     ctx.fillStyle = '#9b111e';
-    ctx.fillRect(W / 2 - 220, 252, 440, 4);
-    text('Every third one goes slow.', W / 2, 290, 26, '#ff4040');
+    ctx.fillRect(W / 2 - 240, 248, 480, 5);
+    text('Every third one goes slow.', W / 2, 292, 32, '#ff4040');
     const lines = [
-      'MOUSE — aim          CLICK / SPACE — shoot',
-      'R or RIGHT-CLICK — reload          A / D — walk back / hurry',
-      'Head: they fly back.   Chest: they drop straight.   Knee: face-first.',
-      'In slow motion, keep shooting — up to 5 hits.',
+      'Tap an attacker to shoot him.',
+      'Head: he flies back.   Chest: he drops straight.   Knee: face-first.',
+      'In slow motion, keep tapping — up to 5 hits.',
     ];
-    lines.forEach((l, i) => text(l, W / 2, 370 + i * 36, 20, '#ccc'));
-    if (Math.floor(tReal * 2) % 2 === 0) text('CLICK TO START', W / 2, 560, 34, '#ffd23b');
-    if (best) text(`BEST ${best}`, W / 2, 610, 18, '#888');
-    drawCrosshair();
+    lines.forEach((l, i) => text(l, W / 2, 370 + i * 42, 26, '#ccc'));
+    if (Math.floor(tReal * 2) % 2 === 0) text('TAP TO START', W / 2, 545, 42, '#ffd23b');
+    if (best) text(`BEST ${best}`, W / 2, 600, 22, '#888');
+    if (!navigator.standalone) text('Tip: Share → Add to Home Screen to play full screen', W / 2, H - 30 - safeB, 20, '#888');
   }
 
   function drawGameOver() {
@@ -1704,7 +1848,7 @@
     text(`SCORE ${score}`, W / 2, 320, 40);
     text(`${kills} KILLS   ·   ${headshots} HEADSHOTS`, W / 2, 370, 22, '#ccc');
     text(score >= best && score > 0 ? 'NEW BEST' : `BEST ${best}`, W / 2, 410, 22, '#ffd23b');
-    if (overT > 1.2 && Math.floor(tReal * 2) % 2 === 0) text('CLICK TO GO AGAIN', W / 2, 520, 30, '#fff');
+    if (overT > 1.2 && Math.floor(tReal * 2) % 2 === 0) text('TAP TO GO AGAIN', W / 2, 520, 34, '#fff');
   }
 
   // ─── Loop ─────────────────────────────────────────────────────────────────
@@ -1714,6 +1858,8 @@
     const rdt = Math.min(0.05, (now - last) / 1000);
     last = now;
     tReal += rdt;
+    tapFade = Math.max(0, tapFade - rdt);
+    if (innerHeight > innerWidth && state === 'play') state = 'paused'; // held upright
     if (state !== 'paused') update(rdt);
     render();
     requestAnimationFrame(frame);
