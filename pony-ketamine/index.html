@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Pony Ketamine — long hair, micro bangs</title>
+  <meta name="theme-color" content="#f4efe6">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="app">
+    <header class="brand">
+      <h1>PONY<span>KETAMINE</span></h1>
+      <p class="tag">long hair · micro bangs · zero regrets</p>
+    </header>
+
+    <!-- START -->
+    <section class="screen" id="screenStart">
+      <div class="hero">
+        <div class="hero-face" aria-hidden="true">
+          <div class="hf-hair"></div>
+          <div class="hf-face"><i></i><i></i><b></b></div>
+          <div class="hf-bangs"></div>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn primary" id="btnSelfie">Take a selfie</button>
+        <label class="btn ghost">
+          Upload a photo
+          <input type="file" id="fileInput" accept="image/*" hidden>
+        </label>
+      </div>
+      <p class="fine">Everything happens on your phone. Your photo never leaves the device.</p>
+    </section>
+
+    <!-- CAMERA -->
+    <section class="screen hidden" id="screenCamera">
+      <div class="cam-wrap">
+        <video id="video" playsinline autoplay muted></video>
+        <div class="cam-guide"></div>
+      </div>
+      <div class="actions row">
+        <button class="btn ghost" id="btnCamCancel">Back</button>
+        <button class="btn shutter" id="btnSnap" aria-label="Take photo"></button>
+        <button class="btn ghost" id="btnFlip">Flip</button>
+      </div>
+    </section>
+
+    <!-- RESULT -->
+    <section class="screen hidden" id="screenResult">
+      <div class="stage">
+        <canvas id="out"></canvas>
+        <div class="busy hidden" id="busy"><div class="spinner"></div><p id="busyText">Sharpening the scissors…</p></div>
+        <button class="peek" id="btnPeek">Hold for before</button>
+      </div>
+      <p class="msg hidden" id="msg"></p>
+
+      <div class="controls" id="controls">
+        <label>Bangs <span>micro ↔ mini</span>
+          <input type="range" id="rBangs" min="0.1" max="0.85" step="0.01" value="0.38">
+        </label>
+        <label>Length <span>shoulder ↔ waist</span>
+          <input type="range" id="rLength" min="0.9" max="2.8" step="0.01" value="1.6">
+        </label>
+        <label>Volume <span>sleek ↔ big</span>
+          <input type="range" id="rVolume" min="0.85" max="1.35" step="0.01" value="1">
+        </label>
+        <div class="color-row">
+          <span class="lbl">Hair colour</span>
+          <button class="swatch auto" id="swAuto" title="Detected colour"></button>
+          <input type="color" id="colorPick" title="Pick your own">
+        </div>
+      </div>
+
+      <div class="actions row">
+        <button class="btn ghost" id="btnAgain">New photo</button>
+        <button class="btn primary" id="btnSave">Save</button>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
