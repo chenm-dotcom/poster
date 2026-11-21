@@ -251,7 +251,7 @@ export default {
     const c = cors(env, request);
     if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: c });
 
-    const limit = Number(env.MAX_USES ?? 50);
+    const limit = Number(env.MAX_USES ?? 400);
     const quota = env.QUOTA.get(env.QUOTA.idFromName('global'));
     const withCors = (res) => { for (const [k, v] of Object.entries(c)) res.headers.set(k, v); return res; };
 

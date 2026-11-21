@@ -4,26 +4,45 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Pony Ketamine — long hair, micro bangs</title>
-  <meta name="theme-color" content="#f4efe6">
+  <meta name="theme-color" content="#000000">
   <!-- If these pages are hosted somewhere other than the Worker, put its URL here: -->
   <meta name="pk-api" content="">
+  <link rel="preload" href="fonts/anton.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/space-mono-400.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <div class="grain" aria-hidden="true"></div>
   <main class="app">
     <header class="brand">
-      <h1>PONY<span>KETAMINE</span></h1>
-      <p class="tag">long hair · micro bangs · zero regrets</p>
+      <div class="meta"><span>BERLIN</span><span>136 BPM</span><span>EST. 2026</span></div>
+      <h1><span class="solid">PONY</span><span class="outline">KETAMINE</span></h1>
+      <p class="tag">Long hair / Micro bangs / No regrets</p>
     </header>
 
     <!-- START -->
     <section class="screen" id="screenStart">
-      <div class="hero">
-        <div class="hero-face" aria-hidden="true">
-          <div class="hf-hair"></div>
-          <div class="hf-face"><i></i><i></i><b></b></div>
-          <div class="hf-bangs"></div>
-        </div>
+      <div class="hero" aria-hidden="true">
+        <svg class="fig" viewBox="0 0 260 300" fill="none" stroke="currentColor">
+          <!-- hair silhouette -->
+          <path d="M130 22 C78 22 58 58 58 104 L56 236 L76 246 L84 238 L96 248 L104 120 C104 100 112 90 130 90 C148 90 156 100 156 120 L164 248 L176 238 L184 246 L204 236 L202 104 C202 58 182 22 130 22 Z" stroke-width="2"/>
+          <!-- strands -->
+          <path d="M70 80 L66 230 M80 68 L78 236 M190 80 L194 230 M180 68 L182 236 M92 60 L90 120 M168 60 L170 120" stroke-width="1" opacity=".55"/>
+          <!-- face -->
+          <path d="M104 96 C104 70 156 70 156 96 L156 150 C156 176 144 192 130 192 C116 192 104 176 104 150 Z" stroke-width="2"/>
+          <!-- micro bangs: solid block, blunt choppy edge -->
+          <path d="M100 54 C108 40 152 40 160 54 L160 86 L155 89 L150 86 L145 89 L140 86 L135 89 L130 86 L125 89 L120 86 L115 89 L110 86 L105 89 L100 86 Z" fill="currentColor" stroke="none"/>
+          <!-- eyes / mouth -->
+          <path d="M116 128 h8 M136 128 h8 M124 168 h12" stroke-width="2"/>
+          <!-- fringe measurement -->
+          <path d="M214 54 h14 M214 88 h14 M221 54 v34" stroke-width="1"/>
+          <text x="232" y="76" class="lbl">2CM</text>
+          <path d="M160 72 L212 72" stroke-width="1" stroke-dasharray="2 3"/>
+          <!-- length measurement -->
+          <path d="M28 104 h14 M28 246 h14 M35 104 v142" stroke-width="1"/>
+          <text x="10" y="180" class="lbl" transform="rotate(-90 10 180)">LENGTH: SHOULDER+</text>
+          <text x="130" y="288" class="lbl" text-anchor="middle">FIG.01 — DER PONY KETAMINE</text>
+        </svg>
       </div>
       <div class="actions">
         <button class="btn primary" id="btnSelfie">Take a selfie</button>
@@ -33,7 +52,7 @@
         </label>
       </div>
       <p class="quota" id="quota"></p>
-      <p class="fine">Your photo is sent to our AI stylist only to make your cut. We don't keep it.</p>
+      <p class="fine">Your photo goes to our AI stylist only to make your cut. We don't keep it.<br>No photos on the dancefloor.</p>
     </section>
 
     <!-- CAMERA -->
@@ -53,7 +72,7 @@
     <section class="screen hidden" id="screenResult">
       <div class="stage">
         <canvas id="out"></canvas>
-        <div class="busy hidden" id="busy"><div class="spinner"></div><p id="busyText">Sharpening the scissors…</p></div>
+        <div class="busy hidden" id="busy"><div class="bar"><i></i></div><p id="busyText">Sharpening the scissors…</p></div>
         <button class="peek hidden" id="btnPeek">Hold for before</button>
         <button class="sound" id="btnSound" aria-pressed="true">Sound on</button>
       </div>
@@ -68,8 +87,8 @@
     <!-- CLOSED: all free cuts used -->
     <section class="screen hidden" id="screenClosed">
       <div class="closed">
-        <p class="closed-big">SALON<br>CLOSED</p>
-        <p>All the free Pony Ketamine cuts are gone.<br>We're sweeping up the bangs. Come back soon.</p>
+        <p class="closed-big">SALON<br><span class="outline">GESCHLOSSEN</span></p>
+        <p>All free cuts are gone.<br>We're sweeping up the bangs.<br>Komm später wieder.</p>
       </div>
     </section>
   </main>
