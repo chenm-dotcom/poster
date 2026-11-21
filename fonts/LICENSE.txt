@@ -1,0 +1,2 @@
+Anton and Space Mono are licensed under the SIL Open Font License 1.1 (https://openfontlicense.org).
+Anton (c) The Anton Project Authors. Space Mono (c) Google / Colophon Foundry.

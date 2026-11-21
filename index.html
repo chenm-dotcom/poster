@@ -2,197 +2,97 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Poster Maker — Mindspace</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Pony Ketamine — long hair, micro bangs</title>
+  <meta name="theme-color" content="#000000">
+  <!-- If these pages are hosted somewhere other than the Worker, put its URL here: -->
+  <meta name="pk-api" content="">
+  <link rel="preload" href="fonts/anton.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/space-mono-400.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <div class="grain" aria-hidden="true"></div>
+  <main class="app">
+    <header class="brand">
+      <div class="meta"><span>BERLIN</span><span>136 BPM</span><span>EST. 2026</span></div>
+      <h1><span class="solid">PONY</span><span class="outline">KETAMINE</span></h1>
+      <p class="tag">Long hair / Micro bangs / No regrets</p>
+    </header>
 
-<!-- ═══ MOBILE BLOCK ══════════════════════════════════════════════════════ -->
-<div class="mobile-block" id="mobileBlock">
-  <div class="mb-inner">
-    <div class="mb-gif" id="mbGif">
-      <img src="https://media.giphy.com/media/l3q2Z6S6n38zjPswo/giphy.gif" alt="" id="mbGifImg">
-    </div>
-    <p class="mb-title">Seriously?</p>
-    <p class="mb-msg" id="mbMsg"></p>
-    <p class="mb-hint">Open on a desktop or laptop to use Mindspace Poster Maker.</p>
-  </div>
-</div>
-
-<!-- ═══ WELCOME ═══════════════════════════════════════════════════════════ -->
-<div class="screen" id="screenWelcome">
-  <div class="wl-logo">
-    <span class="wl-wordmark">Mindspace</span>
-    <span class="wl-dot">·</span>
-    <span class="wl-sub">Poster Maker</span>
-  </div>
-  <div class="wl-center">
-    <h1 class="wl-headline">What is the event<br>all about?</h1>
-    <div class="wl-input-wrap">
-      <div class="wl-input-row">
-        <input class="wl-input" id="wlInput"
-          placeholder="e.g. Rooftop Yoga at Sunrise"
-          autocomplete="off" maxlength="80">
-        <button class="wl-go" id="wlGo" disabled aria-label="Start">
-          <svg viewBox="0 0 20 20" fill="none">
-            <path d="M4 10h12M11 5l5 5-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </button>
-      </div>
-      <p class="wl-enter-hint">Press Enter or click →</p>
-    </div>
-  </div>
-  <div class="wl-footer">Made with love for Mindspace communities.</div>
-</div>
-
-<!-- ═══ BUILD ═════════════════════════════════════════════════════════════ -->
-<div class="screen hidden" id="screenBuild">
-
-  <!-- Left wizard -->
-  <aside class="wizard" id="wizard">
-    <div class="wz-top">
-      <button class="wz-back" id="wzBack" title="Back">
-        <svg viewBox="0 0 20 20" fill="none">
-          <path d="M16 10H4M9 5L4 10l5 5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- START -->
+    <section class="screen" id="screenStart">
+      <div class="hero" aria-hidden="true">
+        <svg class="fig" viewBox="0 0 260 300" fill="none" stroke="currentColor">
+          <!-- hair silhouette -->
+          <path d="M130 22 C78 22 58 58 58 104 L56 236 L76 246 L84 238 L96 248 L104 120 C104 100 112 90 130 90 C148 90 156 100 156 120 L164 248 L176 238 L184 246 L204 236 L202 104 C202 58 182 22 130 22 Z" stroke-width="2"/>
+          <!-- strands -->
+          <path d="M70 80 L66 230 M80 68 L78 236 M190 80 L194 230 M180 68 L182 236 M92 60 L90 120 M168 60 L170 120" stroke-width="1" opacity=".55"/>
+          <!-- face -->
+          <path d="M104 96 C104 70 156 70 156 96 L156 150 C156 176 144 192 130 192 C116 192 104 176 104 150 Z" stroke-width="2"/>
+          <!-- micro bangs: solid block, blunt choppy edge -->
+          <path d="M100 54 C108 40 152 40 160 54 L160 86 L155 89 L150 86 L145 89 L140 86 L135 89 L130 86 L125 89 L120 86 L115 89 L110 86 L105 89 L100 86 Z" fill="currentColor" stroke="none"/>
+          <!-- eyes / mouth -->
+          <path d="M116 128 h8 M136 128 h8 M124 168 h12" stroke-width="2"/>
+          <!-- fringe measurement -->
+          <path d="M214 54 h14 M214 88 h14 M221 54 v34" stroke-width="1"/>
+          <text x="232" y="76" class="lbl">2CM</text>
+          <path d="M160 72 L212 72" stroke-width="1" stroke-dasharray="2 3"/>
+          <!-- length measurement -->
+          <path d="M28 104 h14 M28 246 h14 M35 104 v142" stroke-width="1"/>
+          <text x="10" y="180" class="lbl" transform="rotate(-90 10 180)">LENGTH: SHOULDER+</text>
+          <text x="130" y="288" class="lbl" text-anchor="middle">FIG.01 — DER PONY KETAMINE</text>
         </svg>
-      </button>
-      <div class="wz-progress">
-        <div class="wz-track"><div class="wz-fill" id="wzFill"></div></div>
-        <span class="wz-step-label" id="wzStepLabel">Step 1 of 4</span>
       </div>
-    </div>
-    <div class="wz-body" id="wzBody"></div>
-    <div class="wz-foot">
-      <button class="wz-skip" id="wzSkip">Skip</button>
-      <button class="wz-next" id="wzNext" disabled>Continue</button>
-    </div>
-    <!-- Style controls -->
-    <div class="wz-controls">
-      <div class="wz-ctrl-row">
-        <span class="wz-ctrl-label">Style</span>
-        <div class="wz-ctrl-btns">
-          <button class="tpl-btn active" data-t="0">Dark</button>
-          <button class="tpl-btn" data-t="1">Card</button>
-          <button class="tpl-btn" data-t="2">Strips</button>
-        </div>
+      <div class="actions">
+        <button class="btn primary" id="btnSelfie">Take a selfie</button>
+        <label class="btn ghost">
+          Upload a photo
+          <input type="file" id="fileInput" accept="image/*" hidden>
+        </label>
       </div>
-    </div>
-  </aside>
+      <p class="quota" id="quota"></p>
+      <p class="fine">Your photo goes to our AI stylist only to make your cut. We don't keep it.<br>No photos on the dancefloor.</p>
+    </section>
 
-  <!-- Right stage -->
-  <div class="stage" id="stage">
-    <!-- TV mockup wrapper -->
-    <div class="tv-scene" id="tvScene">
-      <div class="tv-frame">
-        <div class="tv-bezel">
-          <div class="tv-screen" id="tvScreen">
-            <div class="stage-wrap" id="stageWrap">
-              <div class="poster" id="poster">
-                <div class="p-bg" id="pBg"></div>
-                <div class="p-ov"></div>
-                <div class="p-card"></div>
-                <div class="p-content" id="pContent">
-                  <div class="p-logo">Mindspace</div>
-                  <div class="p-title" id="pTitle"></div>
-                  <div class="p-desc" id="pDesc"></div>
-                  <div class="p-meta" id="pMeta"></div>
-                </div>
-                <div class="p-tag" id="pTag">Mindspace</div>
-              </div>
-            </div>
-          </div>
-        </div>
+    <!-- CAMERA -->
+    <section class="screen hidden" id="screenCamera">
+      <div class="cam-wrap">
+        <video id="video" playsinline autoplay muted></video>
+        <div class="cam-guide"></div>
       </div>
-    </div>
-
-  </div>
-</div>
-
-<!-- ═══ DONE ══════════════════════════════════════════════════════════════ -->
-<div class="screen hidden" id="screenDone">
-
-  <!-- TV mockup on done screen -->
-  <div class="done-left" id="doneLeft">
-    <div class="tv-scene done-tv-scene">
-      <div class="tv-frame">
-        <div class="tv-bezel">
-          <div class="tv-screen">
-            <div class="done-wrap" id="doneWrap"></div>
-          </div>
-        </div>
+      <div class="actions row">
+        <button class="btn ghost" id="btnCamCancel">Back</button>
+        <button class="btn shutter" id="btnSnap" aria-label="Take photo"></button>
+        <button class="btn ghost" id="btnFlip">Flip</button>
       </div>
-    </div>
-  </div>
+    </section>
 
-  <div class="done-side">
-    <div class="ds-logo">Mindspace</div>
-    <h2 class="ds-title">Your poster<br>is ready.</h2>
-    <p class="ds-sub">Pick a format, then download.</p>
-
-    <div class="ds-formats">
-      <button class="ds-fmt active" data-r="9:16">
-        <div class="fmt-shape fmt-916"></div>
-        <span>9 : 16</span>
-        <small>TV Screen</small>
-      </button>
-      <button class="ds-fmt" data-r="16:9">
-        <div class="fmt-shape fmt-169"></div>
-        <span>16 : 9</span>
-        <small>Landscape</small>
-      </button>
-      <button class="ds-fmt" data-r="1:1">
-        <div class="fmt-shape fmt-11"></div>
-        <span>1 : 1</span>
-        <small>Square</small>
-      </button>
-    </div>
-
-    <button class="ds-dl" id="dsDl">
-      <svg viewBox="0 0 20 20" fill="none">
-        <path d="M10 3v10M6 9l4 4 4-4M3 16h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-      Download PNG
-    </button>
-    <button class="ds-dl ds-dl-gif hidden" id="dsDlGif">
-      <svg viewBox="0 0 20 20" fill="none">
-        <path d="M10 3v10M6 9l4 4 4-4M3 16h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-      Download GIF
-    </button>
-    <button class="ds-edit" id="dsEdit">Edit poster</button>
-    <button class="ds-new"  id="dsNew">Start over</button>
-  </div>
-</div>
-
-<!-- ═══ IMAGE DRAWER ═══════════════════════════════════════════════════════ -->
-<div class="drawer hidden" id="drawer">
-  <div class="dr-backdrop" id="drBackdrop"></div>
-  <div class="dr-panel">
-    <div class="dr-top">
-      <div class="dr-tabs">
-        <button class="dr-tab active" data-src="unsplash">Photo</button>
-        <button class="dr-tab" data-src="giphy">GIF</button>
-        <button class="dr-tab" data-src="upload">Upload</button>
+    <!-- RESULT -->
+    <section class="screen hidden" id="screenResult">
+      <div class="stage">
+        <canvas id="out"></canvas>
+        <div class="busy hidden" id="busy"><div class="bar"><i></i></div><p id="busyText">Sharpening the scissors…</p></div>
+        <button class="peek hidden" id="btnPeek">Hold for before</button>
+        <button class="sound" id="btnSound" aria-pressed="true">Sound on</button>
       </div>
-      <button class="dr-close" id="drClose">✕</button>
-    </div>
-    <div class="dr-search-row" id="drSearchRow">
-      <input class="dr-search" id="drSearch" placeholder="Search images…" autocomplete="off">
-      <button class="dr-go" id="drGo">Search</button>
-    </div>
-    <div class="dr-upload hidden" id="drUpload">
-      <label class="dr-upload-btn" for="fileInput">
-        <svg viewBox="0 0 24 24" fill="none"><path d="M12 3v12M7 8l5-5 5 5M3 17h18v2a2 2 0 01-2 2H5a2 2 0 01-2-2v-2z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        Choose a file
-      </label>
-      <input type="file" id="fileInput" accept="image/*" style="display:none">
-    </div>
-    <div class="dr-results" id="drResults"></div>
-  </div>
-</div>
+      <p class="msg hidden" id="msg"></p>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="app.js"></script>
+      <div class="actions row" id="resultActions">
+        <button class="btn ghost" id="btnAgain">New photo</button>
+        <button class="btn primary" id="btnSave">Save</button>
+      </div>
+    </section>
+
+    <!-- CLOSED: all free cuts used -->
+    <section class="screen hidden" id="screenClosed">
+      <div class="closed">
+        <p class="closed-big">SALON<br><span class="outline">GESCHLOSSEN</span></p>
+        <p>All free cuts are gone.<br>We're sweeping up the bangs.<br>Komm später wieder.</p>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="app.js"></script>
 </body>
 </html>

@@ -1,0 +1,18 @@
+# Files Cloudflare must NOT publish as web pages
+.git
+.git/**
+.claude
+.claude/**
+.wrangler
+.wrangler/**
+node_modules
+node_modules/**
+worker
+worker/**
+wrangler.toml
+.dev.vars
+.gitignore
+.assetsignore
+.nojekyll
+README.md
+SETUP.md
