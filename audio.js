@@ -7,6 +7,8 @@ const BEAT_LEVEL = 0.22;     // "soft in the background"
 const MUTE_KEY = 'pk-muted';
 
 let ctx = null;
+// 0.1 s of silence (8-bit mono WAV)
+const SILENT_WAV = 'data:audio/wav;base64,UklGRkQDAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YSADAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgA==';
 let master, revSend, beatBus, noiseBuf, grit;
 let muted = localStorage.getItem(MUTE_KEY) === '1';
 let timer = null, nextTime = 0, step = 0, wantBeat = false;
@@ -291,13 +293,28 @@ function stopBeat() {
 /* ───────────────────────── controls ───────────────────────── */
 
 // Call from a tap/click: browsers only allow audio after a user gesture.
+let keepAlive = null;
 function unlock() {
+  // iPhone: play through the speaker even when the ring/silent switch is on silent.
+  try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch {}
   if (!ensure()) return;
   // iOS: play one silent sample inside the gesture
   const b = ctx.createBufferSource();
   b.buffer = ctx.createBuffer(1, 1, 22050);
   b.connect(ctx.destination);
   b.start(0);
+  // Older iPhones: a silent looping <audio> element also lifts the silent-switch mute.
+  if (!navigator.audioSession && !keepAlive) {
+    keepAlive = new Audio(SILENT_WAV);
+    keepAlive.loop = true;
+    keepAlive.setAttribute('playsinline', '');
+    keepAlive.play().catch(() => {});
+  }
+}
+
+// Is sound actually able to play right now? (false = needs another tap)
+function ready() {
+  return !!ctx && ctx.state === 'running';
 }
 
 function setMuted(m) {
@@ -309,15 +326,21 @@ function setMuted(m) {
   }
 }
 
-// Don't keep thumping in a background tab.
+// Don't keep thumping in a background tab. Only the loop stops — the audio
+// engine itself stays awake, because phones won't restart it without a tap
+// (and opening the camera / photo picker briefly hides the page).
 document.addEventListener('visibilitychange', () => {
   if (!ctx) return;
-  if (document.hidden) { haltLoop(); ctx.suspend(); }
-  else { ctx.resume(); if (wantBeat) runLoop(); }
+  if (document.hidden) { haltLoop(); }
+  else {
+    if (ctx.state !== 'running') ctx.resume().catch(() => {});
+    if (wantBeat) runLoop();
+  }
 });
 
 export const sound = {
   unlock,
+  ready,
   tada,
   startBeat,
   stopBeat,

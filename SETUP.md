@@ -1,64 +1,82 @@
-# Pony Ketamine — going live with real AI
+# Pony Ketamine — switching on the real AI
 
-**Preview (no AI):** <https://chenm-dotcom.github.io/poster/> runs in demo mode:
-everything works, but the haircut is drawn on the phone instead of made by AI.
-The steps below give you the real thing.
+Right now <https://chenm-dotcom.github.io/poster/> runs in **demo mode** (the cut
+is drawn on the phone). To get real AI haircuts you connect two accounts. All
+of it works in a web browser — no computer terminal needed.
 
-The app runs on **Cloudflare Workers** (free plan is enough). One deploy serves
-the web pages *and* the small server that holds your Higgsfield key and counts
-the free cuts. After **400** AI haircuts the app shows "Salon closed" to everyone.
+**Cost:** about $0.07 per haircut on Higgsfield. The app stops itself after
+**400** cuts (≈ $28), so top up about $30. Cloudflare is free.
 
-## 1. Higgsfield API key
+---
 
-1. Sign in at <https://open.higgsfield.ai> → API keys → create a key.
-   You get a **Key ID** and a **Key Secret**.
-2. Top up your balance (minimum $5). The model used here is Grok Image 2.0
-   (edit) — roughly $0.07 per haircut, so 400 cuts ≈ $28 (top up at least $30).
+## Step 1 — Higgsfield key (5 min)
 
-## 2. Cloudflare account
+1. Go to <https://open.higgsfield.ai> and sign in.
+2. Open **API keys** → **Create key**. Copy the **Key ID** and the **Key Secret**
+   somewhere safe (the secret is shown only once).
+3. Add credit (Billing → top up ~$30).
 
-Create a free account at <https://dash.cloudflare.com/sign-up>.
+## Step 2 — Put the app on Cloudflare (10 min)
 
-## 3. Deploy (on a computer with Node.js installed)
+1. Create a free account at <https://dash.cloudflare.com/sign-up>.
+2. In the dashboard: **Workers & Pages** → **Create** → **Import a repository**
+   (it may say "Connect to Git").
+3. Connect GitHub and choose the repository **chenm-dotcom/poster**, branch **main**.
+4. Leave the build command empty. Deploy command: `npx wrangler deploy`
+   (usually filled in already). Click **Deploy**.
+5. When it finishes you get a link like `https://pony-ketamine.YOURNAME.workers.dev`.
 
-```bash
-cd poster          # this repository
-npx wrangler login                              # opens the browser once
+## Step 3 — Give it the keys (3 min)
 
-npx wrangler secret put HIGGSFIELD_KEY_ID       # paste the Key ID
-npx wrangler secret put HIGGSFIELD_KEY_SECRET   # paste the Key Secret
-npx wrangler secret put ADMIN_TOKEN             # make up a long password (for you only)
-npx wrangler secret put HASH_SALT               # any random text
+In Cloudflare: **Workers & Pages** → **pony-ketamine** → **Settings** →
+**Variables and Secrets** → **Add**. Add these four, each as type **Secret**:
 
-npx wrangler deploy
-```
+| Name | Value |
+|---|---|
+| `HIGGSFIELD_KEY_ID` | the Key ID from step 1 |
+| `HIGGSFIELD_KEY_SECRET` | the Key Secret from step 1 |
+| `ADMIN_TOKEN` | a long password you make up (for checking usage) |
+| `HASH_SALT` | any random text |
 
-It prints your live link, e.g. `https://pony-ketamine.<your-name>.workers.dev`.
-Open it on your phone. That's the app.
+Save / deploy. Open your `workers.dev` link on your phone — that's the
+pure-AI app, with the free-cuts counter.
 
-## Settings (`wrangler.toml` → `[vars]`, then `npx wrangler deploy` again)
+## Step 4 — Make the GitHub link use the AI too (optional)
+
+Send your `workers.dev` link to Claude, or edit `index.html` yourself: put the
+link in the line `<meta name="pk-api" content="">`, e.g.
+`content="https://pony-ketamine.YOURNAME.workers.dev"`. From then on
+<https://chenm-dotcom.github.io/poster/> uses the AI only — no more drawn demo.
+
+---
+
+## Settings
+
+Change in `wrangler.toml` (Cloudflare redeploys by itself when `main` changes):
 
 | Setting | Default | What it does |
 |---|---|---|
-| `MAX_USES` | `400` | App pauses after this many AI haircuts. Raise it to reopen. |
-| `PER_PERSON_LIMIT` | `3` | Cuts per person (per network/IP). `0` = no limit. |
+| `MAX_USES` | `400` | App shows "Salon geschlossen" after this many AI cuts. |
+| `PER_PERSON_LIMIT` | `3` | Cuts per person (per network). `0` = no limit. |
 | `MODEL` | `grok` | `grok` = Grok Image 2.0 edit, `qwen` = Qwen Image 3 edit. Try the other if results disappoint. |
-| `STYLE_REF_URL` | – | Optional public link to a photo of the perfect cut. The AI uses it only for the haircut shape. Use an AI-rendered model, not a real person's photo. |
+| `STYLE_REF_URL` | – | Optional link to a photo of the perfect cut (use an AI-made model). The AI copies only the haircut shape. |
 
-Failed or refused AI attempts don't count. Photos where no face is found are
-caught on the phone and never reach the AI.
+Failed or refused AI attempts don't count. Photos with no face are caught on
+the phone and never reach the AI.
 
 ## Checking usage / reopening
 
+Open in a browser tool that can send headers, or run in a terminal:
+
 ```bash
 # how many cuts are used
-curl -H "Authorization: Bearer YOUR_ADMIN_TOKEN" https://pony-ketamine.<you>.workers.dev/api/admin/stats
+curl -H "Authorization: Bearer YOUR_ADMIN_TOKEN" https://pony-ketamine.YOURNAME.workers.dev/api/admin/stats
 
-# reset the counter to 0 (reopens the salon for another 400)
-curl -X POST -H "Authorization: Bearer YOUR_ADMIN_TOKEN" https://pony-ketamine.<you>.workers.dev/api/admin/reset
+# reset to 0 (reopens the salon for another 400)
+curl -X POST -H "Authorization: Bearer YOUR_ADMIN_TOKEN" https://pony-ketamine.YOURNAME.workers.dev/api/admin/reset
 ```
 
 ## Privacy
 
-The selfie goes to Higgsfield only to make the cut; the Worker doesn't store
-photos. Only a scrambled (hashed) network ID is kept, to enforce the per-person limit.
+The selfie goes to Higgsfield only to make the cut; the server doesn't store
+photos. Only a scrambled network ID is kept, to enforce the per-person limit.

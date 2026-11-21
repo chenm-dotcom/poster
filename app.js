@@ -173,8 +173,11 @@ async function refreshQuota() {
     state.quota = data;
     state.demo = false;
   } catch {
-    state.quota = null; // API not deployed (e.g. GitHub Pages preview)
-    state.demo = true;
+    state.quota = null;
+    // No AI server configured at all → demo preview. If one IS configured
+    // (pure-AI mode) never fall back to the drawn cut; show the salon as offline.
+    state.demo = !API;
+    state.offline = !!API;
   }
   paintQuota();
   return state.quota;
@@ -196,7 +199,7 @@ function paintQuota() {
       ? 'Demo: your photo stays on your phone.<br>No photos on the dancefloor.'
       : "Your photo goes to our AI stylist only to make your cut. We don't keep it.<br>No photos on the dancefloor.";
   }
-  if (!q) { el.textContent = state.demo ? 'Demo mode — AI not connected' : ''; return; }
+  if (!q) { el.textContent = state.demo ? 'Demo mode — AI not connected' : state.offline ? 'Salon offline — try again soon' : ''; return; }
   el.textContent = `${q.remaining} of ${q.limit} free cuts left`;
 }
 
@@ -239,6 +242,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 function loadImage(url) {
   return new Promise((resolve, reject) => {
     const img = new Image();
+    img.crossOrigin = 'anonymous'; // AI server may be on another domain; keeps Save working
     img.onload = () => resolve(img);
     img.onerror = reject;
     img.src = url;
@@ -268,8 +272,18 @@ function reveal(img) {
   $('btnPeek').classList.remove('hidden');
   $('btnSave').classList.remove('hidden');
   // the reveal: goth ta-da, then the beat creeps in underneath
+  playReveal();
+}
+
+let soundPending = false;
+function playReveal() {
   sound.tada();
   sound.startBeat(2.4);
+  // Phones sometimes still block audio here — then ask for one tap.
+  setTimeout(() => {
+    soundPending = !sound.muted && !sound.ready();
+    paintSound();
+  }, 400);
 }
 
 // Preview without the AI server: a drawn haircut on the user's own photo.
@@ -603,13 +617,20 @@ $('btnSave').onclick = () => {
 };
 
 const sndBtn = $('btnSound');
-const paintSound = () => {
-  sndBtn.textContent = sound.muted ? 'Sound off' : 'Sound on';
+function paintSound() {
+  sndBtn.textContent = soundPending ? '▶ Tap for sound' : sound.muted ? 'Sound off' : 'Sound on';
+  sndBtn.classList.toggle('pending', soundPending);
   sndBtn.setAttribute('aria-pressed', String(!sound.muted));
-};
+}
 sndBtn.onclick = () => {
   sound.unlock();
-  sound.setMuted(!sound.muted);
+  if (soundPending) {
+    soundPending = false;
+    sound.setMuted(false);
+    if (state.result) { sound.tada(); sound.startBeat(2.4); }
+  } else {
+    sound.setMuted(!sound.muted);
+  }
   paintSound();
 };
 paintSound();
