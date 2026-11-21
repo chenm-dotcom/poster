@@ -198,7 +198,7 @@ function faceGeometry(lm, w, h) {
   const topY = toLocal(top).y;
   const oval = FACE_OVAL.map((i) => toLocal(P(i)));
   const skin = [P(50), P(280), P(151), P(9)];
-  return { c, ang, W, H, toLocal, toImg, browY, topY, oval, skin };
+  return { c, ang, W, H, toLocal, toImg, browY, topY, oval, skin, glabella: P(9) };
 }
 
 /* ─────────────────────────── hair colour ─────────────────────────── */
@@ -227,33 +227,105 @@ function sampleHairColor(photo, f) {
   }
   sk = sk.map((v) => v / Math.max(1, n));
 
-  // Candidate hair regions in face-local space (x in W, y in H), with weights.
   const { W, H, topY } = f;
+  const step = Math.max(1, Math.round(W / 90));
+
+  // Forehead mask: grow outward from the skin between the eyebrows and stop
+  // at strong colour edges (the hairline). Whatever is connected is skin,
+  // however the forehead happens to be lit.
+  const gx0 = -0.8 * W, gy0 = topY - 0.5 * H, gy1 = f.browY;
+  const gs = Math.max(2, W / 45);
+  const cols = Math.ceil(1.6 * W / gs) + 1, rows = Math.ceil((gy1 - gy0) / gs) + 1;
+  const grid = new Array(cols * rows);
+  for (let j = 0; j < rows; j++) {
+    for (let i = 0; i < cols; i++) {
+      const p = f.toImg(gx0 + i * gs, gy0 + j * gs);
+      grid[j * cols + i] = px(p.x, p.y);
+    }
+  }
+  const skinMask = new Uint8Array(cols * rows);
+  const seed = f.toLocal(f.glabella);
+  const si = Math.round((seed.x - gx0) / gs), sj = Math.min(rows - 1, Math.round((seed.y - gy0) / gs));
+  const seedC = grid[sj * cols + si];
+  if (seedC) {
+    const cd = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
+    const queue = [sj * cols + si];
+    skinMask[queue[0]] = 1;
+    while (queue.length) {
+      const idx = queue.pop();
+      const i = idx % cols, j = (idx / cols) | 0;
+      const c = grid[idx];
+      for (const [di, dj] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const ni = i + di, nj = j + dj;
+        if (ni < 0 || nj < 0 || ni >= cols || nj >= rows) continue;
+        const nIdx = nj * cols + ni;
+        const nc = grid[nIdx];
+        if (skinMask[nIdx] || !nc) continue;
+        if (cd(nc, c) < 22 && cd(nc, seedC) < 220) { skinMask[nIdx] = 1; queue.push(nIdx); }
+      }
+    }
+  }
+  // Colour of the upper forehead (often lit differently from the cheeks).
+  const skinRefs = [sk];
+  if (seedC) skinRefs.push(seedC);
+  let topRow = rows;
+  for (let k = 0; k < skinMask.length; k++) if (skinMask[k]) { topRow = Math.floor(k / cols); break; }
+  const upper = [0, 0, 0];
+  let nu = 0;
+  for (let j = topRow; j < Math.min(rows, topRow + Math.max(2, (rows - topRow) / 4)); j++) {
+    for (let i = 0; i < cols; i++) {
+      const c = grid[j * cols + i];
+      if (skinMask[j * cols + i] && c) { upper[0] += c[0]; upper[1] += c[1]; upper[2] += c[2]; nu++; }
+    }
+  }
+  if (nu > 3) skinRefs.push(upper.map((v) => v / nu));
+  const nearSkin = (q) => skinRefs.some((r) => Math.hypot(q[0] - r[0], q[1] - r[1], q[2] - r[2]) < 48);
+
+  const isForehead = (lx, ly) => {
+    const i = Math.round((lx - gx0) / gs), j = Math.round((ly - gy0) / gs);
+    if (i < 0 || j < 0 || i >= cols || j >= rows) return false;
+    return skinMask[j * cols + i] === 1;
+  };
+
+  // Candidate hair regions in face-local space (x in W, y in H), with weights.
+  const t = topY / H;
   const regions = [
-    { x0: -0.28, x1: 0.28, y0: topY / H - 0.30, y1: topY / H - 0.08, wgt: 4 }, // above hairline
-    { x0: -0.45, x1: -0.3, y0: topY / H - 0.22, y1: topY / H - 0.02, wgt: 2 },
-    { x0: 0.3, x1: 0.45, y0: topY / H - 0.22, y1: topY / H - 0.02, wgt: 2 },
-    { x0: -0.6, x1: -0.52, y0: -0.4, y1: -0.1, wgt: 1 },                     // temples
-    { x0: 0.52, x1: 0.6, y0: -0.4, y1: -0.1, wgt: 1 },
+    { x0: -0.3, x1: 0.3, y0: t - 0.2, y1: t - 0.03, wgt: 3 },   // just above the hairline
+    { x0: -0.48, x1: -0.3, y0: t - 0.12, y1: t + 0.05, wgt: 2 },
+    { x0: 0.3, x1: 0.48, y0: t - 0.12, y1: t + 0.05, wgt: 2 },
+    { x0: -0.62, x1: -0.52, y0: t + 0.05, y1: -0.1, wgt: 2 },   // beside the temples
+    { x0: 0.52, x1: 0.62, y0: t + 0.05, y1: -0.1, wgt: 2 },
   ];
 
   const bins = new Map();
   const pixels = [];
-  const step = Math.max(1, Math.round(W / 90));
+  // Pixels right above where the forehead ends are the most reliable hair.
+  const add = (q, wgt) => {
+    if (nearSkin(q)) return;
+    const lum = 0.299 * q[0] + 0.587 * q[1] + 0.114 * q[2];
+    const sat = Math.max(...q) - Math.min(...q);
+    if (lum > 235 && sat < 18) return;
+    const key = (q[0] >> 5) * 64 + (q[1] >> 5) * 8 + (q[2] >> 5);
+    bins.set(key, (bins.get(key) || 0) + wgt * (1 + sat / 80) * (lum < 40 ? 0.5 : 1));
+    pixels.push({ q, key, lum, wgt });
+  };
+  for (let i = 0; i < cols; i++) {
+    let jTop = -1;
+    for (let j = 0; j < rows; j++) if (skinMask[j * cols + i]) { jTop = j; break; }
+    if (jTop < 2 || jTop > rows - 3) continue;
+    for (let d = 1; d <= 3; d++) {
+      const c = grid[(jTop - d) * cols + i];
+      if (c) add(c, 4);
+    }
+  }
+
   for (const g of regions) {
     for (let ly = g.y0 * H; ly <= g.y1 * H; ly += step) {
       for (let lx = g.x0 * W; lx <= g.x1 * W; lx += step) {
         const p = f.toImg(lx, ly);
         const q = px(p.x, p.y);
-        if (!q) continue;
-        const dSkin = Math.hypot(q[0] - sk[0], q[1] - sk[1], q[2] - sk[2]);
-        if (dSkin < 55) continue;                 // looks like skin
-        const lum = 0.299 * q[0] + 0.587 * q[1] + 0.114 * q[2];
-        const sat = Math.max(...q) - Math.min(...q);
-        if (lum > 235 && sat < 18) continue;      // blown-out / white wall
-        const key = (q[0] >> 5) * 64 + (q[1] >> 5) * 8 + (q[2] >> 5);
-        bins.set(key, (bins.get(key) || 0) + g.wgt);
-        pixels.push({ q, key, lum, wgt: g.wgt });
+        if (!q || isForehead(lx, ly)) continue;
+        add(q, g.wgt);
       }
     }
   }
@@ -268,7 +340,9 @@ function sampleHairColor(photo, f) {
 
   // …then the mid-to-light part of it. Shadows make hair read darker than it
   // looks to people, so skip the darkest pixels and the specular highlights.
-  const lo = Math.floor(cluster.length * 0.45), hi = Math.max(lo + 1, Math.floor(cluster.length * 0.9));
+  const median = cluster[Math.floor(cluster.length / 2)].lum;
+  const [pLo, pHi] = median < 70 ? [0.35, 0.85] : [0.65, 0.98]; // black hair: don't drift toward brown
+  const lo = Math.floor(cluster.length * pLo), hi = Math.max(lo + 1, Math.floor(cluster.length * pHi));
   const acc = [0, 0, 0];
   let wsum = 0;
   for (const p of cluster.slice(lo, hi)) {
@@ -336,132 +410,165 @@ function render() {
   const color = state.color;
   const rand = mulberry32(state.seed);
   const opt = {
-    bangs: +$('rBangs').value,   // 0 = right at hairline, 1 = eyebrows
-    length: +$('rLength').value, // in face heights below face centre
+    bangs: +$('rBangs').value,   // 0 = right at the hairline, 1 = eyebrows
+    length: +$('rLength').value, // tip height, in face heights below face centre
     volume: +$('rVolume').value,
   };
+  const vol = opt.volume;
 
   const w = photo.width, h = photo.height;
   const toLocalCtx = (ctx) => {
     ctx.setTransform(Math.cos(f.ang), Math.sin(f.ang), -Math.sin(f.ang), Math.cos(f.ang), f.c.x, f.c.y);
   };
 
-  const crownY = f.topY - 0.46 * H * (0.85 + 0.15 * opt.volume);
-  const L = opt.length * H;
-  const vol = opt.volume;
-  const mid = (0.3 * H + L) / 2;
+  // Skull-hugging silhouette: the crown sits just above the head, not a dome.
+  const crownY = f.topY - 0.36 * H * (0.9 + 0.1 * vol);
+  const L = opt.length * H;                  // where the longest strands end
+  const bodyEnd = L - 0.14 * H;              // solid hair stops here; wisps go further
+  const mid = (0.25 * H + L) / 2;
+  // The top of the head as an ellipse, so the hair follows a round skull.
+  const skull = { cy: f.topY + 0.15 * H, rx: 0.6 * W * vol };
+  skull.ry = skull.cy - crownY;
+  const onSkull = (deg, k = 1) => ({
+    x: Math.cos((deg * Math.PI) / 180) * skull.rx * k,
+    y: skull.cy - Math.sin((deg * Math.PI) / 180) * skull.ry,
+  });
 
-  /* ── long side curtains ── */
-  const curtains = layer(w, h);
-  const cc = curtains.getContext('2d');
+  /* ═════════ side hair ═════════ */
+  const sideLayer = layer(w, h);
+  const cc = sideLayer.getContext('2d');
   toLocalCtx(cc);
 
   const sides = [1, -1].map((s) => {
     const outer = spline([
-      { x: 0.0, y: crownY },
-      { x: 0.42 * W * vol, y: crownY + 0.07 * H },
-      { x: 0.64 * W * vol, y: f.topY - 0.08 * H },
-      { x: 0.72 * W * vol, y: -0.2 * H },
-      { x: 0.74 * W * (0.6 + 0.4 * vol), y: 0.25 * H },
-      { x: 0.79 * W * (0.7 + 0.3 * vol), y: mid },
-      { x: 0.8 * W, y: L - 0.06 * H },
-    ].map((p) => ({ x: p.x * s, y: p.y })));
+      onSkull(90),
+      onSkull(55),
+      onSkull(22),
+      { x: 0.62 * W * vol, y: -0.15 * H },
+      { x: 0.63 * W * (0.5 + 0.5 * vol), y: 0.2 * H },
+      { x: 0.66 * W * (0.6 + 0.4 * vol), y: mid },
+      { x: 0.8 * W, y: L },
+    ].map((p) => ({ x: p.x * s, y: p.y })), 16);
     const inner = spline([
-      { x: 0.0, y: crownY + 0.08 * H },
-      { x: 0.26 * W, y: crownY + 0.14 * H },
+      { x: 0.0, y: crownY + 0.06 * H },
+      { x: 0.28 * W, y: onSkull(55).y + 0.08 * H },
       { x: 0.38 * W, y: f.topY + 0.05 * H },
       { x: 0.4 * W, y: -0.2 * H },
-      { x: 0.4 * W, y: 0.25 * H },
-      { x: 0.42 * W, y: mid },
-      { x: 0.46 * W, y: L + 0.02 * H },
-    ].map((p) => ({ x: p.x * s, y: p.y })));
-    // Choppy, layered ends between the two edge tips.
-    const a = outer[outer.length - 1], b = inner[inner.length - 1];
-    const tips = [];
-    const n = 9;
-    for (let i = 1; i < n; i++) {
-      const t = i / n;
-      const x = a.x + (b.x - a.x) * t;
-      const y = a.y + (b.y - a.y) * t + Math.sin(t * Math.PI) * 0.07 * H + (i % 2 ? 0.035 : -0.015) * H * (0.6 + rand() * 0.8);
-      tips.push({ x, y });
-    }
-    return { s, outer, inner, tips };
+      { x: 0.4 * W, y: 0.22 * H },
+      { x: 0.41 * W, y: mid },
+      { x: 0.5 * W, y: L },
+    ].map((p) => ({ x: p.x * s, y: p.y })), 16);
+    return { s, outer, inner };
   });
 
-  const curtainPath = () => {
-    cc.beginPath();
-    for (const sd of sides) {
-      poly(cc, sd.outer);
-      poly(cc, sd.tips, false);
-      poly(cc, [...sd.inner].reverse(), false);
-      cc.closePath();
-    }
+  // Point on the strand that sits fraction t of the way from outer to inner edge.
+  const at = (sd, t, k) => {
+    const o = sd.outer[k], q = sd.inner[k];
+    return { x: o.x + (q.x - o.x) * t, y: o.y + (q.y - o.y) * t };
   };
 
-  // base
-  curtainPath();
+  // x on the line that is fraction t across the hair, at height y
+  const xAt = (sd, t, y) => {
+    let k = 0;
+    while (k < sd.outer.length - 1 && sd.outer[k].y < y) k++;
+    return sd.outer[k].x + (sd.inner[k].x - sd.outer[k].x) * t;
+  };
+  // Shaggy ends: the hair finishes in tapered, pointed pieces of different lengths.
+  for (const sd of sides) {
+    const nClumps = 9;
+    sd.zig = [];
+    for (let c = 0; c < nClumps; c++) {
+      const t0 = c / nClumps, t1 = (c + 1) / nClumps;
+      const valleyY = bodyEnd + rand() * 0.03 * H;
+      const tipY = bodyEnd + 0.05 * H + Math.pow(rand(), 0.7) * 0.15 * H;
+      const tm = t0 + (t1 - t0) * (0.35 + rand() * 0.3);
+      sd.zig.push({ x: xAt(sd, t0, valleyY), y: valleyY });
+      sd.zig.push({ x: xAt(sd, tm, tipY), y: tipY, tip: true });
+    }
+    const lastY = bodyEnd + rand() * 0.03 * H;
+    sd.zig.push({ x: xAt(sd, 1, lastY), y: lastY });
+  }
+  cc.beginPath();
+  for (const sd of sides) {
+    const y0 = sd.zig[0].y, y1 = sd.zig[sd.zig.length - 1].y;
+    poly(cc, sd.outer.filter((p) => p.y < y0));
+    // tapered pieces: curve into each point so they look like hair, not teeth
+    for (let z = 0; z < sd.zig.length - 1; z++) {
+      const a = sd.zig[z], b = sd.zig[z + 1];
+      if (b.tip) cc.quadraticCurveTo(a.x + (b.x - a.x) * 0.3, b.y - (b.y - a.y) * 0.25, b.x, b.y);
+      else cc.quadraticCurveTo(b.x - (b.x - a.x) * 0.3, a.y - (a.y - b.y) * 0.25, b.x, b.y);
+    }
+    poly(cc, sd.inner.filter((p) => p.y < y1).reverse(), false);
+    cc.closePath();
+  }
   cc.fillStyle = rgb(color);
   cc.fill();
-  cc.globalCompositeOperation = 'source-atop';
-  paintHairShading(cc, f, color, crownY, L, rand);
 
-  // glossy sheen streak running down each side
-  const along = (sd, t, from = 0, to = 1) => {
-    const n = sd.outer.length;
-    const pts = [];
-    for (let k = Math.floor(from * (n - 1)); k <= Math.floor(to * (n - 1)); k++) {
-      const o = sd.outer[k], q = sd.inner[k];
-      pts.push({ x: o.x + (q.x - o.x) * t, y: o.y + (q.y - o.y) * t });
-    }
-    return pts;
-  };
+  cc.globalCompositeOperation = 'source-atop';
+  paintHairShading(cc, f, color, crownY, L);
+  // glossy sheen streak + soft shadow where the hair tucks in by the face
   cc.save();
   cc.filter = `blur(${Math.max(2, W * 0.035)}px)`;
   cc.lineCap = 'round';
+  const n0 = sides[0].outer.length;
+  const run = (sd, t, a, b) => {
+    const pts = [];
+    for (let k = Math.floor(a * (n0 - 1)); k <= Math.floor(b * (n0 - 1)); k++) pts.push(at(sd, t, k));
+    return pts;
+  };
   for (const sd of sides) {
-    cc.strokeStyle = rgb(shade(color, 0.5), 0.28);
-    cc.lineWidth = W * 0.11;
-    cc.beginPath(); poly(cc, along(sd, 0.4, 0.12, 0.55)); cc.stroke();
-    cc.strokeStyle = rgb(shade(color, -0.5), 0.3);
-    cc.lineWidth = W * 0.08;
-    cc.beginPath(); poly(cc, along(sd, 0.92, 0.3, 1)); cc.stroke();
+    cc.strokeStyle = rgb(shade(color, 0.55), 0.3);
+    cc.lineWidth = W * 0.1;
+    cc.beginPath(); poly(cc, run(sd, 0.45, 0.1, 0.5)); cc.stroke();
+    cc.strokeStyle = rgb(shade(color, -0.45), 0.22);
+    cc.lineWidth = W * 0.07;
+    cc.beginPath(); poly(cc, run(sd, 0.95, 0.3, 1)); cc.stroke();
   }
   cc.restore();
+  cc.globalCompositeOperation = 'source-over';
 
-  // strands that follow the flow between outer and inner edges
+  // Strand texture, kept inside the hair so it reads as shine, not bristles.
+  cc.globalCompositeOperation = 'source-atop';
+  cc.lineCap = 'round';
   for (const sd of sides) {
-    const N = 260;
-    for (let i = 0; i < N; i++) {
+    for (let i = 0; i < 300; i++) {
       const t = rand();
-      const wav = (rand() - 0.5) * 0.04 * W;
+      const wav = (rand() - 0.5) * 0.025 * W;
       const ph = rand() * Math.PI * 2;
-      const lgt = (rand() - 0.5) * 0.5;
-      cc.strokeStyle = rgb(shade(color, lgt), 0.18 + rand() * 0.22);
-      cc.lineWidth = W * (0.002 + rand() * 0.006);
+      cc.strokeStyle = rgb(shade(color, (rand() - 0.45) * 0.4), 0.2 + rand() * 0.25);
+      cc.lineWidth = W * (0.003 + rand() * 0.007);
       cc.beginPath();
-      for (let k = 0; k < sd.outer.length; k++) {
-        const o = sd.outer[k], q = sd.inner[k];
-        const x = o.x + (q.x - o.x) * t + Math.sin(k * 0.25 + ph) * wav;
-        const y = o.y + (q.y - o.y) * t;
-        k ? cc.lineTo(x, y) : cc.moveTo(x, y);
+      for (let k = 0; k < n0; k++) {
+        const p = at(sd, t, k);
+        const x = p.x + Math.sin(k * 0.18 + ph) * wav;
+        k ? cc.lineTo(x, p.y) : cc.moveTo(x, p.y);
       }
-      cc.lineTo(sd.tips[Math.min(sd.tips.length - 1, Math.floor(t * sd.tips.length))].x,
-        sd.tips[Math.min(sd.tips.length - 1, Math.floor(t * sd.tips.length))].y + 0.04 * H);
+      cc.lineTo(xAt(sd, t, L + 0.1 * H), L + 0.1 * H);
       cc.stroke();
     }
   }
-
-  // a few flyaways past the silhouette so the edge isn't a cut-out
   cc.globalCompositeOperation = 'source-over';
   for (const sd of sides) {
-    for (let i = 0; i < 16; i++) {
-      const t = -0.04 - rand() * 0.05;
-      const pts = along(sd, t, 0.15 + rand() * 0.2, 0.75 + rand() * 0.25);
+    // a few fine wisps trailing off the pointed ends
+    for (const z of sd.zig.filter((p) => p.tip)) {
+      for (let i = 0; i < 2; i++) {
+        cc.strokeStyle = rgb(shade(color, (rand() - 0.4) * 0.3), 0.35);
+        cc.lineWidth = W * (0.002 + rand() * 0.002);
+        cc.beginPath();
+        cc.moveTo(z.x, z.y - 0.06 * H);
+        cc.quadraticCurveTo(z.x + (rand() - 0.5) * 0.02 * W, z.y, z.x + (rand() - 0.5) * 0.03 * W, z.y + (0.01 + rand() * 0.04) * H);
+        cc.stroke();
+      }
+    }
+    // flyaways just outside the silhouette
+    for (let i = 0; i < 14; i++) {
+      const t = -0.03 - rand() * 0.05;
+      const a = 0.15 + rand() * 0.2, b = 0.6 + rand() * 0.35;
       const ph = rand() * 6;
-      cc.strokeStyle = rgb(shade(color, (rand() - 0.3) * 0.3), 0.25 + rand() * 0.2);
+      cc.strokeStyle = rgb(shade(color, (rand() - 0.3) * 0.3), 0.2 + rand() * 0.2);
       cc.lineWidth = W * (0.0015 + rand() * 0.002);
       cc.beginPath();
-      pts.forEach((p, k) => {
+      run(sd, t, a, b).forEach((p, k) => {
         const x = p.x + Math.sin(k * 0.2 + ph) * 0.012 * W * sd.s;
         k ? cc.lineTo(x, p.y) : cc.moveTo(x, p.y);
       });
@@ -469,11 +576,10 @@ function render() {
     }
   }
 
-  // carve the face out (slightly narrowed so hair overlaps the face edges)
+  // carve the face out (narrowed a little so hair overlaps the cheeks)
   cc.globalCompositeOperation = 'destination-out';
   cc.beginPath();
-  const ovalPts = f.oval.map((p) => ({ x: p.x * (p.y > f.topY + 0.15 * H ? 0.9 : 1), y: p.y }));
-  poly(cc, ovalPts);
+  poly(cc, f.oval.map((p) => ({ x: p.x * (p.y > f.topY + 0.15 * H ? 0.9 : 1), y: p.y })));
   cc.closePath();
   cc.fillStyle = '#000';
   cc.filter = `blur(${Math.max(1, W * 0.006)}px)`;
@@ -481,98 +587,119 @@ function render() {
   cc.filter = 'none';
   cc.globalCompositeOperation = 'source-over';
 
-  /* ── micro bangs ── */
-  const bangsLayer = layer(w, h);
-  const bc = bangsLayer.getContext('2d');
+  /* ═════════ micro bangs ═════════ */
+  const bangLayer = layer(w, h);
+  const bc = bangLayer.getContext('2d');
   toLocalCtx(bc);
-  const yb = f.topY + (f.browY - f.topY) * opt.bangs; // blunt edge height
-  const halfB = 0.47 * W;
-  const bottom = [];
-  const segs = 34;
-  for (let i = 0; i <= segs; i++) {
-    const t = i / segs;
-    const x = halfB - 2 * halfB * t;
-    const curve = -Math.pow(x / halfB, 2) * 0.035 * H;        // follows the forehead
-    const chop = (rand() - 0.5) * 0.018 * H;                  // blunt but choppy
-    bottom.push({ x, y: yb + curve + chop });
+  const yb = f.topY + (f.browY - f.topY) * opt.bangs;  // where the fringe ends
+  const halfB = 0.49 * W;
+  // The fringe follows the curve of the forehead and kicks up a touch at the temples.
+  const edgeY = (x) => yb - Math.pow(Math.abs(x) / halfB, 2) * 0.03 * H - Math.pow(Math.abs(x) / halfB, 6) * 0.025 * H;
+
+  // Cut into "pieces", each a slightly different length: blunt but textured.
+  const pieces = [];
+  const nPieces = 15;
+  for (let i = 0; i < nPieces; i++) {
+    pieces.push({
+      x0: -halfB + (2 * halfB * i) / nPieces,
+      x1: -halfB + (2 * halfB * (i + 1)) / nPieces,
+      dy: (rand() - 0.5) * 0.014 * H,
+    });
   }
-  const bangsTop = spline([
-    { x: -0.52 * W * (0.9 + 0.1 * vol), y: yb - 0.04 * H },
-    { x: -0.5 * W * vol, y: f.topY - 0.14 * H },
-    { x: -0.3 * W * vol, y: crownY + 0.05 * H },
-    { x: 0, y: crownY - 0.01 * H },
-    { x: 0.3 * W * vol, y: crownY + 0.05 * H },
-    { x: 0.5 * W * vol, y: f.topY - 0.14 * H },
-    { x: 0.52 * W * (0.9 + 0.1 * vol), y: yb - 0.04 * H },
+  // Bottom edge: each piece ends in one or two short points.
+  const edge = [];
+  for (let p = pieces.length - 1; p >= 0; p--) {
+    const pc = pieces[p];
+    const pts = 1 + (rand() < 0.45 ? 1 : 0);
+    edge.push({ x: pc.x1, y: edgeY(pc.x1) + pc.dy - 0.005 * H });
+    for (let k = 0; k < pts; k++) {
+      const x = pc.x1 - (pc.x1 - pc.x0) * ((k + 0.5 + (rand() - 0.5) * 0.4) / pts);
+      edge.push({ x, y: edgeY(x) + pc.dy + 0.002 * H + rand() * 0.005 * H, tip: true });
+    }
+  }
+  edge.push({ x: pieces[0].x0, y: edgeY(pieces[0].x0) + pieces[0].dy - 0.005 * H });
+
+  const bangTop = spline([
+    { x: -halfB * 1.04, y: edgeY(-halfB) - 0.02 * H },
+    onSkull(160, 0.97), onSkull(125, 0.97), onSkull(90), onSkull(55, 0.97), onSkull(20, 0.97),
+    { x: halfB * 1.04, y: edgeY(halfB) - 0.02 * H },
   ]);
   bc.beginPath();
-  poly(bc, bangsTop);
-  poly(bc, bottom, false);
+  poly(bc, bangTop);
+  for (const e of edge) bc.lineTo(e.x, e.y);
   bc.closePath();
   bc.fillStyle = rgb(color);
   bc.fill();
 
   bc.globalCompositeOperation = 'source-atop';
-  // roots darker, a sheen band, darker toward the cut line
   const g = bc.createLinearGradient(0, crownY, 0, yb);
-  g.addColorStop(0, rgb(shade(color, -0.35), 0.4));
-  g.addColorStop(0.45, rgb(shade(color, 0.22), 0.25));
-  g.addColorStop(0.7, rgb(color, 0));
-  g.addColorStop(1, rgb(shade(color, -0.3), 0.35));
+  g.addColorStop(0, rgb(shade(color, -0.3), 0.3));
+  g.addColorStop(0.4, rgb(shade(color, 0.35), 0.28));
+  g.addColorStop(0.65, rgb(color, 0));
+  g.addColorStop(1, rgb(shade(color, -0.2), 0.2));
   bc.fillStyle = g;
   bc.fillRect(-W, crownY - H, 2 * W, yb - crownY + 2 * H);
 
-  // strands radiating from the crown down to the blunt edge
-  const NB = 230;
-  for (let i = 0; i < NB; i++) {
-    const t = rand();
-    const xb = halfB - 2 * halfB * t + (rand() - 0.5) * 0.01 * W;
-    const x0 = xb * 0.25;
-    const lgt = (rand() - 0.5) * 0.55;
-    bc.strokeStyle = rgb(shade(color, lgt), 0.2 + rand() * 0.25);
-    bc.lineWidth = W * (0.002 + rand() * 0.005);
+  // strand texture combed from the crown, clipped to the fringe
+  bc.lineCap = 'round';
+  for (let i = 0; i < 300; i++) {
+    const xb = -halfB * 1.05 + rand() * 2.1 * halfB;
+    const yEnd = edgeY(xb) + 0.03 * H;
+    const x0 = xb * 0.45;
+    const y0 = crownY + 0.02 * H;
+    bc.strokeStyle = rgb(shade(color, (rand() - 0.45) * 0.35), 0.2 + rand() * 0.25);
+    bc.lineWidth = W * (0.003 + rand() * 0.007);
     bc.beginPath();
-    bc.moveTo(x0, crownY);
-    bc.quadraticCurveTo(xb * 1.05, (crownY + yb) / 2, xb, yb + 0.02 * H);
+    bc.moveTo(x0, y0);
+    bc.quadraticCurveTo(xb * 1.04, (y0 + yEnd) / 2, xb, yEnd);
+    bc.stroke();
+  }
+  // darker separations between the pieces
+  for (const pc of pieces) {
+    const x = pc.x0;
+    bc.strokeStyle = rgb(shade(color, -0.35), 0.35);
+    bc.lineWidth = W * 0.004;
+    bc.beginPath();
+    bc.moveTo(x * 0.92, edgeY(x) - 0.07 * H);
+    bc.lineTo(x, edgeY(x) + 0.02 * H);
     bc.stroke();
   }
   bc.globalCompositeOperation = 'source-over';
 
-  /* ── composite ── */
+  /* ═════════ composite ═════════ */
   octx.save();
-  octx.shadowColor = 'rgba(0,0,0,0.35)';
-  octx.shadowBlur = W * 0.05;
+  octx.shadowColor = 'rgba(0,0,0,0.3)';
+  octx.shadowBlur = W * 0.045;
   octx.shadowOffsetY = W * 0.01;
-  octx.drawImage(curtains, 0, 0);
-  octx.shadowBlur = W * 0.025;
-  octx.shadowOffsetY = W * 0.012;
-  octx.shadowColor = 'rgba(0,0,0,0.4)';
-  octx.drawImage(bangsLayer, 0, 0);
+  octx.drawImage(sideLayer, 0, 0);
+  octx.shadowColor = 'rgba(0,0,0,0.28)';
+  octx.shadowBlur = W * 0.02;
+  octx.shadowOffsetY = W * 0.01;
+  octx.drawImage(bangLayer, 0, 0);
   octx.restore();
 }
 
-function paintHairShading(ctx, f, color, crownY, L, rand) {
+function paintHairShading(ctx, f, color, crownY, L) {
   const { W, H } = f;
-  // vertical: dark roots → sheen → slightly lighter ends
+  // slightly deeper roots → sheen → even mid-lengths → sun-lightened ends
   const g = ctx.createLinearGradient(0, crownY, 0, L);
-  g.addColorStop(0, rgb(shade(color, -0.4), 0.4));
-  g.addColorStop(0.18, rgb(shade(color, 0.25), 0.25));
+  g.addColorStop(0, rgb(shade(color, -0.3), 0.3));
+  g.addColorStop(0.15, rgb(shade(color, 0.3), 0.2));
   g.addColorStop(0.3, rgb(color, 0));
-  g.addColorStop(0.75, rgb(shade(color, -0.15), 0.25));
-  g.addColorStop(1, rgb(shade(color, 0.12), 0.25));
+  g.addColorStop(0.8, rgb(color, 0));
+  g.addColorStop(1, rgb(shade(color, 0.15), 0.2));
   ctx.fillStyle = g;
   ctx.fillRect(-2 * W, crownY - H, 4 * W, L - crownY + 2 * H);
 
-  // horizontal: darker where hair tucks in next to the face/neck
+  // a touch of depth where the hair meets the face and at the outer edge
   for (const s of [1, -1]) {
-    const gh = ctx.createLinearGradient(0.38 * W * s, 0, 0.85 * W * s, 0);
-    gh.addColorStop(0, rgb(shade(color, -0.45), 0.55));
+    const gh = ctx.createLinearGradient(0.38 * W * s, 0, 0.75 * W * s, 0);
+    gh.addColorStop(0, rgb(shade(color, -0.4), 0.4));
     gh.addColorStop(0.35, rgb(color, 0));
     gh.addColorStop(0.85, rgb(color, 0));
-    gh.addColorStop(1, rgb(shade(color, -0.3), 0.35));
+    gh.addColorStop(1, rgb(shade(color, -0.25), 0.25));
     ctx.fillStyle = gh;
-    const x0 = Math.min(0.38 * W * s, 0.9 * W * s);
-    ctx.fillRect(x0, f.topY, 0.52 * W, L);
+    ctx.fillRect(Math.min(0.38 * W * s, 0.8 * W * s), f.topY, 0.42 * W, L);
   }
 }
 
