@@ -1,5 +1,9 @@
 # Pony Ketamine — going live with real AI
 
+**Preview (no AI):** <https://chenm-dotcom.github.io/poster/> runs in demo mode:
+everything works, but the haircut is drawn on the phone instead of made by AI.
+The steps below give you the real thing.
+
 The app runs on **Cloudflare Workers** (free plan is enough). One deploy serves
 the web pages *and* the small server that holds your Higgsfield key and counts
 the free cuts. After **400** AI haircuts the app shows "Salon closed" to everyone.
@@ -18,7 +22,7 @@ Create a free account at <https://dash.cloudflare.com/sign-up>.
 ## 3. Deploy (on a computer with Node.js installed)
 
 ```bash
-cd pony-ketamine
+cd poster          # this repository
 npx wrangler login                              # opens the browser once
 
 npx wrangler secret put HIGGSFIELD_KEY_ID       # paste the Key ID

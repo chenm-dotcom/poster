@@ -2,9 +2,9 @@ name = "pony-ketamine"
 main = "worker/index.js"
 compatibility_date = "2026-01-01"
 
-# The app's web pages are served from ./public
+# The app's web pages are the files in this folder (see .assetsignore)
 [assets]
-directory = "./public"
+directory = "."
 binding = "ASSETS"
 
 # Exact usage counter
