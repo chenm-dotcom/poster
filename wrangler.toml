@@ -21,7 +21,7 @@ MAX_USES = "400"         # app pauses after this many AI haircuts
 PER_PERSON_LIMIT = "3"   # per network/IP, so one person can't use them all (0 = no limit)
 MODEL = "grok"           # "grok" (Grok Image 2.0 edit) or "qwen" (Qwen Image 3 edit)
 # STYLE_REF_URL = ""     # optional: public URL of a reference photo of the haircut
-# ALLOWED_ORIGINS = ""   # only if the pages are hosted elsewhere (e.g. GitHub Pages)
+ALLOWED_ORIGINS = "https://chenm-dotcom.github.io"   # lets the GitHub Pages link use this AI server
 
 # Secrets — set with `npx wrangler secret put NAME`, never in this file:
 #   HIGGSFIELD_KEY_ID, HIGGSFIELD_KEY_SECRET, ADMIN_TOKEN, HASH_SALT
