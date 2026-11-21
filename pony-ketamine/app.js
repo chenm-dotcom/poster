@@ -2,6 +2,8 @@
 // Face landmarks come from MediaPipe Face Landmarker; the haircut is drawn
 // procedurally on a canvas in the colour sampled from the user's own hair.
 
+import { sound } from './audio.js';
+
 const MP_VER = '0.10.14';
 const MP_BASE = `https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${MP_VER}`;
 const MODEL_URL =
@@ -31,6 +33,7 @@ const state = {
 function show(name) {
   for (const [k, el] of Object.entries(screens)) el.classList.toggle('hidden', k !== name);
   if (name !== 'camera') stopCamera();
+  if (name !== 'result') sound.stopBeat();
 }
 
 function busy(on, text) {
@@ -176,6 +179,9 @@ async function processPhoto(src) {
   $('controls').classList.remove('hidden');
   busy(false);
   render();
+  // the reveal: goth ta-da, then the beat creeps in underneath
+  sound.tada();
+  sound.startBeat(2.4);
 }
 
 /* ─────────────────────────── geometry ─────────────────────────── */
@@ -706,6 +712,7 @@ function paintHairShading(ctx, f, color, crownY, L) {
 /* ─────────────────────────── events ─────────────────────────── */
 
 $('btnSelfie').onclick = () => {
+  sound.unlock();
   if (!navigator.mediaDevices?.getUserMedia) {
     $('fileInput').setAttribute('capture', 'user');
     $('fileInput').click();
@@ -714,13 +721,16 @@ $('btnSelfie').onclick = () => {
   facing = 'user';
   startCamera();
 };
+// The file picker's change event doesn't count as a tap on iOS, so unlock
+// audio when the upload button itself is pressed.
+$('fileInput').closest('label').addEventListener('pointerdown', () => sound.unlock());
 $('fileInput').onchange = (e) => {
   loadFile(e.target.files[0]);
   e.target.value = '';
   e.target.removeAttribute('capture');
 };
 $('btnCamCancel').onclick = () => show('start');
-$('btnSnap').onclick = snap;
+$('btnSnap').onclick = () => { sound.unlock(); snap(); };
 $('btnFlip').onclick = () => { facing = facing === 'user' ? 'environment' : 'user'; startCamera(); };
 $('btnAgain').onclick = () => show('start');
 
@@ -758,3 +768,15 @@ $('btnSave').onclick = () => {
     setTimeout(() => URL.revokeObjectURL(a.href), 2000);
   }, 'image/png');
 };
+
+const sndBtn = $('btnSound');
+const paintSound = () => {
+  sndBtn.textContent = sound.muted ? 'Sound off' : 'Sound on';
+  sndBtn.setAttribute('aria-pressed', String(!sound.muted));
+};
+sndBtn.onclick = () => {
+  sound.unlock();
+  sound.setMuted(!sound.muted);
+  paintSound();
+};
+paintSound();
