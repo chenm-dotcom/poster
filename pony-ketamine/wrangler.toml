@@ -1,0 +1,27 @@
+name = "pony-ketamine"
+main = "worker/index.js"
+compatibility_date = "2026-01-01"
+
+# The app's web pages are served from ./public
+[assets]
+directory = "./public"
+binding = "ASSETS"
+
+# Exact usage counter
+[[durable_objects.bindings]]
+name = "QUOTA"
+class_name = "Quota"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["Quota"]
+
+[vars]
+MAX_USES = "50"          # app pauses after this many AI haircuts
+PER_PERSON_LIMIT = "3"   # per network/IP, so one person can't use them all (0 = no limit)
+MODEL = "grok"           # "grok" (Grok Image 2.0 edit) or "qwen" (Qwen Image 3 edit)
+# STYLE_REF_URL = ""     # optional: public URL of a reference photo of the haircut
+# ALLOWED_ORIGINS = ""   # only if the pages are hosted elsewhere (e.g. GitHub Pages)
+
+# Secrets — set with `npx wrangler secret put NAME`, never in this file:
+#   HIGGSFIELD_KEY_ID, HIGGSFIELD_KEY_SECRET, ADMIN_TOKEN, HASH_SALT

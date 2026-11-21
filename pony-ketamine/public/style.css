@@ -191,3 +191,18 @@ body {
 #colorPick {
   width: 40px; height: 40px; border: 0; background: none; cursor: pointer; padding: 0;
 }
+
+/* free-cuts counter + closed screen */
+.quota {
+  text-align: center; font-size: 13px; font-weight: 700;
+  letter-spacing: .08em; text-transform: uppercase; color: var(--accent);
+}
+.quota:empty { display: none; }
+.closed {
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 18px; text-align: center; color: var(--muted); line-height: 1.5;
+}
+.closed-big {
+  font-size: clamp(48px, 16vw, 84px); font-weight: 900; line-height: .9;
+  letter-spacing: -0.04em; color: var(--ink);
+}

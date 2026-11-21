@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Pony Ketamine — long hair, micro bangs</title>
   <meta name="theme-color" content="#f4efe6">
+  <!-- If these pages are hosted somewhere other than the Worker, put its URL here: -->
+  <meta name="pk-api" content="">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -30,7 +32,8 @@
           <input type="file" id="fileInput" accept="image/*" hidden>
         </label>
       </div>
-      <p class="fine">Everything happens on your phone. Your photo never leaves the device.</p>
+      <p class="quota" id="quota"></p>
+      <p class="fine">Your photo is sent to our AI stylist only to make your cut. We don't keep it.</p>
     </section>
 
     <!-- CAMERA -->
@@ -51,31 +54,22 @@
       <div class="stage">
         <canvas id="out"></canvas>
         <div class="busy hidden" id="busy"><div class="spinner"></div><p id="busyText">Sharpening the scissors…</p></div>
-        <button class="peek" id="btnPeek">Hold for before</button>
+        <button class="peek hidden" id="btnPeek">Hold for before</button>
         <button class="sound" id="btnSound" aria-pressed="true">Sound on</button>
       </div>
       <p class="msg hidden" id="msg"></p>
 
-      <div class="controls" id="controls">
-        <label>Bangs <span>micro ↔ mini</span>
-          <input type="range" id="rBangs" min="0" max="0.7" step="0.01" value="0.22">
-        </label>
-        <label>Length <span>bob ↔ waist</span>
-          <input type="range" id="rLength" min="0.7" max="2.6" step="0.01" value="1.2">
-        </label>
-        <label>Volume <span>sleek ↔ big</span>
-          <input type="range" id="rVolume" min="0.85" max="1.35" step="0.01" value="1">
-        </label>
-        <div class="color-row">
-          <span class="lbl">Hair colour</span>
-          <button class="swatch auto" id="swAuto" title="Detected colour"></button>
-          <input type="color" id="colorPick" title="Pick your own">
-        </div>
-      </div>
-
-      <div class="actions row">
+      <div class="actions row" id="resultActions">
         <button class="btn ghost" id="btnAgain">New photo</button>
         <button class="btn primary" id="btnSave">Save</button>
+      </div>
+    </section>
+
+    <!-- CLOSED: all free cuts used -->
+    <section class="screen hidden" id="screenClosed">
+      <div class="closed">
+        <p class="closed-big">SALON<br>CLOSED</p>
+        <p>All the free Pony Ketamine cuts are gone.<br>We're sweeping up the bangs. Come back soon.</p>
       </div>
     </section>
   </main>
